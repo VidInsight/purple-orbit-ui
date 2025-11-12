@@ -1,6 +1,7 @@
 import { Workspace } from '@/types/workspace';
-import { Users, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 
 interface WorkspaceCardProps {
   workspace: Workspace;
@@ -17,60 +18,44 @@ export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
       .slice(0, 2);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return 'Yesterday';
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    return date.toLocaleDateString();
-  };
-
   return (
     <button
       onClick={() => onClick(workspace)}
       className={cn(
-        'group relative w-full p-6 rounded-lg border border-border bg-surface',
-        'hover:border-primary hover:shadow-lg hover:scale-[1.02]',
-        'transition-all duration-200 text-left',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+        'group relative w-full p-4 rounded-lg border border-border bg-surface',
+        'hover:border-primary hover:shadow-md transition-all duration-200',
+        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+        'flex items-center gap-4'
       )}
     >
-      {/* Workspace Icon */}
-      <div className="mb-4">
-        <div className="h-16 w-16 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-2xl font-semibold text-primary-foreground">
-            {getInitials(workspace.name)}
-          </span>
-        </div>
+      {/* Logo */}
+      <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+        <span className="text-lg font-semibold text-primary-foreground">
+          {getInitials(workspace.name)}
+        </span>
       </div>
 
-      {/* Workspace Info */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+      {/* Name and Description */}
+      <div className="flex-1 text-left min-w-0">
+        <h3 className="text-base font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors truncate">
           {workspace.name}
         </h3>
         {workspace.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-muted-foreground truncate">
             {workspace.description}
           </p>
         )}
       </div>
 
-      {/* Metadata */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Users className="h-3.5 w-3.5" />
-          <span>{workspace.memberCount} member{workspace.memberCount !== 1 ? 's' : ''}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5" />
-          <span>{formatDate(workspace.lastAccessed)}</span>
-        </div>
-      </div>
+      {/* Enter Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex-shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+      >
+        <span className="mr-1">Enter</span>
+        <ArrowRight className="h-4 w-4" />
+      </Button>
     </button>
   );
 };
