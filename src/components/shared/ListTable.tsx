@@ -62,88 +62,84 @@ export function ListTable<T extends { id: string; name: string; description?: st
   return (
     <>
       {/* Desktop Table View */}
-      <div className="hidden md:block space-y-3">
-        {items.map((item, index) => (
+      <div className="hidden md:block space-y-1">
+        {items.map((item) => (
           <div
             key={item.id}
-            className="group relative bg-surface rounded-lg border border-border overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5"
+            className="group flex items-center justify-between px-4 py-3 border-b border-border/50 hover:bg-accent/30 transition-colors"
           >
-            <div className="flex items-center justify-between px-6 py-5">
-              <div className="flex-1 space-y-1.5">
-                <p className="text-xs font-mono text-muted-foreground/70">{item.id}</p>
-                <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.name}</p>
-                {item.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                )}
-              </div>
-              {hasActions && (
-                <div className="flex items-center gap-1.5 ml-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {onView && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onView(item)}
-                      aria-label="View details"
-                      className="hover:bg-primary/10 hover:text-primary"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onEdit && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(item)}
-                      aria-label="Edit"
-                      className="hover:bg-primary/10 hover:text-primary"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(item)}
-                      aria-label="Delete"
-                      className="hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+            <div className="flex-1 space-y-0.5">
+              <p className="text-[10px] font-mono text-muted-foreground/60">{item.id}</p>
+              <p className="text-sm font-medium text-foreground">{item.name}</p>
+              {item.description && (
+                <p className="text-xs text-muted-foreground/80 line-clamp-1">{item.description}</p>
               )}
             </div>
-            {/* Accent line on hover */}
-            <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-primary/50 group-hover:w-full transition-all duration-300" />
+            {hasActions && (
+              <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                {onView && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onView(item)}
+                    aria-label="View details"
+                    className="h-7 w-7 p-0"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                {onEdit && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(item)}
+                    aria-label="Edit"
+                    className="h-7 w-7 p-0"
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(item)}
+                    aria-label="Delete"
+                    className="h-7 w-7 p-0 hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-3">
+      <div className="md:hidden space-y-2">
         {items.map((item) => (
           <div
             key={item.id}
-            className="group bg-surface rounded-lg border border-border p-4 space-y-3 transition-all duration-200 hover:shadow-lg hover:border-primary/30"
+            className="border-b border-border/50 pb-3"
           >
-            <div className="space-y-1.5">
-              <p className="text-xs font-mono text-muted-foreground/70">{item.id}</p>
-              <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.name}</p>
+            <div className="space-y-0.5 mb-2">
+              <p className="text-[10px] font-mono text-muted-foreground/60">{item.id}</p>
+              <p className="text-sm font-medium text-foreground">{item.name}</p>
               {item.description && (
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-xs text-muted-foreground/80">{item.description}</p>
               )}
             </div>
             {hasActions && (
-              <div className="flex items-center gap-2 pt-3 border-t border-border">
+              <div className="flex items-center gap-2">
                 {onView && (
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => onView(item)}
-                    className="flex-1 hover:bg-primary/10 hover:text-primary"
+                    className="flex-1 h-8 text-xs"
                   >
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className="h-3 w-3 mr-1.5" />
                     View
                   </Button>
                 )}
@@ -152,9 +148,9 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="secondary"
                     size="sm"
                     onClick={() => onEdit(item)}
-                    className="flex-1 hover:bg-primary/10 hover:text-primary"
+                    className="flex-1 h-8 text-xs"
                   >
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit className="h-3 w-3 mr-1.5" />
                     Edit
                   </Button>
                 )}
@@ -163,9 +159,9 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="danger"
                     size="sm"
                     onClick={() => onDelete(item)}
-                    className="flex-1"
+                    className="flex-1 h-8 text-xs"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3 w-3 mr-1.5" />
                     Delete
                   </Button>
                 )}
