@@ -22,6 +22,8 @@ import {
   Settings,
   Sun,
   Moon,
+  Network,
+  Package,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -42,6 +44,8 @@ const navigationSections = {
     { name: 'Databases', path: '/databases', icon: Database },
     { name: 'Variables', path: '/variables', icon: Code },
     { name: 'Files', path: '/files', icon: Folder },
+    { name: 'Global Nodes', path: '/global-nodes', icon: Network },
+    { name: 'Custom Nodes', path: '/custom-nodes', icon: Package },
   ],
   management: [
     { name: 'API Keys', path: '/api-keys', icon: Shield },
