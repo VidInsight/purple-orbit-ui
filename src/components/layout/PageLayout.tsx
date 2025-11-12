@@ -1,27 +1,25 @@
 import { ReactNode } from 'react';
-import { Navbar } from './Navbar';
-import { useNavbar } from '@/hooks/useNavbar';
-import { cn } from '@/lib/utils';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from './AppSidebar';
 
 interface PageLayoutProps {
   children: ReactNode;
 }
 
 export const PageLayout = ({ children }: PageLayoutProps) => {
-  const { isCollapsed, toggleCollapsed } = useNavbar();
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar isCollapsed={isCollapsed} onToggle={toggleCollapsed} />
-      
-      <main
-        className={cn(
-          'min-h-screen transition-all duration-300 ease-in-out',
-          isCollapsed ? 'ml-16' : 'ml-64'
-        )}
-      >
-        {children}
-      </main>
-    </div>
+    <SidebarProvider defaultOpen={false}>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        
+        <main className="flex-1">
+          <header className="h-12 flex items-center border-b border-border px-4 bg-surface/50">
+            <SidebarTrigger />
+          </header>
+          
+          {children}
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
