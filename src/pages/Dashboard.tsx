@@ -13,8 +13,7 @@ import {
   RecentWorkflow,
   RecentExecution,
 } from '@/utils/dashboardData';
-import { Workflow, PlayCircle, Key, HardDrive, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Workflow, PlayCircle, Key, HardDrive } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
@@ -109,12 +108,6 @@ const Dashboard = () => {
         <PageHeader
           title="Dashboard"
           description="Overview of your automation workspace"
-          actions={
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-          }
         />
 
         <div className="space-y-6">

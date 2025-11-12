@@ -47,6 +47,7 @@ const navigationSections = {
     { name: 'API Keys', path: '/api-keys', icon: Shield },
     { name: 'Users', path: '/users', icon: Users },
     { name: 'Billing', path: '/billing', icon: CreditCard },
+    { name: 'Settings', path: '/settings', icon: Settings },
   ],
 };
 
@@ -220,39 +221,53 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         </div>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="border-t border-border p-3">
-        <div className={cn(
-          'flex gap-1',
-          isCollapsed ? 'flex-col' : 'flex-row justify-center'
-        )}>
-          <button
-            onClick={() => {/* Add help handler */}}
-            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            title="Help"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </button>
-          
-          <button
-            onClick={() => {/* Add preferences handler */}}
-            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            title="Preferences"
-          >
-            <Settings className="h-4 w-4" />
-          </button>
-          
-          <button
-            onClick={toggleTheme}
-            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
+      {/* Bottom Section */}
+      <div className="border-t border-border">
+        {/* User Info */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <User className="h-4 w-4 text-primary-foreground" />
+            </div>
+            {!isCollapsed && (
+              <div className="overflow-hidden flex-1">
+                <p className="text-sm font-medium text-foreground truncate">
+                  Sarah Johnson
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  sarah@company.com
+                </p>
+              </div>
             )}
-          </button>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="p-3">
+          <div className={cn(
+            'flex gap-1',
+            isCollapsed ? 'flex-col' : 'flex-row justify-center'
+          )}>
+            <button
+              onClick={() => {/* Add help handler */}}
+              className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              title="Help"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </button>
+            
+            <button
+              onClick={toggleTheme}
+              className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
