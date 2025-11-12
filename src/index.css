@@ -8,85 +8,121 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light mode colors */
-    --background: 0 0% 100%;
-    --foreground: 222 84% 5%;
+    /* Light mode - Clean & Minimal */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
     
-    --surface: 214 32% 97%;
-    --surface-foreground: 222 84% 5%;
+    --surface: 0 0% 100%;
+    --surface-foreground: 0 0% 10%;
     
     --card: 0 0% 100%;
-    --card-foreground: 222 84% 5%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 84% 5%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 271 91% 65%;
+    /* Purple accent */
+    --primary: 270 80% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 32% 97%;
-    --secondary-foreground: 222 47% 15%;
+    /* Light gray */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 214 32% 97%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted gray */
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 271 91% 70%;
+    /* Purple accent lighter */
+    --accent: 270 75% 65%;
     --accent-foreground: 0 0% 100%;
+
+    /* Yellow highlight */
+    --highlight: 48 100% 55%;
+    --highlight-foreground: 0 0% 10%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    /* Yellow warning */
+    --warning: 48 100% 55%;
+    --warning-foreground: 0 0% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 271 91% 65%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 270 80% 60%;
 
     --radius: 0.5rem;
+
+    /* Shadows */
+    --shadow: 0 0% 0%;
+    --shadow-sm: 0px 1px 2px hsla(var(--shadow) / 0.05);
+    --shadow-md: 0px 4px 8px hsla(var(--shadow) / 0.08);
+    --shadow-lg: 0px 10px 24px hsla(var(--shadow) / 0.1);
   }
 
   .dark {
-    /* Dark mode colors */
-    --background: 222 47% 11%;
-    --foreground: 214 32% 94%;
+    /* Dark mode - Professional Black & Gray with Purple/Yellow accents */
+    --background: 0 0% 6%;
+    --foreground: 0 0% 95%;
     
-    --surface: 222 47% 15%;
-    --surface-foreground: 214 32% 94%;
+    /* Slightly lighter black for surfaces */
+    --surface: 0 0% 10%;
+    --surface-foreground: 0 0% 95%;
     
-    --card: 222 47% 15%;
-    --card-foreground: 214 32% 94%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 222 47% 15%;
-    --popover-foreground: 214 32% 94%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 271 91% 70%;
+    /* Purple accent - more vibrant in dark mode */
+    --primary: 270 85% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 47% 20%;
-    --secondary-foreground: 214 32% 94%;
+    /* Dark gray for secondary elements */
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 222 47% 20%;
-    --muted-foreground: 215 20% 65%;
+    /* Muted gray */
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 271 91% 70%;
+    /* Purple accent */
+    --accent: 270 85% 65%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    /* Yellow highlight for dark mode */
+    --highlight: 48 100% 60%;
+    --highlight-foreground: 0 0% 10%;
+
+    --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    /* Yellow warning */
+    --warning: 48 100% 60%;
+    --warning-foreground: 0 0% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 47% 20%;
-    --input: 222 47% 20%;
-    --ring: 271 91% 70%;
+    /* Subtle borders */
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 270 85% 65%;
+
+    /* Enhanced shadows for dark mode */
+    --shadow: 0 0% 0%;
+    --shadow-sm: 0px 1px 3px hsla(var(--shadow) / 0.3);
+    --shadow-md: 0px 4px 12px hsla(var(--shadow) / 0.4);
+    --shadow-lg: 0px 10px 30px hsla(var(--shadow) / 0.5);
+
+    /* Subtle glow effects */
+    --glow-purple: 270 85% 65%;
+    --glow-yellow: 48 100% 60%;
   }
 }
 
@@ -96,6 +132,59 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar for dark mode */
+  .dark ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer components {
+  /* Glowing effects for buttons and interactive elements */
+  .glow-purple {
+    box-shadow: 0 0 20px hsla(var(--glow-purple) / 0.3);
+  }
+
+  .glow-yellow {
+    box-shadow: 0 0 20px hsla(var(--glow-yellow) / 0.3);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: hsla(var(--surface) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--border) / 0.5);
+  }
+
+  /* Elevated card */
+  .card-elevated {
+    box-shadow: var(--shadow-lg);
   }
 }
