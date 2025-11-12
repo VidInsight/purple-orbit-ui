@@ -72,7 +72,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       {/* Workspace Info */}
       <div className="p-4 border-b border-border transition-all duration-200">
         {!isCollapsed ? (
-          <div className="space-y-2 animate-fade-in">
+          <div className="space-y-2">
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-200 group"
