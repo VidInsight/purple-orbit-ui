@@ -75,7 +75,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               <span>Back to workspaces</span>
             </button>
             <div>
-              <h2 className="text-lg font-semibold text-foreground truncate">
+              <h2 className="text-base font-semibold text-foreground truncate">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
             </div>
