@@ -143,101 +143,10 @@ const Billing = () => {
               onChangeCycle={(cycle) => setBillingCycle(cycle)}
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <PaymentMethodCard
-                paymentMethod={mockPaymentMethod}
-                onUpdate={() => setPaymentModalOpen(true)}
-              />
-
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-1">
-                        Billing Information
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Company and address details
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingBillingInfo(!editingBillingInfo)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {editingBillingInfo ? (
-                  <div className="space-y-4">
-                    <Input
-                      label="Company Name"
-                      value={billingInfo.companyName}
-                      onChange={(e) =>
-                        setBillingInfo((prev) => ({ ...prev, companyName: e.target.value }))
-                      }
-                    />
-                    <Input
-                      label="Address"
-                      value={billingInfo.addressLine1}
-                      onChange={(e) =>
-                        setBillingInfo((prev) => ({ ...prev, addressLine1: e.target.value }))
-                      }
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        label="City"
-                        value={billingInfo.city}
-                        onChange={(e) =>
-                          setBillingInfo((prev) => ({ ...prev, city: e.target.value }))
-                        }
-                      />
-                      <Input
-                        label="State"
-                        value={billingInfo.state}
-                        onChange={(e) =>
-                          setBillingInfo((prev) => ({ ...prev, state: e.target.value }))
-                        }
-                      />
-                    </div>
-                    <Input
-                      label="Tax ID"
-                      value={billingInfo.taxId}
-                      onChange={(e) =>
-                        setBillingInfo((prev) => ({ ...prev, taxId: e.target.value }))
-                      }
-                    />
-                    <Button variant="primary" size="sm" onClick={handleBillingInfoSave}>
-                      Save Changes
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3 p-4 bg-surface rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {billingInfo.companyName}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{billingInfo.addressLine1}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {billingInfo.city}, {billingInfo.state} {billingInfo.zipCode}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{billingInfo.country}</p>
-                    </div>
-                    {billingInfo.taxId && (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Tax ID</p>
-                        <p className="text-sm font-medium text-foreground">{billingInfo.taxId}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <PaymentMethodCard
+              paymentMethod={mockPaymentMethod}
+              onUpdate={() => setPaymentModalOpen(true)}
+            />
           </TabsContent>
 
           {/* Quotas Tab */}

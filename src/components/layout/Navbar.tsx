@@ -17,6 +17,7 @@ import {
   Users,
   LayoutDashboard,
   CreditCard,
+  Wallet,
   ArrowLeft,
   HelpCircle,
   Settings,
@@ -47,6 +48,7 @@ const navigationSections = {
     { name: 'API Keys', path: '/api-keys', icon: Shield },
     { name: 'Users', path: '/users', icon: Users },
     { name: 'Billing', path: '/billing', icon: CreditCard },
+    { name: 'Payment', path: '/payment', icon: Wallet },
     { name: 'Settings', path: '/settings', icon: Settings },
   ],
 };
