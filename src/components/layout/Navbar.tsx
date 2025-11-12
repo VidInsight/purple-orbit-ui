@@ -230,11 +230,11 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           
           {!isCollapsed && (
             <>
-              <div className="overflow-hidden flex-1">
-                <p className="text-sm font-medium text-foreground truncate">
+              <div className="overflow-hidden flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
                   Sarah Johnson
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-foreground/70 truncate">
                   sarah@company.com
                 </p>
               </div>
