@@ -63,92 +63,72 @@ export const PendingInvitationsTab = ({
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Email
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Role
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Invited By
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Sent At
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Status
-              </th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {invitations.map((invitation) => {
-              const expiration = getExpirationStatus(invitation.expiresAt);
-              return (
-                <tr
-                  key={invitation.id}
-                  className="border-b border-border hover:bg-surface/50 transition-colors"
-                >
-                  <td className="py-4 px-4 font-medium text-foreground">
-                    {invitation.email}
-                  </td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        ROLE_COLORS[invitation.role]
-                      }`}
-                    >
-                      {ROLE_LABELS[invitation.role]}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-muted-foreground">
-                    {invitation.invitedBy}
-                  </td>
-                  <td className="py-4 px-4 text-sm text-muted-foreground">
+      <div className="space-y-1">
+        {invitations.map((invitation) => {
+          const expiration = getExpirationStatus(invitation.expiresAt);
+          return (
+            <div
+              key={invitation.id}
+              className="group flex items-center justify-between px-4 py-3 border-b border-border/50 hover:bg-accent/30 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {invitation.email}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground">
+                    Invited by {invitation.invitedBy}
+                  </span>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span className="text-xs text-muted-foreground">
                     {formatDate(invitation.sentAt)}
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className={`flex items-center gap-1 text-xs ${expiration.color}`}>
-                      <Clock className="h-3 w-3" />
-                      {expiration.text}
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onResend(invitation.id)}
-                        className="text-primary hover:text-primary hover:bg-primary/10"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCancelClick(invitation)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 ml-4">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border ${
+                    ROLE_COLORS[invitation.role]
+                  }`}
+                >
+                  {ROLE_LABELS[invitation.role]}
+                </span>
+                
+                <div className={`flex items-center gap-1 text-xs min-w-[100px] ${expiration.color}`}>
+                  <Clock className="h-3 w-3" />
+                  {expiration.text}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onResend(invitation.id)}
+                    className="h-7 w-7 p-0 hover:text-primary"
+                    title="Resend invitation"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleCancelClick(invitation)}
+                    className="h-7 w-7 p-0 hover:text-destructive"
+                    title="Cancel invitation"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {invitations.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No pending invitations</p>
+          <p className="text-sm text-muted-foreground">No pending invitations</p>
         </div>
       )}
 

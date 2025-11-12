@@ -78,94 +78,75 @@ export const ActiveUsersTab = ({
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                User
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Email
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Role
-              </th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                Last Active
-              </th>
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-border hover:bg-surface/50 transition-colors"
-              >
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium text-foreground">
-                        {user.name}
-                        {user.id === currentUserId && (
-                          <span className="ml-2 text-xs text-muted-foreground">(You)</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-sm text-muted-foreground">
-                  {user.email}
-                </td>
-                <td className="py-4 px-4">
-                  {isCurrentUserAdmin && user.id !== currentUserId ? (
-                    <RoleSelector
-                      value={user.role}
-                      onChange={(newRole) => onRoleChange(user.id, newRole)}
-                    />
-                  ) : (
-                    <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        ROLE_COLORS[user.role]
-                      }`}
-                    >
-                      {ROLE_LABELS[user.role]}
+      <div className="space-y-1">
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="group flex items-center justify-between px-4 py-3 border-b border-border/50 hover:bg-accent/30 transition-colors"
+          >
+            <div className="flex items-center gap-4 flex-1">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {user.name}
+                  </p>
+                  {user.id === currentUserId && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                      YOU
                     </span>
                   )}
-                </td>
-                <td className="py-4 px-4 text-sm text-muted-foreground">
-                  {formatLastActive(user.lastActive)}
-                </td>
-                <td className="py-4 px-4 text-right">
-                  {isCurrentUserAdmin && user.id !== currentUserId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveClick(user)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 ml-4">
+              <div className="hidden sm:block text-xs text-muted-foreground">
+                {formatLastActive(user.lastActive)}
+              </div>
+              
+              <div className="w-24">
+                {isCurrentUserAdmin && user.id !== currentUserId ? (
+                  <RoleSelector
+                    value={user.role}
+                    onChange={(newRole) => onRoleChange(user.id, newRole)}
+                  />
+                ) : (
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border ${
+                      ROLE_COLORS[user.role]
+                    }`}
+                  >
+                    {ROLE_LABELS[user.role]}
+                  </span>
+                )}
+              </div>
+
+              {isCurrentUserAdmin && user.id !== currentUserId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveClick(user)}
+                  className="h-7 w-7 p-0 hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {users.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No users found</p>
+          <p className="text-sm text-muted-foreground">No users found</p>
         </div>
       )}
 

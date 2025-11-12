@@ -180,17 +180,17 @@ const UserManagement = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-            <TabsTrigger value="users">
-              Active Users ({users.length})
+          <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50">
+            <TabsTrigger value="users" className="text-sm">
+              Active Users <span className="ml-1.5 text-xs text-muted-foreground">({users.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="invitations">
-              Pending Invitations ({invitations.length})
+            <TabsTrigger value="invitations" className="text-sm">
+              Pending <span className="ml-1.5 text-xs text-muted-foreground">({invitations.length})</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="mt-6">
-            <div className="bg-card rounded-lg border border-border overflow-hidden">
+          <TabsContent value="users" className="mt-4">
+            <div className="rounded-lg border border-border overflow-hidden bg-card">
               <ActiveUsersTab
                 users={users}
                 currentUserId={CURRENT_USER_ID}
@@ -200,8 +200,8 @@ const UserManagement = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="invitations" className="mt-6">
-            <div className="bg-card rounded-lg border border-border overflow-hidden">
+          <TabsContent value="invitations" className="mt-4">
+            <div className="rounded-lg border border-border overflow-hidden bg-card">
               <PendingInvitationsTab
                 invitations={invitations}
                 onResend={handleResendInvitation}
