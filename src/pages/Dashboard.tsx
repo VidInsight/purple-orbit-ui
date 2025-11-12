@@ -5,6 +5,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentActivityList } from '@/components/dashboard/RecentActivityList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { UpdatesFeed } from '@/components/dashboard/UpdatesFeed';
+import { QuotasWidget } from '@/components/dashboard/QuotasWidget';
 import {
   generateDashboardStats,
   generateRecentWorkflows,
@@ -110,82 +112,91 @@ const Dashboard = () => {
           description="Overview of your automation workspace"
         />
 
-        <div className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              icon={Workflow}
-              label="Total Workflows"
-              value={stats.totalWorkflows}
-              trend={{
-                value: stats.trends.workflows,
-                isPositive: true,
-              }}
-              iconBgColor="bg-primary"
-              iconColor="text-primary-foreground"
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Side - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <StatCard
+                icon={Workflow}
+                label="Total Workflows"
+                value={stats.totalWorkflows}
+                trend={{
+                  value: stats.trends.workflows,
+                  isPositive: true,
+                }}
+                iconBgColor="bg-primary"
+                iconColor="text-primary-foreground"
+              />
 
-            <StatCard
-              icon={PlayCircle}
-              label="Active Executions"
-              value={stats.activeExecutions}
-              trend={{
-                value: stats.trends.executions,
-                isPositive: true,
-              }}
-              iconBgColor="bg-success"
-              iconColor="text-success-foreground"
-            />
+              <StatCard
+                icon={PlayCircle}
+                label="Active Executions"
+                value={stats.activeExecutions}
+                trend={{
+                  value: stats.trends.executions,
+                  isPositive: true,
+                }}
+                iconBgColor="bg-success"
+                iconColor="text-success-foreground"
+              />
 
-            <StatCard
-              icon={Key}
-              label="Total Credentials"
-              value={stats.totalCredentials}
-              trend={{
-                value: stats.trends.credentials,
-                isPositive: true,
-              }}
-              iconBgColor="bg-accent"
-              iconColor="text-accent-foreground"
-            />
+              <StatCard
+                icon={Key}
+                label="Total Credentials"
+                value={stats.totalCredentials}
+                trend={{
+                  value: stats.trends.credentials,
+                  isPositive: true,
+                }}
+                iconBgColor="bg-accent"
+                iconColor="text-accent-foreground"
+              />
 
-            <StatCard
-              icon={HardDrive}
-              label="Storage Used"
-              value={stats.storageUsed}
-              trend={{
-                value: stats.trends.storage,
-                isPositive: true,
-              }}
-              iconBgColor="bg-warning"
-              iconColor="text-warning-foreground"
+              <StatCard
+                icon={HardDrive}
+                label="Storage Used"
+                value={stats.storageUsed}
+                trend={{
+                  value: stats.trends.storage,
+                  isPositive: true,
+                }}
+                iconBgColor="bg-warning"
+                iconColor="text-warning-foreground"
+              />
+            </div>
+
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 gap-6">
+              <RecentActivityList
+                title="Recent Workflows"
+                items={recentWorkflows}
+                onViewAll={handleViewWorkflows}
+                emptyMessage="No workflows yet"
+              />
+
+              <RecentActivityList
+                title="Recent Executions"
+                items={recentExecutions}
+                onViewAll={handleViewExecutions}
+                emptyMessage="No executions yet"
+              />
+            </div>
+
+            {/* Quick Actions */}
+            <QuickActions
+              onCreateWorkflow={handleCreateWorkflow}
+              onViewWorkflows={handleViewWorkflows}
+              onViewExecutions={handleViewExecutions}
+              onManageCredentials={handleManageCredentials}
             />
           </div>
 
-          {/* Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RecentActivityList
-              title="Recent Workflows"
-              items={recentWorkflows}
-              onViewAll={handleViewWorkflows}
-              emptyMessage="No workflows yet"
-            />
-
-            <RecentActivityList
-              title="Recent Executions"
-              items={recentExecutions}
-              onViewAll={handleViewExecutions}
-              emptyMessage="No executions yet"
-            />
+          {/* Right Side - Updates & Quotas */}
+          <div className="space-y-6">
+            <UpdatesFeed />
+            <QuotasWidget />
           </div>
-
-          {/* Quick Actions */}
-          <QuickActions
-            onCreateWorkflow={handleCreateWorkflow}
-            onViewWorkflows={handleViewWorkflows}
-            onViewExecutions={handleViewExecutions}
-            onManageCredentials={handleManageCredentials}
-          />
         </div>
       </div>
     </PageLayout>
