@@ -47,15 +47,15 @@ export const SearchFilterBar = ({
   return (
     <div className="flex items-center gap-3 mb-6">
       {/* Search & Filter - Left Side */}
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-3 flex-1">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
             placeholder={searchPlaceholder}
             value={searchValue}
             onChange={handleSearchChange}
-            className="h-10 pl-9"
+            className="pl-9"
           />
         </div>
         
@@ -75,7 +75,7 @@ export const SearchFilterBar = ({
       <div className="flex items-center gap-2">
         {actions}
         {onCreateClick && (
-          <Button variant="primary" size="md" onClick={onCreateClick}>
+          <Button variant="primary" onClick={onCreateClick}>
             <Plus className="h-4 w-4 mr-2" />
             {createButtonText}
           </Button>
