@@ -44,6 +44,8 @@ const navigationSections = {
     { name: 'Databases', path: '/databases', icon: Database },
     { name: 'Variables', path: '/variables', icon: Code },
     { name: 'Files', path: '/files', icon: Folder },
+  ],
+  nodes: [
     { name: 'Global Nodes', path: '/global-nodes', icon: Network },
     { name: 'Custom Nodes', path: '/custom-nodes', icon: Package },
   ],
@@ -169,6 +171,36 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             )}
             <ul className="space-y-0.5">
               {navigationSections.resources.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                    )}
+                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-sm truncate">{item.name}</span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Nodes Section */}
+          <div>
+            {!isCollapsed && (
+              <div className="px-3 mb-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Nodes
+                </span>
+              </div>
+            )}
+            <ul className="space-y-0.5">
+              {navigationSections.nodes.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}

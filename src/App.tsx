@@ -21,6 +21,8 @@ import Credentials from "@/pages/Credentials";
 import Databases from "@/pages/Databases";
 import Variables from "@/pages/Variables";
 import Files from "@/pages/Files";
+import GlobalNodes from "@/pages/GlobalNodes";
+import CustomNodes from "@/pages/CustomNodes";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
 import Billing from "@/pages/Billing";
@@ -47,6 +49,8 @@ const AppRoutes = () => {
       <Route path="/databases" element={<ProtectedRoute><Databases /></ProtectedRoute>} />
       <Route path="/variables" element={<ProtectedRoute><Variables /></ProtectedRoute>} />
       <Route path="/files" element={<ProtectedRoute><Files /></ProtectedRoute>} />
+      <Route path="/global-nodes" element={<ProtectedRoute><GlobalNodes /></ProtectedRoute>} />
+      <Route path="/custom-nodes" element={<ProtectedRoute><CustomNodes /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
