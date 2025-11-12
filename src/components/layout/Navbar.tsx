@@ -27,6 +27,8 @@ interface NavbarProps {
 const navigationSections = {
   workspace: [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  ],
+  workflow: [
     { name: 'Workflows', path: '/workflows', icon: Workflow },
     { name: 'Executions', path: '/executions', icon: PlayCircle },
   ],
@@ -101,6 +103,36 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             )}
             <ul className="space-y-1">
               {navigationSections.workspace.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    )}
+                    activeClassName="bg-accent text-accent-foreground font-medium"
+                  >
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-sm truncate">{item.name}</span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Workflow Section */}
+          <div>
+            {!isCollapsed && (
+              <div className="px-3 mb-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Workflow
+                </span>
+              </div>
+            )}
+            <ul className="space-y-1">
+              {navigationSections.workflow.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
