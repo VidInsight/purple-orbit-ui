@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { WorkflowItem, ColumnConfig } from '@/types/common';
 import { generateMockWorkflows } from '@/utils/mockData';
@@ -7,6 +8,7 @@ import { Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Workflows = () => {
+  const navigate = useNavigate();
   const [workflows] = useState<WorkflowItem[]>(generateMockWorkflows());
 
   const columns: ColumnConfig<WorkflowItem>[] = [
@@ -57,24 +59,15 @@ const Workflows = () => {
   ];
 
   const handleCreate = () => {
-    toast({
-      title: 'Create Workflow',
-      description: 'Opening workflow creator...',
-    });
+    navigate('/workflows/new');
   };
 
   const handleView = (item: WorkflowItem) => {
-    toast({
-      title: 'View Workflow',
-      description: `Opening: ${item.name}`,
-    });
+    navigate(`/workflows/${item.id}/edit`);
   };
 
   const handleEdit = (item: WorkflowItem) => {
-    toast({
-      title: 'Edit Workflow',
-      description: `Editing: ${item.name}`,
-    });
+    navigate(`/workflows/${item.id}/edit`);
   };
 
   const handleDelete = async (item: WorkflowItem) => {

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
+import WorkflowEditor from "@/pages/WorkflowEditor";
 import Executions from "@/pages/Executions";
 import Credentials from "@/pages/Credentials";
 import Databases from "@/pages/Databases";
@@ -29,6 +30,8 @@ const App = () => (
             <Route path="/workspaces" element={<WorkspaceSelection />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/workflows" element={<Workflows />} />
+            <Route path="/workflows/new" element={<WorkflowEditor />} />
+            <Route path="/workflows/:id/edit" element={<WorkflowEditor />} />
             <Route path="/executions" element={<Executions />} />
             <Route path="/credentials" element={<Credentials />} />
             <Route path="/databases" element={<Databases />} />
