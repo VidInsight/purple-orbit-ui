@@ -8,17 +8,17 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Light mode - Clean & Minimal */
-    --background: 0 0% 98%;
+    /* Light mode - Softer & More Comfortable */
+    --background: 220 13% 95%;
     --foreground: 220 13% 18%;
     
-    --surface: 0 0% 100%;
+    --surface: 220 13% 97%;
     --surface-foreground: 220 13% 18%;
     
-    --card: 0 0% 100%;
+    --card: 220 13% 97%;
     --card-foreground: 220 13% 18%;
 
-    --popover: 0 0% 100%;
+    --popover: 220 13% 97%;
     --popover-foreground: 220 13% 18%;
 
     /* Purple-blue brand */
