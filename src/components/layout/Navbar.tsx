@@ -71,11 +71,11 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="h-3 w-3" />
+              <ArrowLeft className="h-3 w-3 flex-shrink-0" />
               <span>Back to workspaces</span>
             </button>
             <div>
-              <h2 className="text-lg font-semibold text-foreground truncate">
+              <h2 className="text-xl font-semibold text-foreground truncate">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
             </div>
