@@ -2,6 +2,7 @@ import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
+import { useTheme } from '@/context/ThemeContext';
 import {
   Workflow,
   PlayCircle,
@@ -17,6 +18,10 @@ import {
   LayoutDashboard,
   CreditCard,
   ArrowLeft,
+  HelpCircle,
+  Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -48,6 +53,7 @@ const navigationSections = {
 export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   const navigate = useNavigate();
   const { currentWorkspace } = useWorkspace();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav
@@ -57,9 +63,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       )}
     >
       {/* Workspace Info */}
-      <div className="p-4 border-b border-border">
+      <div className="p-6 border-b border-border">
         {!isCollapsed ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -68,11 +74,11 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               <span>Back to workspaces</span>
             </button>
             <div>
-              <h2 className="text-sm font-semibold text-foreground truncate">
+              <h2 className="text-base font-semibold text-foreground truncate">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
               {currentWorkspace?.description && (
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                <p className="text-xs text-muted-foreground truncate mt-1">
                   {currentWorkspace.description}
                 </p>
               )}
@@ -214,22 +220,39 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         </div>
       </div>
 
-      {/* User Section */}
-      <div className="border-t border-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-            <User className="h-4 w-4 text-primary-foreground" />
-          </div>
-          {!isCollapsed && (
-            <div className="overflow-hidden flex-1">
-              <p className="text-sm font-medium text-foreground truncate">
-                Sarah Johnson
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                sarah@company.com
-              </p>
-            </div>
-          )}
+      {/* Bottom Actions */}
+      <div className="border-t border-border p-3">
+        <div className={cn(
+          'flex gap-1',
+          isCollapsed ? 'flex-col' : 'flex-row justify-center'
+        )}>
+          <button
+            onClick={() => {/* Add help handler */}}
+            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Help"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </button>
+          
+          <button
+            onClick={() => {/* Add preferences handler */}}
+            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Preferences"
+          >
+            <Settings className="h-4 w-4" />
+          </button>
+          
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </button>
         </div>
       </div>
 
