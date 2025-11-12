@@ -84,10 +84,10 @@ const Dropdown = ({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={cn(
-            'w-full px-4 py-2 rounded-lg bg-surface border border-input text-left',
+            'h-10 w-full px-3 py-2 rounded-md bg-background border border-input text-left text-sm',
             'flex items-center justify-between',
-            'focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
-            'transition-all duration-200',
+            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+            'transition-colors',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             selectedValues.length === 0 && 'text-muted-foreground'
           )}
@@ -97,7 +97,7 @@ const Dropdown = ({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-2 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-2 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-auto">
             {searchable && (
               <div className="p-2 border-b border-border">
                 <input
@@ -105,7 +105,7 @@ const Dropdown = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search..."
-                  className="w-full px-3 py-2 rounded-md bg-surface border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full h-9 px-3 py-2 rounded-md bg-background border border-input text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 />
               </div>
             )}
