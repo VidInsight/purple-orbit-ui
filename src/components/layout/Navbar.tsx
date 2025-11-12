@@ -70,9 +70,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       )}
     >
       {/* Workspace Info */}
-      <div className="p-6 border-b border-border min-h-[100px] transition-all duration-200">
+      <div className="p-4 border-b border-border transition-all duration-200">
         {!isCollapsed ? (
-          <div className="space-y-3 animate-fade-in">
+          <div className="space-y-2 animate-fade-in">
             <button
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-200 group"
@@ -81,7 +81,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               <span>Back to workspaces</span>
             </button>
             <div>
-              <h2 className="text-xl font-semibold text-foreground truncate">
+              <h2 className="text-lg font-semibold text-foreground truncate">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
             </div>
@@ -98,12 +98,12 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 py-3 overflow-y-auto">
-        <div className="space-y-4 px-2">
+      <div className="flex-1 py-2 overflow-y-auto">
+        <div className="space-y-2 px-2">
           {/* Workspace Section */}
           <div>
             {!isCollapsed && (
-              <div className="px-3 mb-2">
+              <div className="px-3 mb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Workspace
                 </span>
@@ -115,7 +115,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
@@ -133,7 +133,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           {/* Workflow Section */}
           <div>
             {!isCollapsed && (
-              <div className="px-3 mb-2">
+              <div className="px-3 mb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Workflow
                 </span>
@@ -145,7 +145,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
@@ -163,7 +163,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           {/* Resources Section */}
           <div>
             {!isCollapsed && (
-              <div className="px-3 mb-2">
+              <div className="px-3 mb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Resources
                 </span>
@@ -175,7 +175,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
@@ -193,7 +193,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           {/* Nodes Section */}
           <div>
             {!isCollapsed && (
-              <div className="px-3 mb-2">
+              <div className="px-3 mb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Nodes
                 </span>
@@ -205,7 +205,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
@@ -223,7 +223,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           {/* Management Section */}
           <div>
             {!isCollapsed && (
-              <div className="px-3 mb-2">
+              <div className="px-3 mb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Management
                 </span>
@@ -235,7 +235,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
@@ -253,10 +253,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Bottom Section - User Info with Actions */}
-      <div className="px-2 py-3">
+      <div className="px-2 py-2">
         {!isCollapsed && (
           <>
-            <div className="flex items-center justify-center gap-1 mb-2">
+            <div className="flex items-center justify-center gap-1 mb-1.5">
               <button
                 onClick={() => {/* Add help handler */}}
                 className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
@@ -286,11 +286,11 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               </button>
             </div>
             
-            <div className="border-t border-border my-2" />
+            <div className="border-t border-border my-1.5" />
           </>
         )}
         
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/50 transition-all duration-200 cursor-pointer group">
+        <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-all duration-200 cursor-pointer group">
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 group-hover:shadow-glow-primary transition-all duration-200">
             <User className="h-4 w-4 text-primary-foreground" />
           </div>
