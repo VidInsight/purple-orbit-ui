@@ -21,21 +21,25 @@ All colors MUST be HSL.
     --popover: 220 13% 97%;
     --popover-foreground: 220 13% 18%;
 
-    /* Purple-blue brand */
-    --primary: 250 84% 60%;
+    /* Purple-blue brand - more vibrant */
+    --primary: 250 90% 62%;
     --primary-foreground: 0 0% 98%;
+    --primary-hover: 250 90% 55%;
+    --primary-active: 250 90% 50%;
 
     /* Light gray */
     --secondary: 220 13% 96%;
     --secondary-foreground: 220 13% 18%;
+    --secondary-hover: 220 13% 92%;
 
     /* Muted gray */
     --muted: 220 13% 96%;
     --muted-foreground: 220 9% 46%;
 
     /* Purple-blue accent */
-    --accent: 250 84% 60%;
+    --accent: 250 90% 62%;
     --accent-foreground: 0 0% 98%;
+    --accent-hover: 250 90% 95%;
 
     /* Yellow highlight */
     --highlight: 48 100% 55%;
@@ -43,17 +47,20 @@ All colors MUST be HSL.
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
+    --success-glow: 142 76% 45%;
 
     /* Orange warning */
     --warning: 38 92% 50%;
     --warning-foreground: 220 13% 18%;
+    --warning-glow: 38 92% 60%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
+    --destructive-glow: 0 84% 70%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 250 84% 60%;
+    --ring: 250 90% 62%;
 
     --radius: 0.5rem;
 
@@ -62,6 +69,12 @@ All colors MUST be HSL.
     --shadow-sm: 0px 1px 2px hsla(var(--shadow) / 0.05);
     --shadow-md: 0px 4px 8px hsla(var(--shadow) / 0.08);
     --shadow-lg: 0px 10px 24px hsla(var(--shadow) / 0.1);
+    
+    /* Gradient colors */
+    --gradient-primary-start: 250 90% 62%;
+    --gradient-primary-end: 280 85% 58%;
+    --gradient-accent-start: 48 100% 55%;
+    --gradient-accent-end: 38 92% 50%;
   }
 
   .dark {
@@ -80,39 +93,46 @@ All colors MUST be HSL.
     --popover-foreground: 220 13% 98%;
 
     /* Purple-blue brand - brighter in dark mode */
-    --primary: 250 84% 65%;
+    --primary: 250 90% 68%;
     --primary-foreground: 220 13% 9%;
+    --primary-hover: 250 90% 72%;
+    --primary-active: 250 90% 60%;
 
     /* Dark gray for secondary elements */
     --secondary: 220 13% 15%;
     --secondary-foreground: 220 13% 98%;
+    --secondary-hover: 220 13% 20%;
 
     /* Muted gray */
     --muted: 220 13% 20%;
     --muted-foreground: 220 9% 46%;
 
     /* Purple-blue accent */
-    --accent: 250 84% 65%;
+    --accent: 250 90% 68%;
     --accent-foreground: 220 13% 98%;
+    --accent-hover: 220 13% 18%;
 
     /* Yellow highlight for dark mode */
     --highlight: 48 100% 60%;
     --highlight-foreground: 0 0% 10%;
 
-    --success: 142 76% 45%;
+    --success: 142 76% 48%;
     --success-foreground: 220 13% 98%;
+    --success-glow: 142 76% 55%;
 
     /* Orange warning */
-    --warning: 38 92% 55%;
+    --warning: 38 92% 58%;
     --warning-foreground: 220 13% 9%;
+    --warning-glow: 38 92% 65%;
 
-    --destructive: 0 84% 65%;
+    --destructive: 0 84% 68%;
     --destructive-foreground: 220 13% 98%;
+    --destructive-glow: 0 84% 75%;
 
     /* Subtle borders */
     --border: 220 13% 20%;
     --input: 220 13% 20%;
-    --ring: 250 84% 65%;
+    --ring: 250 90% 68%;
 
     /* Enhanced shadows for dark mode */
     --shadow: 0 0% 0%;
@@ -120,9 +140,15 @@ All colors MUST be HSL.
     --shadow-md: 0px 4px 12px hsla(var(--shadow) / 0.4);
     --shadow-lg: 0px 10px 30px hsla(var(--shadow) / 0.5);
 
-    /* Subtle glow effects */
-    --glow-purple: 250 84% 65%;
+    /* Enhanced glow effects */
+    --glow-purple: 250 90% 68%;
     --glow-yellow: 48 100% 60%;
+    
+    /* Gradient colors */
+    --gradient-primary-start: 250 90% 68%;
+    --gradient-primary-end: 280 85% 64%;
+    --gradient-accent-start: 48 100% 60%;
+    --gradient-accent-end: 38 92% 58%;
   }
 }
 
@@ -164,16 +190,36 @@ All colors MUST be HSL.
 @layer components {
   /* Glowing effects for buttons and interactive elements */
   .glow-purple {
-    box-shadow: 0 0 20px hsla(var(--glow-purple) / 0.3);
+    box-shadow: 0 0 24px hsla(var(--glow-purple) / 0.4), 0 0 48px hsla(var(--glow-purple) / 0.2);
   }
 
   .glow-yellow {
-    box-shadow: 0 0 20px hsla(var(--glow-yellow) / 0.3);
+    box-shadow: 0 0 24px hsla(var(--glow-yellow) / 0.4), 0 0 48px hsla(var(--glow-yellow) / 0.2);
+  }
+  
+  .glow-primary {
+    box-shadow: 0 0 20px hsla(var(--primary) / 0.35);
+  }
+  
+  .glow-success {
+    box-shadow: 0 0 20px hsla(var(--success-glow) / 0.35);
+  }
+  
+  .glow-destructive {
+    box-shadow: 0 0 20px hsla(var(--destructive-glow) / 0.35);
   }
 
   /* Smooth transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-fast {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-bounce {
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   /* Glass morphism effect */
@@ -185,6 +231,25 @@ All colors MUST be HSL.
 
   /* Elevated card */
   .card-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--gradient-primary-start)), hsl(var(--gradient-primary-end)));
+  }
+  
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--gradient-accent-start)), hsl(var(--gradient-accent-end)));
+  }
+  
+  /* Hover lift effect */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
   }
 }

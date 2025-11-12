@@ -8,7 +8,7 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex items-start justify-between mb-6 animate-fade-in-down">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
         {description && (

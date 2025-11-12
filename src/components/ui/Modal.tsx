@@ -51,14 +51,14 @@ const Modal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/80 backdrop-blur-md transition-all duration-300"
         onClick={handleBackdropClick}
       />
 
       {/* Modal */}
       <div
         className={cn(
-          'relative w-full bg-surface rounded-lg shadow-lg animate-scale-in',
+          'relative w-full bg-surface rounded-lg shadow-2xl animate-bounce-in border border-border/50',
           sizes[size]
         )}
         onClick={(e) => e.stopPropagation()}
@@ -69,7 +69,7 @@ const Modal = ({
             <h2 className="text-xl font-semibold text-foreground">{title}</h2>
             <button
               onClick={onClose}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:rotate-90 transition-all duration-200 p-1 rounded-lg"
             >
               <X className="h-5 w-5" />
             </button>

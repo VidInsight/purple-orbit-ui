@@ -59,19 +59,19 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   return (
     <nav
       className={cn(
-        'fixed left-0 top-0 h-screen bg-surface border-r border-border transition-all duration-300 ease-in-out flex flex-col z-30',
+        'fixed left-0 top-0 h-screen bg-surface border-r border-border flex flex-col z-30 transition-all duration-300 ease-in-out',
         isCollapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Workspace Info */}
-      <div className="p-6 border-b border-border min-h-[100px]">
+      <div className="p-6 border-b border-border min-h-[100px] transition-all duration-200">
         {!isCollapsed ? (
-          <div className="space-y-3">
+          <div className="space-y-3 animate-fade-in">
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-200 group"
             >
-              <ArrowLeft className="h-3 w-3 flex-shrink-0" />
+              <ArrowLeft className="h-3 w-3 flex-shrink-0 group-hover:-translate-x-1 transition-transform duration-200" />
               <span>Back to workspaces</span>
             </button>
             <div>
@@ -83,7 +83,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         ) : (
           <button
             onClick={() => navigate('/')}
-            className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200"
             title="Back to workspaces"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -106,13 +106,13 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             <ul className="space-y-0.5">
               {navigationSections.workspace.map((item) => (
                 <li key={item.path}>
-                    <NavLink
+                  <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
-                      'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium"
+                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
                   >
                     <item.icon className="h-4 w-4 flex-shrink-0" />
                     {!isCollapsed && (
@@ -139,10 +139,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
-                      'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium"
+                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
                   >
                     <item.icon className="h-4 w-4 flex-shrink-0" />
                     {!isCollapsed && (
@@ -169,10 +169,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
-                      'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium"
+                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
                   >
                     <item.icon className="h-4 w-4 flex-shrink-0" />
                     {!isCollapsed && (
@@ -199,10 +199,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
-                      'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium"
+                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
                   >
                     <item.icon className="h-4 w-4 flex-shrink-0" />
                     {!isCollapsed && (
@@ -223,7 +223,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             <div className="flex items-center justify-center gap-1 mb-2">
               <button
                 onClick={() => {/* Add help handler */}}
-                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title="Help"
               >
                 <HelpCircle className="h-4 w-4" />
@@ -231,7 +231,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               
               <button
                 onClick={toggleTheme}
-                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {theme === 'dark' ? (
@@ -243,7 +243,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               
               <button
                 onClick={() => {/* Add user preferences handler */}}
-                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title="User Preferences"
               >
                 <Settings className="h-4 w-4" />
@@ -254,8 +254,8 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </>
         )}
         
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/50 transition-all duration-200 cursor-pointer group">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 group-hover:shadow-glow-primary transition-all duration-200">
             <User className="h-4 w-4 text-primary-foreground" />
           </div>
           
@@ -277,8 +277,8 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         onClick={onToggle}
         className={cn(
           'absolute -right-3 top-20 h-6 w-6 rounded-full border border-border bg-surface',
-          'flex items-center justify-center hover:bg-accent transition-colors',
-          'shadow-md'
+          'flex items-center justify-center hover:bg-accent hover:scale-110 transition-all duration-200',
+          'shadow-md hover:shadow-glow-primary'
         )}
         aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
