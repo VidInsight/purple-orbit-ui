@@ -63,3 +63,95 @@ export const generateRecentExecutions = (): RecentExecution[] => {
     ).toISOString(),
   }));
 };
+
+export interface ExecutionStats {
+  success: number;
+  failed: number;
+  running: number;
+}
+
+export interface PeakUsageData {
+  hour: string;
+  executions: number;
+}
+
+export interface ExpiringCredential {
+  id: string;
+  name: string;
+  service: string;
+  daysUntilExpiry: number;
+}
+
+export interface QuotaWarning {
+  label: string;
+  used: number;
+  limit: number;
+  unit?: string;
+}
+
+export const generateExecutionStats = (): ExecutionStats => {
+  return {
+    success: 245,
+    failed: 15,
+    running: 5,
+  };
+};
+
+export const generatePeakUsageData = (): PeakUsageData[] => {
+  const hours = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, '0');
+    return `${hour}:00`;
+  });
+
+  return hours.map((hour) => ({
+    hour,
+    executions: Math.floor(Math.random() * 50) + 5,
+  }));
+};
+
+export const generateExpiringCredentials = (): ExpiringCredential[] => {
+  const services = ['AWS', 'Google Cloud', 'Azure', 'Stripe', 'SendGrid'];
+  const credentials: ExpiringCredential[] = [
+    {
+      id: 'cred-1',
+      name: 'AWS Production API Key',
+      service: services[0],
+      daysUntilExpiry: 5,
+    },
+    {
+      id: 'cred-2',
+      name: 'Stripe Webhook Secret',
+      service: services[3],
+      daysUntilExpiry: 12,
+    },
+    {
+      id: 'cred-3',
+      name: 'SendGrid API Token',
+      service: services[4],
+      daysUntilExpiry: 23,
+    },
+  ];
+
+  return credentials;
+};
+
+export const generateQuotaWarnings = (): QuotaWarning[] => {
+  return [
+    {
+      label: 'Workflows',
+      used: 85,
+      limit: 100,
+    },
+    {
+      label: 'Executions',
+      used: 4600,
+      limit: 5000,
+    },
+    {
+      label: 'Storage',
+      used: 7.8,
+      limit: 10,
+      unit: 'GB',
+    },
+  ];
+};
