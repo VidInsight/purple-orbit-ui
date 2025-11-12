@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  Users,
   LayoutDashboard,
 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const navigationItems = [
   { name: 'Variables', path: '/variables', icon: Code },
   { name: 'Files', path: '/files', icon: Folder },
   { name: 'API Keys', path: '/api-keys', icon: Shield },
+  { name: 'Users', path: '/users', icon: Users },
 ];
 
 export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {

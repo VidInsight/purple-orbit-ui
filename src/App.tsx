@@ -15,6 +15,7 @@ import Databases from "@/pages/Databases";
 import Variables from "@/pages/Variables";
 import Files from "@/pages/Files";
 import ApiKeys from "@/pages/ApiKeys";
+import UserManagement from "@/pages/UserManagement";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,10 +38,11 @@ const App = () => (
             <Route path="/executions/:id" element={<ExecutionDetails />} />
             <Route path="/credentials" element={<Credentials />} />
             <Route path="/databases" element={<Databases />} />
-            <Route path="/variables" element={<Variables />} />
-            <Route path="/files" element={<Files />} />
-            <Route path="/api-keys" element={<ApiKeys />} />
-            <Route path="*" element={<NotFound />} />
+          <Route path="/variables" element={<Variables />} />
+          <Route path="/files" element={<Files />} />
+          <Route path="/api-keys" element={<ApiKeys />} />
+          <Route path="/users" element={<UserManagement />} />
+          <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
