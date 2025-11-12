@@ -1,30 +1,89 @@
-import { PageLayout } from '@/components/layout/PageLayout';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { SearchFilterBar } from '@/components/layout/SearchFilterBar';
+import { useState } from 'react';
+import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
+import { CredentialItem, ColumnConfig } from '@/types/common';
+import { generateMockCredentials } from '@/utils/mockData';
+import { toast } from '@/hooks/use-toast';
 
 const Credentials = () => {
+  const [credentials] = useState<CredentialItem[]>(generateMockCredentials());
+
+  const columns: ColumnConfig<CredentialItem>[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      width: '30%',
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      width: '20%',
+      render: (item) => (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+          {item.type}
+        </span>
+      ),
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      width: '30%',
+      render: (item) => (
+        <span className="text-muted-foreground">{item.description}</span>
+      ),
+    },
+    {
+      key: 'lastUsed',
+      label: 'Last Used',
+      width: '20%',
+      render: (item) => item.lastUsed ? new Date(item.lastUsed).toLocaleDateString() : 'Never',
+    },
+  ];
+
+  const handleCreate = () => {
+    toast({
+      title: 'Add Credential',
+      description: 'Opening credential form...',
+    });
+  };
+
+  const handleView = (item: CredentialItem) => {
+    toast({
+      title: 'View Credential',
+      description: `Viewing: ${item.name}`,
+    });
+  };
+
+  const handleEdit = (item: CredentialItem) => {
+    toast({
+      title: 'Edit Credential',
+      description: `Editing: ${item.name}`,
+    });
+  };
+
+  const handleDelete = async (item: CredentialItem) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    toast({
+      title: 'Credential Deleted',
+      description: `${item.name} has been deleted.`,
+    });
+  };
+
   return (
-    <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
-        <PageHeader
-          title="Credentials"
-          description="Manage authentication credentials for integrations"
-        />
-
-        <SearchFilterBar
-          searchPlaceholder="Search credentials..."
-          createButtonText="Add Credential"
-          onCreateClick={() => console.log('Add credential')}
-          onSearch={(value) => console.log('Search:', value)}
-        />
-
-        <div className="bg-surface rounded-lg border border-border p-8 text-center">
-          <p className="text-muted-foreground">
-            No credentials configured. Add credentials to connect with external services.
-          </p>
-        </div>
-      </div>
-    </PageLayout>
+    <ListPageTemplate
+      pageTitle="Credentials"
+      pageDescription="Manage authentication credentials for integrations"
+      items={credentials}
+      columns={columns}
+      searchPlaceholder="Search credentials..."
+      createButtonText="Add Credential"
+      itemTypeName="credential"
+      emptyMessage="No credentials configured"
+      emptyDescription="Add credentials to connect with external services."
+      onCreate={handleCreate}
+      onView={handleView}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+    />
   );
 };
 
