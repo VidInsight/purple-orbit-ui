@@ -1,0 +1,26 @@
+{
+  "title": "Files",
+  "description": "Manage uploaded files and documents",
+  "upload": "Upload File",
+  "delete": "Delete File",
+  "download": "Download File",
+  "fields": {
+    "name": "File Name",
+    "description": "Description",
+    "type": "Type",
+    "size": "Size",
+    "url": "URL",
+    "createdAt": "Uploaded At"
+  },
+  "placeholders": {
+    "searchFiles": "Search files...",
+    "filterByType": "Filter by type..."
+  },
+  "emptyState": "No files uploaded yet. Upload your first file.",
+  "upload": {
+    "title": "Upload File",
+    "dragDrop": "Drag and drop files here, or click to browse",
+    "maxSize": "Maximum file size: {{size}}",
+    "allowedTypes": "Allowed types: {{types}}"
+  }
+}

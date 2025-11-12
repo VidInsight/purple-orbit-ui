@@ -1,0 +1,36 @@
+{
+  "title": "Veritabanları",
+  "description": "Veritabanı bağlantılarını yönetin",
+  "create": "Veritabanı Ekle",
+  "edit": "Veritabanını Düzenle",
+  "delete": "Veritabanını Sil",
+  "testConnection": "Bağlantıyı Test Et",
+  "fields": {
+    "name": "Veritabanı Adı",
+    "description": "Açıklama",
+    "type": "Tür",
+    "host": "Sunucu",
+    "port": "Port",
+    "username": "Kullanıcı Adı",
+    "password": "Şifre",
+    "database": "Veritabanı Adı",
+    "status": "Durum",
+    "createdAt": "Oluşturulma Tarihi"
+  },
+  "types": {
+    "postgresql": "PostgreSQL",
+    "mysql": "MySQL",
+    "mongodb": "MongoDB",
+    "redis": "Redis"
+  },
+  "status": {
+    "connected": "Bağlı",
+    "disconnected": "Bağlantı Yok",
+    "error": "Hata"
+  },
+  "placeholders": {
+    "searchDatabases": "Veritabanlarında ara...",
+    "filterByType": "Türe göre filtrele..."
+  },
+  "emptyState": "Veritabanı yapılandırılmamış. İlk veritabanı bağlantınızı ekleyin."
+}

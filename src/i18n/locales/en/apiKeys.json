@@ -1,0 +1,48 @@
+{
+  "title": "API Keys",
+  "description": "Manage API keys for external integrations",
+  "create": "Create API Key",
+  "revoke": "Revoke Key",
+  "regenerate": "Regenerate Key",
+  "fields": {
+    "name": "Key Name",
+    "description": "Description",
+    "key": "API Key",
+    "keyPreview": "Key Preview",
+    "permissions": "Permissions",
+    "createdAt": "Created At",
+    "lastUsed": "Last Used",
+    "expiresAt": "Expires At"
+  },
+  "create": {
+    "title": "Create API Key",
+    "nameLabel": "Key Name",
+    "namePlaceholder": "Enter key name",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "What will this key be used for?",
+    "expirationLabel": "Expiration",
+    "permissions": "Permissions & Scopes"
+  },
+  "expiration": {
+    "30days": "30 days",
+    "60days": "60 days",
+    "90days": "90 days",
+    "never": "Never"
+  },
+  "reveal": {
+    "title": "API Key Created",
+    "warning": "Save this key now. You won't be able to see it again!",
+    "copied": "Copied to clipboard",
+    "confirm": "I have saved this key",
+    "close": "Close"
+  },
+  "placeholders": {
+    "searchKeys": "Search API keys..."
+  },
+  "emptyState": "No API keys created yet. Create your first API key.",
+  "warnings": {
+    "expiringSoon": "Expires in {{days}} days",
+    "neverExpires": "This key never expires",
+    "expired": "Expired"
+  }
+}

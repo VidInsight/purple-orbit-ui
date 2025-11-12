@@ -1,0 +1,36 @@
+{
+  "title": "Databases",
+  "description": "Manage database connections",
+  "create": "Add Database",
+  "edit": "Edit Database",
+  "delete": "Delete Database",
+  "testConnection": "Test Connection",
+  "fields": {
+    "name": "Database Name",
+    "description": "Description",
+    "type": "Type",
+    "host": "Host",
+    "port": "Port",
+    "username": "Username",
+    "password": "Password",
+    "database": "Database Name",
+    "status": "Status",
+    "createdAt": "Created At"
+  },
+  "types": {
+    "postgresql": "PostgreSQL",
+    "mysql": "MySQL",
+    "mongodb": "MongoDB",
+    "redis": "Redis"
+  },
+  "status": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "error": "Error"
+  },
+  "placeholders": {
+    "searchDatabases": "Search databases...",
+    "filterByType": "Filter by type..."
+  },
+  "emptyState": "No databases configured. Add your first database connection."
+}

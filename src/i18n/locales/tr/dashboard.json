@@ -1,0 +1,37 @@
+{
+  "title": "Kontrol Paneli",
+  "description": "Çalışma alanı aktivitenize genel bakış",
+  "stats": {
+    "totalWorkflows": "Toplam İş Akışı",
+    "activeExecutions": "Aktif Çalıştırmalar",
+    "successRate": "Başarı Oranı",
+    "apiCalls": "Bugünkü API Çağrıları"
+  },
+  "charts": {
+    "executionSuccess": "Çalıştırma Başarı Oranı",
+    "peakUsage": "Yoğun Kullanım Saatleri"
+  },
+  "quotas": {
+    "title": "Kullanım ve Kotalar",
+    "description": "Mevcut kullanım limitleri"
+  },
+  "recentActivity": {
+    "title": "Son Aktiviteler",
+    "viewAll": "Tümünü Görüntüle"
+  },
+  "updates": {
+    "title": "Güncellemeler ve Haberler",
+    "viewAll": "Tüm Güncellemeleri Görüntüle"
+  },
+  "quickActions": {
+    "title": "Hızlı İşlemler",
+    "createWorkflow": "İş Akışı Oluştur",
+    "viewExecutions": "Çalıştırmaları Görüntüle",
+    "manageCredentials": "Kimlik Bilgilerini Yönet",
+    "inviteUsers": "Kullanıcı Davet Et"
+  },
+  "warnings": {
+    "quotaWarning": "Kota Uyarısı",
+    "expiringCredentials": "Süresi Dolan Kimlik Bilgileri"
+  }
+}

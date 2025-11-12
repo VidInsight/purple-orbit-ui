@@ -1,0 +1,28 @@
+{
+  "logo": "AutoFlow",
+  "workspace": "Workspace",
+  "workspaceInfo": "Workspace Information",
+  "selectWorkspace": "Select Workspace",
+  "workflows": "Workflows",
+  "executions": "Executions",
+  "credentials": "Credentials",
+  "databases": "Databases",
+  "variables": "Variables",
+  "files": "Files",
+  "apiKeys": "API Keys",
+  "users": "Users",
+  "billing": "Billing",
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "logout": "Logout",
+  "profile": "Profile",
+  "globalNodes": "Global Nodes",
+  "customNodes": "Custom Nodes",
+  "sections": {
+    "workspace": "Workspace",
+    "workflow": "Workflow",
+    "resources": "Resources",
+    "nodes": "Nodes",
+    "management": "Management"
+  }
+}

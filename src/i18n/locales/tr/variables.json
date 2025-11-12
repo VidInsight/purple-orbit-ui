@@ -1,0 +1,26 @@
+{
+  "title": "Değişkenler",
+  "description": "Ortam değişkenlerini ve sabitleri yönetin",
+  "create": "Değişken Ekle",
+  "edit": "Değişkeni Düzenle",
+  "delete": "Değişkeni Sil",
+  "fields": {
+    "name": "Değişken Adı",
+    "key": "Anahtar",
+    "value": "Değer",
+    "type": "Tür",
+    "description": "Açıklama",
+    "createdAt": "Oluşturulma Tarihi"
+  },
+  "types": {
+    "string": "Metin",
+    "number": "Sayı",
+    "boolean": "Mantıksal",
+    "json": "JSON"
+  },
+  "placeholders": {
+    "searchVariables": "Değişkenlerde ara...",
+    "filterByType": "Türe göre filtrele..."
+  },
+  "emptyState": "Değişken tanımlanmamış. İlk değişkeninizi oluşturun."
+}

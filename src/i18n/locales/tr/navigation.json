@@ -1,0 +1,28 @@
+{
+  "logo": "AutoFlow",
+  "workspace": "Çalışma Alanı",
+  "workspaceInfo": "Çalışma Alanı Bilgisi",
+  "selectWorkspace": "Çalışma Alanı Seç",
+  "workflows": "İş Akışları",
+  "executions": "Çalıştırmalar",
+  "credentials": "Kimlik Bilgileri",
+  "databases": "Veritabanları",
+  "variables": "Değişkenler",
+  "files": "Dosyalar",
+  "apiKeys": "API Anahtarları",
+  "users": "Kullanıcılar",
+  "billing": "Faturalama",
+  "dashboard": "Kontrol Paneli",
+  "settings": "Ayarlar",
+  "logout": "Çıkış",
+  "profile": "Profil",
+  "globalNodes": "Genel Düğümler",
+  "customNodes": "Özel Düğümler",
+  "sections": {
+    "workspace": "Çalışma Alanı",
+    "workflow": "İş Akışı",
+    "resources": "Kaynaklar",
+    "nodes": "Düğümler",
+    "management": "Yönetim"
+  }
+}

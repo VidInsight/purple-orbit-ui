@@ -1,0 +1,102 @@
+{
+  "title": "Faturalama ve Abonelik",
+  "description": "Abonelik ve fatura bilgilerinizi yönetin",
+  "tabs": {
+    "overview": "Genel Bakış",
+    "payment": "Ödeme",
+    "quotas": "Kotalar",
+    "plans": "Planlar",
+    "history": "Geçmiş"
+  },
+  "currentPlan": {
+    "title": "Mevcut Plan",
+    "billing": "Faturalama",
+    "monthly": "Aylık",
+    "annually": "Yıllık",
+    "nextBilling": "Sonraki fatura tarihi",
+    "upgrade": "Planı Yükselt",
+    "downgrade": "Planı Düşür",
+    "cancel": "Aboneliği İptal Et"
+  },
+  "payment": {
+    "title": "Ödeme Bilgileri",
+    "method": "Ödeme Yöntemi",
+    "billingEmail": "Fatura E-postası",
+    "address": "Fatura Adresi",
+    "update": "Ödeme Yöntemini Güncelle",
+    "card": {
+      "number": "Kart Numarası",
+      "expiry": "Son Kullanma Tarihi",
+      "brand": "Kart Markası",
+      "lastFour": "Son Dört Rakam"
+    },
+    "address": {
+      "company": "Şirket Adı",
+      "line1": "Adres Satırı 1",
+      "line2": "Adres Satırı 2",
+      "city": "Şehir",
+      "state": "İl",
+      "zip": "Posta Kodu",
+      "country": "Ülke",
+      "taxId": "Vergi Kimlik No"
+    }
+  },
+  "quotas": {
+    "title": "Kullanım ve Kotalar",
+    "workflows": "İş Akışları",
+    "executions": "Çalıştırmalar",
+    "storage": "Depolama",
+    "apiCalls": "API Çağrıları",
+    "users": "Kullanıcılar"
+  },
+  "plans": {
+    "free": {
+      "name": "Ücretsiz",
+      "price": "$0",
+      "features": [
+        "5 iş akışı",
+        "100 çalıştırma/ay",
+        "1 GB depolama",
+        "Topluluk desteği"
+      ]
+    },
+    "starter": {
+      "name": "Başlangıç",
+      "price": "$29",
+      "features": [
+        "25 iş akışı",
+        "1.000 çalıştırma/ay",
+        "10 GB depolama",
+        "E-posta desteği"
+      ]
+    },
+    "professional": {
+      "name": "Profesyonel",
+      "price": "$99",
+      "features": [
+        "100 iş akışı",
+        "10.000 çalıştırma/ay",
+        "100 GB depolama",
+        "Öncelikli destek"
+      ]
+    },
+    "enterprise": {
+      "name": "Kurumsal",
+      "price": "Özel",
+      "features": [
+        "Sınırsız iş akışı",
+        "Sınırsız çalıştırma",
+        "Sınırsız depolama",
+        "Özel destek"
+      ]
+    }
+  },
+  "history": {
+    "title": "Fatura Geçmişi",
+    "invoice": "Fatura",
+    "date": "Tarih",
+    "amount": "Tutar",
+    "status": "Durum",
+    "download": "İndir"
+  }
+}

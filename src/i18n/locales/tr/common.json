@@ -1,0 +1,75 @@
+{
+  "buttons": {
+    "create": "Oluştur",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "close": "Kapat",
+    "confirm": "Onayla",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "view": "Görüntüle",
+    "download": "İndir",
+    "upload": "Yükle",
+    "copy": "Kopyala",
+    "export": "Dışa Aktar",
+    "import": "İçe Aktar"
+  },
+  "actions": {
+    "view": "Görüntüle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "update": "Güncelle",
+    "remove": "Kaldır",
+    "duplicate": "Çoğalt",
+    "share": "Paylaş"
+  },
+  "status": {
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "success": "Başarılı",
+    "failed": "Başarısız",
+    "running": "Çalışıyor",
+    "pending": "Bekliyor",
+    "completed": "Tamamlandı",
+    "cancelled": "İptal Edildi",
+    "paused": "Duraklatıldı",
+    "draft": "Taslak"
+  },
+  "validation": {
+    "required": "Bu alan zorunludur",
+    "email": "Geçerli bir e-posta girin",
+    "minLength": "En az {{count}} karakter gerekli",
+    "maxLength": "En fazla {{count}} karakter olmalı",
+    "invalidFormat": "Geçersiz format"
+  },
+  "messages": {
+    "success": "İşlem başarılı",
+    "error": "Bir hata oluştu",
+    "loading": "Yükleniyor...",
+    "noData": "Veri bulunamadı",
+    "confirmDelete": "Bu öğeyi silmek istediğinizden emin misiniz?",
+    "confirmDeleteTitle": "Silme İşlemini Onayla",
+    "saved": "Başarıyla kaydedildi",
+    "updated": "Başarıyla güncellendi",
+    "deleted": "Başarıyla silindi",
+    "created": "Başarıyla oluşturuldu"
+  },
+  "pagination": {
+    "showing": "{{total}} kayıttan {{from}}-{{to}} arası gösteriliyor",
+    "rowsPerPage": "Sayfa başına satır:",
+    "page": "Sayfa {{current}} / {{total}}"
+  },
+  "time": {
+    "justNow": "Az önce",
+    "minutesAgo": "{{count}} dakika önce",
+    "hoursAgo": "{{count}} saat önce",
+    "daysAgo": "{{count}} gün önce",
+    "weeksAgo": "{{count}} hafta önce",
+    "monthsAgo": "{{count}} ay önce"
+  }
+}

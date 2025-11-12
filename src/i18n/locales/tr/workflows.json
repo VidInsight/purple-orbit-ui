@@ -1,0 +1,31 @@
+{
+  "title": "İş Akışları",
+  "description": "Otomasyon iş akışlarınızı yönetin",
+  "create": "İş Akışı Oluştur",
+  "edit": "İş Akışını Düzenle",
+  "delete": "İş Akışını Sil",
+  "fields": {
+    "name": "İş Akışı Adı",
+    "description": "Açıklama",
+    "status": "Durum",
+    "lastExecuted": "Son Çalıştırma",
+    "executionCount": "Çalıştırma Sayısı",
+    "createdAt": "Oluşturulma Tarihi",
+    "updatedAt": "Güncellenme Tarihi"
+  },
+  "placeholders": {
+    "searchWorkflows": "İş akışlarında ara...",
+    "filterByStatus": "Duruma göre filtrele..."
+  },
+  "emptyState": "İş akışı bulunamadı. Başlamak için ilk iş akışınızı oluşturun.",
+  "editor": {
+    "title": "İş Akışı Düzenleyici",
+    "backToList": "İş Akışlarına Dön",
+    "save": "İş Akışını Kaydet",
+    "testRun": "Test Çalıştırması",
+    "publish": "Yayınla",
+    "nodeLibrary": "Düğüm Kütüphanesi",
+    "properties": "Özellikler",
+    "settings": "Ayarlar"
+  }
+}

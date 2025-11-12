@@ -1,0 +1,102 @@
+{
+  "title": "Billing & Subscription",
+  "description": "Manage your subscription and billing information",
+  "tabs": {
+    "overview": "Overview",
+    "payment": "Payment",
+    "quotas": "Quotas",
+    "plans": "Plans",
+    "history": "History"
+  },
+  "currentPlan": {
+    "title": "Current Plan",
+    "billing": "Billing",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "nextBilling": "Next billing date",
+    "upgrade": "Upgrade Plan",
+    "downgrade": "Downgrade Plan",
+    "cancel": "Cancel Subscription"
+  },
+  "payment": {
+    "title": "Payment Information",
+    "method": "Payment Method",
+    "billingEmail": "Billing Email",
+    "address": "Billing Address",
+    "update": "Update Payment Method",
+    "card": {
+      "number": "Card Number",
+      "expiry": "Expiry Date",
+      "brand": "Card Brand",
+      "lastFour": "Last Four Digits"
+    },
+    "address": {
+      "company": "Company Name",
+      "line1": "Address Line 1",
+      "line2": "Address Line 2",
+      "city": "City",
+      "state": "State/Province",
+      "zip": "ZIP/Postal Code",
+      "country": "Country",
+      "taxId": "Tax ID"
+    }
+  },
+  "quotas": {
+    "title": "Usage & Quotas",
+    "workflows": "Workflows",
+    "executions": "Executions",
+    "storage": "Storage",
+    "apiCalls": "API Calls",
+    "users": "Users"
+  },
+  "plans": {
+    "free": {
+      "name": "Free",
+      "price": "$0",
+      "features": [
+        "5 workflows",
+        "100 executions/month",
+        "1 GB storage",
+        "Community support"
+      ]
+    },
+    "starter": {
+      "name": "Starter",
+      "price": "$29",
+      "features": [
+        "25 workflows",
+        "1,000 executions/month",
+        "10 GB storage",
+        "Email support"
+      ]
+    },
+    "professional": {
+      "name": "Professional",
+      "price": "$99",
+      "features": [
+        "100 workflows",
+        "10,000 executions/month",
+        "100 GB storage",
+        "Priority support"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Custom",
+      "features": [
+        "Unlimited workflows",
+        "Unlimited executions",
+        "Unlimited storage",
+        "Dedicated support"
+      ]
+    }
+  },
+  "history": {
+    "title": "Billing History",
+    "invoice": "Invoice",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "download": "Download"
+  }
+}

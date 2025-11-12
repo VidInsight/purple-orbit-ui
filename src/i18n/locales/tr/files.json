@@ -1,0 +1,26 @@
+{
+  "title": "Dosyalar",
+  "description": "Yüklenen dosyaları ve belgeleri yönetin",
+  "upload": "Dosya Yükle",
+  "delete": "Dosyayı Sil",
+  "download": "Dosyayı İndir",
+  "fields": {
+    "name": "Dosya Adı",
+    "description": "Açıklama",
+    "type": "Tür",
+    "size": "Boyut",
+    "url": "URL",
+    "createdAt": "Yüklenme Tarihi"
+  },
+  "placeholders": {
+    "searchFiles": "Dosyalarda ara...",
+    "filterByType": "Türe göre filtrele..."
+  },
+  "emptyState": "Henüz dosya yüklenmemiş. İlk dosyanızı yükleyin.",
+  "upload": {
+    "title": "Dosya Yükle",
+    "dragDrop": "Dosyaları buraya sürükleyin veya göz atmak için tıklayın",
+    "maxSize": "Maksimum dosya boyutu: {{size}}",
+    "allowedTypes": "İzin verilen türler: {{types}}"
+  }
+}
