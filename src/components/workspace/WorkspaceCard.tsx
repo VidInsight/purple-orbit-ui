@@ -39,9 +39,21 @@ export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
 
       {/* Name and Description */}
       <div className="flex-1 text-left min-w-0 py-1">
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-200 truncate leading-tight">
-          {workspace.name}
-        </h3>
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition-colors duration-200 truncate leading-tight">
+            {workspace.name}
+          </h3>
+          {workspace.role && workspace.role !== 'owner' && (
+            <span className={cn(
+              "text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide",
+              workspace.role === 'admin' && "bg-primary/10 text-primary",
+              workspace.role === 'editor' && "bg-success/10 text-success",
+              workspace.role === 'viewer' && "bg-muted text-muted-foreground"
+            )}>
+              {workspace.role}
+            </span>
+          )}
+        </div>
         {workspace.description && (
           <p className="text-xs sm:text-sm text-muted-foreground/90 truncate leading-relaxed">
             {workspace.description}

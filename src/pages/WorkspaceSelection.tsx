@@ -23,6 +23,10 @@ const WorkspaceSelection = () => {
     role: 'Admin',
   };
 
+  // Separate workspaces into owned and joined
+  const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
+  const joinedWorkspaces = workspaces.filter(ws => ws.role !== 'owner');
+
   useEffect(() => {
     loadWorkspaces();
   }, []);
@@ -106,61 +110,92 @@ const WorkspaceSelection = () => {
           />
         </div>
 
-        {/* Divider with WORKSPACES Label - Better visual weight */}
-        <div className="relative mb-10 sm:mb-14 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t-2 border-border"></div>
+        {/* Header with Create Button */}
+        <div className="flex items-center justify-between mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
+            <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
           </div>
-          <div className="relative flex justify-center">
-            <span className="bg-background px-6 py-1 text-xs font-bold text-muted-foreground tracking-[0.2em] uppercase">
-              Workspaces
-            </span>
-          </div>
-        </div>
-
-        {/* Workspaces Stacked Vertically - Improved spacing */}
-        <div className="space-y-3 mb-10">
-          {workspaces.map((workspace, index) => (
-            <div
-              key={workspace.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${0.15 + index * 0.05}s` }}
-            >
-              <WorkspaceCard
-                workspace={workspace}
-                onClick={handleWorkspaceSelect}
-              />
-            </div>
-          ))}
-
-          {/* Create New Workspace Card - Refined design */}
-          <div
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${0.15 + workspaces.length * 0.05}s` }}
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            size="lg"
+            className="shadow-glow-primary"
           >
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className={cn(
-                'group relative w-full p-5 rounded-lg border-2 border-dashed border-border bg-surface/30',
-                'hover:border-primary hover:bg-surface/50 hover:shadow-md transition-all duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                'flex items-center justify-center gap-3'
-              )}
-            >
-              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                  Create New Workspace
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Start fresh with a new workspace
-                </p>
-              </div>
-            </button>
-          </div>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Workspace
+          </Button>
         </div>
+
+        {/* Owned Workspaces Section */}
+        {ownedWorkspaces.length > 0 && (
+          <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+            <div className="mb-4">
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                Owned Workspaces
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Workspaces you created and manage
+              </p>
+            </div>
+            <div className="space-y-2">
+              {ownedWorkspaces.map((workspace, index) => (
+                <div
+                  key={workspace.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${0.2 + index * 0.05}s` }}
+                >
+                  <WorkspaceCard
+                    workspace={workspace}
+                    onClick={handleWorkspaceSelect}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Joined Workspaces Section */}
+        {joinedWorkspaces.length > 0 && (
+          <div className="mb-10 animate-fade-in-up" style={{ animationDelay: `${0.2 + ownedWorkspaces.length * 0.05}s` }}>
+            <div className="mb-4">
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                Joined Workspaces
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Workspaces shared with you
+              </p>
+            </div>
+            <div className="space-y-2">
+              {joinedWorkspaces.map((workspace, index) => (
+                <div
+                  key={workspace.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${0.25 + (ownedWorkspaces.length + index) * 0.05}s` }}
+                >
+                  <WorkspaceCard
+                    workspace={workspace}
+                    onClick={handleWorkspaceSelect}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {workspaces.length === 0 && (
+          <div className="text-center py-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Plus className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
+            <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
+            <Button onClick={() => setIsModalOpen(true)} size="lg">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Your First Workspace
+            </Button>
+          </div>
+        )}
 
         {/* Footer Info - Better spacing and typography */}
         <div className="text-center pt-10 mt-10 border-t border-border animate-fade-in-up" style={{ animationDelay: '0.4s' }}>

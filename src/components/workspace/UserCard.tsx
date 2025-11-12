@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/Button';
 import { Settings, LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
-import { Badge } from '@/components/ui/badge';
 
 interface UserCardProps {
   user: {
@@ -28,65 +27,64 @@ export const UserCard = ({ user, onSettings, onLogout }: UserCardProps) => {
   };
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-6 sm:p-8 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
-      <div className="flex items-start justify-between gap-4 sm:gap-6">
+    <div className="bg-surface border border-border rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
+      <div className="flex items-start justify-between gap-4">
         {/* User Info */}
-        <div className="flex items-center gap-4 sm:gap-5 flex-1">
-          <Avatar className="h-14 w-14 sm:h-16 sm:w-16 border-2 border-primary/20 shadow-sm">
+        <div className="flex items-center gap-4 flex-1">
+          <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-sm">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="bg-primary/10 text-primary text-lg sm:text-xl font-bold">
+            <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <h2 className="text-lg sm:text-xl font-bold text-foreground truncate">{user.name}</h2>
-              <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold">
-                {user.role}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mb-2.5 truncate">{user.email}</p>
-            <p className="text-xs text-muted-foreground/80 leading-relaxed">
-              Welcome back! Select a workspace to continue.
-            </p>
+            <h2 className="text-lg font-bold text-foreground truncate mb-1">{user.name}</h2>
+            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="h-9 w-9 p-0 hover:bg-muted"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
+        {/* Action Buttons - More Descriptive */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="h-8 px-3 hover:bg-accent/70 hover:scale-105 transition-all"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="h-3.5 w-3.5 mr-1.5" />
+                  <span className="text-xs font-medium">Light</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-3.5 w-3.5 mr-1.5" />
+                  <span className="text-xs font-medium">Dark</span>
+                </>
+              )}
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSettings}
-            title="Settings"
-            className="h-9 w-9 p-0 hover:bg-muted"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSettings}
+              className="h-8 px-3 hover:bg-accent/70 hover:scale-105 transition-all"
+            >
+              <Settings className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs font-medium">Settings</span>
+            </Button>
+          </div>
+          
           <Button
             variant="ghost"
             size="sm"
             onClick={onLogout}
-            title="Logout"
-            className="h-9 w-9 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="h-8 px-3 text-destructive border border-destructive/30 hover:bg-destructive/10 hover:border-destructive hover:scale-105 transition-all"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5 mr-1.5" />
+            <span className="text-xs font-medium">Logout</span>
           </Button>
         </div>
       </div>

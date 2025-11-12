@@ -6,6 +6,7 @@ export interface Workspace {
   memberCount: number;
   lastAccessed: string;
   createdAt: string;
+  role?: 'owner' | 'admin' | 'editor' | 'viewer';
 }
 
 export interface CreateWorkspaceData {

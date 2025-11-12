@@ -11,6 +11,7 @@ const defaultWorkspaces: Workspace[] = [
     memberCount: 1,
     lastAccessed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    role: 'owner',
   },
   {
     id: 'workspace-2',
@@ -19,6 +20,7 @@ const defaultWorkspaces: Workspace[] = [
     memberCount: 8,
     lastAccessed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
     createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+    role: 'admin',
   },
   {
     id: 'workspace-3',
@@ -27,6 +29,16 @@ const defaultWorkspaces: Workspace[] = [
     memberCount: 3,
     lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+    role: 'owner',
+  },
+  {
+    id: 'workspace-4',
+    name: 'Marketing Team',
+    description: 'Shared workspace for marketing automations',
+    memberCount: 5,
+    lastAccessed: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
+    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+    role: 'editor',
   },
 ];
 
@@ -61,6 +73,7 @@ export const createWorkspace = (name: string, description?: string): Workspace =
     memberCount: 1,
     lastAccessed: new Date().toISOString(),
     createdAt: new Date().toISOString(),
+    role: 'owner',
   };
 
   const workspaces = getWorkspaces();
