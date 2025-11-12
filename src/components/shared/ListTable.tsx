@@ -1,12 +1,8 @@
-import { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ColumnConfig } from '@/types/common';
 
 interface ListTableProps<T> {
   items: T[];
-  columns: ColumnConfig<T>[];
   onView?: (item: T) => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
@@ -16,9 +12,8 @@ interface ListTableProps<T> {
   emptyDescription?: string;
 }
 
-export function ListTable<T extends { id: string; name: string }>({
+export function ListTable<T extends { id: string; name: string; description?: string }>({
   items,
-  columns,
   onView,
   onEdit,
   onDelete,
@@ -68,83 +63,56 @@ export function ListTable<T extends { id: string; name: string }>({
     <>
       {/* Desktop Table View */}
       <div className="hidden md:block bg-surface rounded-lg border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b border-border">
-              <tr>
-                {columns.map((column) => (
-                  <th
-                    key={String(column.key)}
-                    className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
-                    style={{ width: column.width }}
-                  >
-                    {column.label}
-                  </th>
-                ))}
-                {hasActions && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider w-[30%]">
-                    Actions
-                  </th>
+        <div className="divide-y divide-border">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between px-6 py-4 hover:bg-accent/50 transition-colors"
+            >
+              <div className="flex-1 space-y-1">
+                <p className="text-xs text-muted-foreground">{item.id}</p>
+                <p className="text-base font-medium text-foreground">{item.name}</p>
+                {item.description && (
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-accent/50 transition-colors"
-                >
-                  {columns.map((column) => (
-                    <td
-                      key={String(column.key)}
-                      className="px-6 py-4 text-sm text-foreground"
+              </div>
+              {hasActions && (
+                <div className="flex items-center gap-2 ml-4">
+                  {onView && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onView(item)}
+                      aria-label="View details"
                     >
-                      {column.render
-                        ? column.render(item)
-                        : String(item[column.key as keyof T] ?? '-')}
-                    </td>
-                  ))}
-                  {hasActions && (
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {onView && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onView(item)}
-                            aria-label="View details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onEdit && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onEdit(item)}
-                            aria-label="Edit"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onDelete && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onDelete(item)}
-                            aria-label="Delete"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEdit(item)}
+                      aria-label="Edit"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(item)}
+                      aria-label="Delete"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -155,19 +123,12 @@ export function ListTable<T extends { id: string; name: string }>({
             key={item.id}
             className="bg-surface rounded-lg border border-border p-4 space-y-3"
           >
-            <div className="space-y-2">
-              {columns.map((column) => (
-                <div key={String(column.key)} className="flex justify-between">
-                  <span className="text-xs font-medium text-muted-foreground uppercase">
-                    {column.label}
-                  </span>
-                  <span className="text-sm text-foreground">
-                    {column.render
-                      ? column.render(item)
-                      : String(item[column.key as keyof T] ?? '-')}
-                  </span>
-                </div>
-              ))}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{item.id}</p>
+              <p className="text-base font-medium text-foreground">{item.name}</p>
+              {item.description && (
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              )}
             </div>
             {hasActions && (
               <div className="flex items-center gap-2 pt-2 border-t border-border">

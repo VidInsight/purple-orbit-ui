@@ -1,43 +1,11 @@
 import { useState } from 'react';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
-import { CredentialItem, ColumnConfig } from '@/types/common';
+import { CredentialItem } from '@/types/common';
 import { generateMockCredentials } from '@/utils/mockData';
 import { toast } from '@/hooks/use-toast';
 
 const Credentials = () => {
   const [credentials] = useState<CredentialItem[]>(generateMockCredentials());
-
-  const columns: ColumnConfig<CredentialItem>[] = [
-    {
-      key: 'name',
-      label: 'Name',
-      width: '30%',
-    },
-    {
-      key: 'type',
-      label: 'Type',
-      width: '20%',
-      render: (item) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-          {item.type}
-        </span>
-      ),
-    },
-    {
-      key: 'description',
-      label: 'Description',
-      width: '30%',
-      render: (item) => (
-        <span className="text-muted-foreground">{item.description}</span>
-      ),
-    },
-    {
-      key: 'lastUsed',
-      label: 'Last Used',
-      width: '20%',
-      render: (item) => item.lastUsed ? new Date(item.lastUsed).toLocaleDateString() : 'Never',
-    },
-  ];
 
   const handleCreate = () => {
     toast({
@@ -73,7 +41,6 @@ const Credentials = () => {
       pageTitle="Credentials"
       pageDescription="Manage authentication credentials for integrations"
       items={credentials}
-      columns={columns}
       searchPlaceholder="Search credentials..."
       createButtonText="Add Credential"
       itemTypeName="credential"

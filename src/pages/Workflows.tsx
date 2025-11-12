@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
-import { WorkflowItem, ColumnConfig } from '@/types/common';
+import { WorkflowItem } from '@/types/common';
 import { generateMockWorkflows } from '@/utils/mockData';
 import { Button } from '@/components/ui/Button';
 import { Settings } from 'lucide-react';
@@ -10,53 +10,6 @@ import { toast } from '@/hooks/use-toast';
 const Workflows = () => {
   const navigate = useNavigate();
   const [workflows] = useState<WorkflowItem[]>(generateMockWorkflows());
-
-  const columns: ColumnConfig<WorkflowItem>[] = [
-    {
-      key: 'name',
-      label: 'Name',
-      width: '25%',
-    },
-    {
-      key: 'description',
-      label: 'Description',
-      width: '30%',
-      render: (item) => (
-        <span className="text-muted-foreground">{item.description}</span>
-      ),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      width: '15%',
-      render: (item) => {
-        const statusColors = {
-          active: 'bg-success/10 text-success',
-          inactive: 'bg-muted text-muted-foreground',
-          draft: 'bg-warning/10 text-warning',
-        };
-        return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[item.status]}`}>
-            {item.status}
-          </span>
-        );
-      },
-    },
-    {
-      key: 'executionCount',
-      label: 'Executions',
-      width: '15%',
-      render: (item) => (
-        <span className="font-medium">{item.executionCount}</span>
-      ),
-    },
-    {
-      key: 'updatedAt',
-      label: 'Updated',
-      width: '15%',
-      render: (item) => new Date(item.updatedAt).toLocaleDateString(),
-    },
-  ];
 
   const handleCreate = () => {
     navigate('/workflows/new');
@@ -84,7 +37,6 @@ const Workflows = () => {
       pageTitle="Workflows"
       pageDescription="Manage and monitor your automation workflows"
       items={workflows}
-      columns={columns}
       searchPlaceholder="Search workflows..."
       createButtonText="New Workflow"
       itemTypeName="workflow"

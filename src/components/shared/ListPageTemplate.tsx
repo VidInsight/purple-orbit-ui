@@ -5,14 +5,12 @@ import { SearchFilterBar } from '@/components/layout/SearchFilterBar';
 import { ListTable } from './ListTable';
 import { Pagination } from './Pagination';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
-import { ColumnConfig } from '@/types/common';
 import { DropdownOption } from '@/components/ui/Dropdown';
 
-interface ListPageTemplateProps<T extends { id: string; name: string }> {
+interface ListPageTemplateProps<T extends { id: string; name: string; description?: string }> {
   pageTitle: string;
   pageDescription: string;
   items: T[];
-  columns: ColumnConfig<T>[];
   filterOptions?: DropdownOption[];
   searchPlaceholder?: string;
   createButtonText?: string;
@@ -29,11 +27,10 @@ interface ListPageTemplateProps<T extends { id: string; name: string }> {
   itemsPerPage?: number;
 }
 
-export function ListPageTemplate<T extends { id: string; name: string }>({
+export function ListPageTemplate<T extends { id: string; name: string; description?: string }>({
   pageTitle,
   pageDescription,
   items,
-  columns,
   filterOptions,
   searchPlaceholder = 'Search...',
   createButtonText = 'Create',
@@ -152,7 +149,6 @@ export function ListPageTemplate<T extends { id: string; name: string }>({
 
         <ListTable
           items={paginatedItems}
-          columns={columns}
           isLoading={isLoading}
           error={error}
           emptyMessage={emptyMessage}
