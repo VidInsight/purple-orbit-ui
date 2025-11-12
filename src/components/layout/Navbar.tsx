@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useTheme } from '@/context/ThemeContext';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import {
   Workflow,
   PlayCircle,
@@ -276,6 +277,8 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   <Moon className="h-4 w-4" />
                 )}
               </button>
+              
+              <LanguageSwitcher />
               
               <button
                 onClick={() => {/* Add user preferences handler */}}
