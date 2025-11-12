@@ -114,12 +114,14 @@ const GlobalNodes = () => {
           description="Pre-built nodes available across all workflows"
         />
         
-        <NodeGrid 
-          nodes={mockGlobalNodes}
-          onDocumentation={handleDocumentation}
-          readOnly={true}
-          columns={5}
-        />
+        <div className="animate-fade-in">
+          <NodeGrid 
+            nodes={mockGlobalNodes}
+            onDocumentation={handleDocumentation}
+            readOnly={true}
+            columns={5}
+          />
+        </div>
       </div>
     </PageLayout>
   );

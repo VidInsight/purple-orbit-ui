@@ -45,7 +45,7 @@ export const SearchFilterBar = ({
   };
 
   return (
-    <div className="flex items-center gap-3 mb-6">
+    <div className="flex items-center gap-3 mb-6 animate-fade-in">
       {/* Search & Filter - Left Side */}
       <div className="flex items-center gap-3 flex-1">
         <div className="relative flex-1 max-w-md">

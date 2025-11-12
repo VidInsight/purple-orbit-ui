@@ -121,12 +121,12 @@ const ExecutionDetails = () => {
     <PageLayout>
       <div className="container mx-auto max-w-[1400px] px-6 py-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 animate-fade-in">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/executions')}
-            className="mb-4"
+            className="mb-4 hover:translate-x-1 transition-transform duration-200"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Executions
@@ -165,15 +165,19 @@ const ExecutionDetails = () => {
         </div>
 
         {/* Content */}
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
           {/* Overview */}
-          <ExecutionOverview execution={execution} />
+          <div className="animate-fade-in-down">
+            <ExecutionOverview execution={execution} />
+          </div>
 
           {/* Timeline */}
-          <ExecutionTimeline steps={execution.steps} />
+          <div className="animate-fade-in">
+            <ExecutionTimeline steps={execution.steps} />
+          </div>
 
           {/* Logs */}
-          <div>
+          <div className="animate-fade-in">
             <h3 className="text-lg font-semibold text-foreground mb-4">Execution Logs</h3>
             <ExecutionLogs logs={execution.logs} />
           </div>

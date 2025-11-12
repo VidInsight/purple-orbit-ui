@@ -13,7 +13,7 @@ const Dashboard = () => {
           description="Overview of your automation workspace"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
           {/* Left Side - Empty for now */}
           <div className="lg:col-span-2">
             {/* Content removed */}

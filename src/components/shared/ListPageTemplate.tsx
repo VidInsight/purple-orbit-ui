@@ -147,16 +147,18 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
           onCreateClick={onCreate}
         />
 
-        <ListTable
-          items={paginatedItems}
-          isLoading={isLoading}
-          error={error}
-          emptyMessage={emptyMessage}
-          emptyDescription={emptyDescription}
-          onView={onView}
-          onEdit={onEdit}
-          onDelete={onDelete ? handleDeleteClick : undefined}
-        />
+        <div className="animate-fade-in">
+          <ListTable
+            items={paginatedItems}
+            isLoading={isLoading}
+            error={error}
+            emptyMessage={emptyMessage}
+            emptyDescription={emptyDescription}
+            onView={onView}
+            onEdit={onEdit}
+            onDelete={onDelete ? handleDeleteClick : undefined}
+          />
+        </div>
 
         {filteredItems.length > 0 && (
           <Pagination

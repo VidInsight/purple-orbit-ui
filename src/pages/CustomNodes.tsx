@@ -88,28 +88,30 @@ const CustomNodes = () => {
           }
         />
         
-        {nodes.length > 0 ? (
-          <NodeGrid 
-            nodes={nodes}
-            onDocumentation={handleDocumentation}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            readOnly={false}
-            columns={5}
-          />
-        ) : (
-          <div className="text-center py-16 bg-surface rounded-lg border border-border">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Settings className="h-8 w-8 text-muted-foreground" />
+        <div className="animate-fade-in">
+          {nodes.length > 0 ? (
+            <NodeGrid 
+              nodes={nodes}
+              onDocumentation={handleDocumentation}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              readOnly={false}
+              columns={5}
+            />
+          ) : (
+            <div className="text-center py-16 bg-surface rounded-lg border border-border animate-fade-in-down">
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <Settings className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No custom nodes yet</h3>
+              <p className="text-sm text-muted-foreground mb-6">Create your first custom node to extend your workflows</p>
+              <Button onClick={handleCreate}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Custom Node
+              </Button>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No custom nodes yet</h3>
-            <p className="text-sm text-muted-foreground mb-6">Create your first custom node to extend your workflows</p>
-            <Button onClick={handleCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Custom Node
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </PageLayout>
   );
