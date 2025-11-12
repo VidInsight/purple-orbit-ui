@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { ExecutionItem, ColumnConfig } from '@/types/common';
 import { generateMockExecutions } from '@/utils/mockData';
 import { toast } from '@/hooks/use-toast';
 
 const Executions = () => {
+  const navigate = useNavigate();
   const [executions] = useState<ExecutionItem[]>(generateMockExecutions());
 
   const columns: ColumnConfig<ExecutionItem>[] = [
@@ -52,10 +54,7 @@ const Executions = () => {
   ];
 
   const handleView = (item: ExecutionItem) => {
-    toast({
-      title: 'View Execution',
-      description: `Opening execution details...`,
-    });
+    navigate(`/executions/${item.id}`);
   };
 
   return (

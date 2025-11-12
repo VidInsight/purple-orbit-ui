@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
 import WorkflowEditor from "@/pages/WorkflowEditor";
 import Executions from "@/pages/Executions";
+import ExecutionDetails from "@/pages/ExecutionDetails";
 import Credentials from "@/pages/Credentials";
 import Databases from "@/pages/Databases";
 import Variables from "@/pages/Variables";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/workflows/new" element={<WorkflowEditor />} />
             <Route path="/workflows/:id/edit" element={<WorkflowEditor />} />
             <Route path="/executions" element={<Executions />} />
+            <Route path="/executions/:id" element={<ExecutionDetails />} />
             <Route path="/credentials" element={<Credentials />} />
             <Route path="/databases" element={<Databases />} />
             <Route path="/variables" element={<Variables />} />
