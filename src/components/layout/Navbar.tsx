@@ -222,54 +222,54 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Bottom Section - User Info with Actions */}
-      <div className="p-3">
+      <div className="px-2 py-4">
         {!isCollapsed && (
           <>
             <div className="flex items-center justify-center gap-1 mb-2">
               <button
                 onClick={() => {/* Add help handler */}}
-                className="flex items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 title="Help"
               >
-                <HelpCircle className="h-3.5 w-3.5" />
+                <HelpCircle className="h-4 w-4" />
               </button>
               
               <button
                 onClick={toggleTheme}
-                className="flex items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-3.5 w-3.5" />
+                  <Sun className="h-4 w-4" />
                 ) : (
-                  <Moon className="h-3.5 w-3.5" />
+                  <Moon className="h-4 w-4" />
                 )}
               </button>
               
               <button
                 onClick={() => {/* Add user preferences handler */}}
-                className="flex items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 title="User Preferences"
               >
-                <Settings className="h-3.5 w-3.5" />
+                <Settings className="h-4 w-4" />
               </button>
             </div>
             
-            <div className="border-t border-border mb-2" />
+            <div className="border-t border-border my-2" />
           </>
         )}
         
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-            <User className="h-3.5 w-3.5 text-primary-foreground" />
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <User className="h-4 w-4 text-primary-foreground" />
           </div>
           
           {!isCollapsed && (
             <div className="overflow-hidden flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 Sarah Johnson
               </p>
-              <p className="text-[10px] text-foreground/70 truncate">
+              <p className="text-xs text-foreground/70 truncate">
                 sarah@company.com
               </p>
             </div>
