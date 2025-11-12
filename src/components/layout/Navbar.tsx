@@ -13,6 +13,7 @@ import {
   User,
   Users,
   LayoutDashboard,
+  CreditCard,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -30,6 +31,7 @@ const navigationItems = [
   { name: 'Files', path: '/files', icon: Folder },
   { name: 'API Keys', path: '/api-keys', icon: Shield },
   { name: 'Users', path: '/users', icon: Users },
+  { name: 'Billing', path: '/billing', icon: CreditCard },
 ];
 
 export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {

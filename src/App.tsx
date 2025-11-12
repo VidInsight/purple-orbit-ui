@@ -16,6 +16,7 @@ import Variables from "@/pages/Variables";
 import Files from "@/pages/Files";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
+import Billing from "@/pages/Billing";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/files" element={<Files />} />
           <Route path="/api-keys" element={<ApiKeys />} />
           <Route path="/users" element={<UserManagement />} />
+          <Route path="/billing" element={<Billing />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
