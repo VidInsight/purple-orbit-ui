@@ -24,7 +24,6 @@ import Files from "@/pages/Files";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
 import Billing from "@/pages/Billing";
-import Payment from "@/pages/Payment";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,7 +50,6 @@ const AppRoutes = () => {
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-      <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

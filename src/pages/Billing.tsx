@@ -20,7 +20,7 @@ import {
   PLANS,
 } from '@/types/billing';
 import { toast } from '@/hooks/use-toast';
-import { Edit, Building2 } from 'lucide-react';
+import { CreditCard, Mail, MapPin, Edit, Check, X } from 'lucide-react';
 
 // Mock data
 const mockSubscription: CurrentSubscription = {
@@ -82,6 +82,8 @@ const Billing = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [editingBillingInfo, setEditingBillingInfo] = useState(false);
   const [billingInfo, setBillingInfo] = useState(mockBillingInfo);
+  const [email] = useState('sarah@company.com');
+  const [editingCard, setEditingCard] = useState(false);
 
   const handlePlanSelect = (planId: string) => {
     if (planId === 'enterprise') {
@@ -117,6 +119,14 @@ const Billing = () => {
     });
   };
 
+  const handleSaveCard = () => {
+    setEditingCard(false);
+    toast({
+      title: 'Payment Method Updated',
+      description: 'Your payment method has been successfully updated.',
+    });
+  };
+
   return (
     <PageLayout>
       <div className="container mx-auto max-w-[1400px] px-6 py-8">
@@ -143,10 +153,253 @@ const Billing = () => {
               onChangeCycle={(cycle) => setBillingCycle(cycle)}
             />
 
-            <PaymentMethodCard
-              paymentMethod={mockPaymentMethod}
-              onUpdate={() => setPaymentModalOpen(true)}
-            />
+            {/* Payment Information Section */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-foreground">Payment Information</h3>
+              
+              {/* Email */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-semibold text-foreground">Billing Email</h4>
+                    <p className="text-sm text-muted-foreground">Receipts and invoices will be sent to this email</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between py-2 px-4 bg-muted/30 rounded-lg">
+                  <span className="text-sm font-medium text-foreground">{email}</span>
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-semibold text-foreground">Payment Method</h4>
+                      <p className="text-sm text-muted-foreground">Manage your credit or debit card</p>
+                    </div>
+                  </div>
+                  {!editingCard && (
+                    <Button variant="ghost" size="sm" onClick={() => setEditingCard(true)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {editingCard ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <Label htmlFor="cardNumber">Card Number</Label>
+                        <Input
+                          id="cardNumber"
+                          placeholder="1234 5678 9012 3456"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="expiry">Expiry Date</Label>
+                        <Input
+                          id="expiry"
+                          placeholder="MM/YY"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cvc">CVC</Label>
+                        <Input
+                          id="cvc"
+                          placeholder="123"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="primary" size="sm" onClick={handleSaveCard}>
+                        <Check className="h-4 w-4 mr-1" />
+                        Save
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingCard(false)}>
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-2 px-4 bg-muted/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {mockPaymentMethod.cardBrand} •••• {mockPaymentMethod.lastFour}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Expires {mockPaymentMethod.expiryMonth}/{mockPaymentMethod.expiryYear}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Billing Address */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-semibold text-foreground">Billing Address</h4>
+                      <p className="text-sm text-muted-foreground">Address for billing and invoices</p>
+                    </div>
+                  </div>
+                  {!editingBillingInfo && (
+                    <Button variant="ghost" size="sm" onClick={() => setEditingBillingInfo(true)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {editingBillingInfo ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        value={billingInfo.companyName}
+                        onChange={(e) =>
+                          setBillingInfo((prev) => ({ ...prev, companyName: e.target.value }))
+                        }
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="addressLine1">Address Line 1</Label>
+                      <Input
+                        id="addressLine1"
+                        value={billingInfo.addressLine1}
+                        onChange={(e) =>
+                          setBillingInfo((prev) => ({ ...prev, addressLine1: e.target.value }))
+                        }
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
+                      <Input
+                        id="addressLine2"
+                        value={billingInfo.addressLine2 || ''}
+                        onChange={(e) =>
+                          setBillingInfo((prev) => ({ ...prev, addressLine2: e.target.value }))
+                        }
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={billingInfo.city}
+                          onChange={(e) =>
+                            setBillingInfo((prev) => ({ ...prev, city: e.target.value }))
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          value={billingInfo.state}
+                          onChange={(e) =>
+                            setBillingInfo((prev) => ({ ...prev, state: e.target.value }))
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="zipCode">Zip Code</Label>
+                        <Input
+                          id="zipCode"
+                          value={billingInfo.zipCode}
+                          onChange={(e) =>
+                            setBillingInfo((prev) => ({ ...prev, zipCode: e.target.value }))
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="country">Country</Label>
+                        <Input
+                          id="country"
+                          value={billingInfo.country}
+                          onChange={(e) =>
+                            setBillingInfo((prev) => ({ ...prev, country: e.target.value }))
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="taxId">Tax ID (Optional)</Label>
+                      <Input
+                        id="taxId"
+                        value={billingInfo.taxId || ''}
+                        onChange={(e) =>
+                          setBillingInfo((prev) => ({ ...prev, taxId: e.target.value }))
+                        }
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="primary" size="sm" onClick={handleBillingInfoSave}>
+                        <Check className="h-4 w-4 mr-1" />
+                        Save
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingBillingInfo(false)}>
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-2 px-4 bg-muted/30 rounded-lg space-y-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {billingInfo.companyName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{billingInfo.addressLine1}</p>
+                      {billingInfo.addressLine2 && (
+                        <p className="text-xs text-muted-foreground">{billingInfo.addressLine2}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {billingInfo.city}, {billingInfo.state} {billingInfo.zipCode}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{billingInfo.country}</p>
+                    </div>
+                    {billingInfo.taxId && (
+                      <div className="pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">Tax ID</p>
+                        <p className="text-sm font-medium text-foreground">{billingInfo.taxId}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </TabsContent>
 
           {/* Quotas Tab */}
