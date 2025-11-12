@@ -108,11 +108,11 @@ export const ActiveUsersTab = ({
             </div>
 
             <div className="flex items-center gap-4 ml-4">
-              <div className="hidden sm:block text-xs text-muted-foreground">
+              <div className="hidden sm:block text-xs text-muted-foreground min-w-[80px]">
                 {formatLastActive(user.lastActive)}
               </div>
               
-              <div className="w-24">
+              <div className="min-w-[100px]">
                 {isCurrentUserAdmin && user.id !== currentUserId ? (
                   <RoleSelector
                     value={user.role}
@@ -129,16 +129,18 @@ export const ActiveUsersTab = ({
                 )}
               </div>
 
-              {isCurrentUserAdmin && user.id !== currentUserId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveClick(user)}
-                  className="h-7 w-7 p-0 hover:text-destructive"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
+              <div className="w-7">
+                {isCurrentUserAdmin && user.id !== currentUserId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveClick(user)}
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}

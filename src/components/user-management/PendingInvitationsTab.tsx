@@ -97,7 +97,7 @@ export const PendingInvitationsTab = ({
                 
                 <div className={`flex items-center gap-1 text-xs min-w-[100px] ${expiration.color}`}>
                   <Clock className="h-3 w-3" />
-                  {expiration.text}
+                  <span className="truncate">{expiration.text}</span>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -105,7 +105,7 @@ export const PendingInvitationsTab = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onResend(invitation.id)}
-                    className="h-7 w-7 p-0 hover:text-primary"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-primary"
                     title="Resend invitation"
                   >
                     <Send className="h-3.5 w-3.5" />
@@ -114,7 +114,7 @@ export const PendingInvitationsTab = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleCancelClick(invitation)}
-                    className="h-7 w-7 p-0 hover:text-destructive"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                     title="Cancel invitation"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

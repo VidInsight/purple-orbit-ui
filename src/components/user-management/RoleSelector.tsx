@@ -16,27 +16,18 @@ interface RoleSelectorProps {
 export const RoleSelector = ({ value, onChange, disabled }: RoleSelectorProps) => {
   return (
     <Select value={value} onValueChange={(val) => onChange(val as UserRole)} disabled={disabled}>
-      <SelectTrigger className="w-[140px]">
+      <SelectTrigger className="h-7 w-24 text-xs border-border/50">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="admin">
-          <div>
-            <div className="font-medium">{ROLE_LABELS.admin}</div>
-            <div className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS.admin}</div>
-          </div>
+        <SelectItem value="admin" className="text-xs">
+          {ROLE_LABELS.admin}
         </SelectItem>
-        <SelectItem value="editor">
-          <div>
-            <div className="font-medium">{ROLE_LABELS.editor}</div>
-            <div className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS.editor}</div>
-          </div>
+        <SelectItem value="editor" className="text-xs">
+          {ROLE_LABELS.editor}
         </SelectItem>
-        <SelectItem value="viewer">
-          <div>
-            <div className="font-medium">{ROLE_LABELS.viewer}</div>
-            <div className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS.viewer}</div>
-          </div>
+        <SelectItem value="viewer" className="text-xs">
+          {ROLE_LABELS.viewer}
         </SelectItem>
       </SelectContent>
     </Select>
