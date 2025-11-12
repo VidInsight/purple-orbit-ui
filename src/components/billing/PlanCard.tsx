@@ -14,6 +14,21 @@ export const PlanCard = ({ plan, billingCycle, currentPlanId, onSelect }: PlanCa
   const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice;
   const isCurrent = plan.id === currentPlanId;
   const isEnterprise = plan.id === 'enterprise';
+  
+  // Determine plan tier for button text
+  const planTiers = { free: 0, pro: 1, enterprise: 2 };
+  const currentTier = planTiers[currentPlanId as keyof typeof planTiers] || 0;
+  const planTier = planTiers[plan.id as keyof typeof planTiers] || 0;
+  const isUpgrade = planTier > currentTier;
+  const isDowngrade = planTier < currentTier;
+  
+  const getButtonText = () => {
+    if (isCurrent) return 'Current Plan';
+    if (isEnterprise) return 'Contact Sales';
+    if (isUpgrade) return 'Upgrade';
+    if (isDowngrade) return 'Downgrade';
+    return 'Select Plan';
+  };
 
   return (
     <div
@@ -62,12 +77,12 @@ export const PlanCard = ({ plan, billingCycle, currentPlanId, onSelect }: PlanCa
       </ul>
 
       <Button
-        variant={isCurrent ? 'secondary' : plan.popular ? 'primary' : 'secondary'}
+        variant={isCurrent ? 'secondary' : isUpgrade ? 'primary' : 'ghost'}
         className="w-full"
         onClick={() => onSelect(plan.id)}
         disabled={isCurrent}
       >
-        {isCurrent ? 'Current Plan' : isEnterprise ? 'Contact Sales' : 'Choose Plan'}
+        {getButtonText()}
       </Button>
     </div>
   );

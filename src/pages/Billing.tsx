@@ -6,6 +6,7 @@ import { PlanCard } from '@/components/billing/PlanCard';
 import { BillingHistoryTable } from '@/components/billing/BillingHistoryTable';
 import { PaymentMethodCard } from '@/components/billing/PaymentMethodCard';
 import { UpdatePaymentModal } from '@/components/billing/UpdatePaymentModal';
+import { QuotasTab } from '@/components/billing/QuotasTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/label';
@@ -125,14 +126,17 @@ const Billing = () => {
         />
 
         <Tabs defaultValue="overview" className="mt-6">
-          <TabsList className="grid w-full max-w-[500px] grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-6">
+            <TabsList className="inline-flex">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="quotas">Quotas</TabsTrigger>
+              <TabsTrigger value="plans">Plans</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6 mt-6">
+          <TabsContent value="overview" className="space-y-6">
             <CurrentPlanCard
               subscription={subscription}
               onUpgrade={handleUpgrade}
@@ -236,8 +240,13 @@ const Billing = () => {
             </div>
           </TabsContent>
 
+          {/* Quotas Tab */}
+          <TabsContent value="quotas">
+            <QuotasTab subscription={subscription} />
+          </TabsContent>
+
           {/* Plans Tab */}
-          <TabsContent value="plans" className="space-y-6 mt-6">
+          <TabsContent value="plans" className="space-y-6">
             <div className="flex items-center justify-center gap-4 mb-6">
               <Button
                 variant={billingCycle === 'monthly' ? 'primary' : 'ghost'}
@@ -267,7 +276,7 @@ const Billing = () => {
           </TabsContent>
 
           {/* History Tab */}
-          <TabsContent value="history" className="mt-6">
+          <TabsContent value="history">
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               <BillingHistoryTable invoices={mockInvoices} />
             </div>
