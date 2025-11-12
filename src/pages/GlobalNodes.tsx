@@ -1,77 +1,125 @@
-import { useState } from 'react';
-import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { NodeGrid, NodeItem } from '@/components/nodes/NodeGrid';
+import { 
+  Globe, 
+  Mail, 
+  Database, 
+  Code, 
+  FileJson,
+  Calendar,
+  Webhook,
+  MessageSquare,
+  Filter,
+  GitBranch,
+  Clock,
+  Repeat
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
-interface GlobalNode {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-// Mock data
-const mockGlobalNodes: GlobalNode[] = [
+// Mock data with categories
+const mockGlobalNodes: NodeItem[] = [
   {
     id: 'gn-001',
     name: 'HTTP Request',
-    description: 'Make HTTP requests to external APIs',
+    description: 'Make HTTP requests to external APIs and services',
+    icon: Globe,
+    category: 'Communication',
+    subcategory: 'HTTP',
   },
   {
     id: 'gn-002',
-    name: 'JSON Parser',
-    description: 'Parse and transform JSON data',
+    name: 'Webhook',
+    description: 'Receive data from external webhooks',
+    icon: Webhook,
+    category: 'Communication',
+    subcategory: 'HTTP',
   },
   {
     id: 'gn-003',
     name: 'Email Sender',
-    description: 'Send emails via SMTP or API',
+    description: 'Send emails via SMTP or API services',
+    icon: Mail,
+    category: 'Communication',
+    subcategory: 'Email',
   },
   {
     id: 'gn-004',
-    name: 'Data Transformer',
-    description: 'Transform data between different formats',
+    name: 'JSON Parser',
+    description: 'Parse and transform JSON data structures',
+    icon: FileJson,
+    category: 'Data Processing',
+    subcategory: 'Parsers',
   },
   {
     id: 'gn-005',
+    name: 'Data Transformer',
+    description: 'Transform data between different formats',
+    icon: Code,
+    category: 'Data Processing',
+    subcategory: 'Transform',
+  },
+  {
+    id: 'gn-006',
+    name: 'Filter',
+    description: 'Filter data based on conditions',
+    icon: Filter,
+    category: 'Data Processing',
+    subcategory: 'Transform',
+  },
+  {
+    id: 'gn-007',
+    name: 'Database Query',
+    description: 'Execute queries on connected databases',
+    icon: Database,
+    category: 'Data Storage',
+  },
+  {
+    id: 'gn-008',
     name: 'Scheduler',
-    description: 'Schedule and trigger workflows',
+    description: 'Schedule and trigger workflows at specific times',
+    icon: Calendar,
+    category: 'Triggers',
+  },
+  {
+    id: 'gn-009',
+    name: 'Wait',
+    description: 'Pause workflow execution for a specified duration',
+    icon: Clock,
+    category: 'Flow Control',
+  },
+  {
+    id: 'gn-010',
+    name: 'Loop',
+    description: 'Repeat actions for each item in a collection',
+    icon: Repeat,
+    category: 'Flow Control',
   },
 ];
 
 const GlobalNodes = () => {
-  const [nodes] = useState<GlobalNode[]>(mockGlobalNodes);
-  const [isLoading] = useState(false);
-
-  const handleView = async (node: GlobalNode) => {
-    console.log('View node:', node);
-  };
-
-  const handleEdit = async (node: GlobalNode) => {
-    console.log('Edit node:', node);
-  };
-
-  const handleDelete = async (node: GlobalNode) => {
-    console.log('Delete node:', node);
-  };
-
-  const handleCreate = () => {
-    console.log('Create new global node');
+  const handleDocumentation = (node: NodeItem) => {
+    toast({
+      title: 'Documentation',
+      description: `Opening documentation for ${node.name}...`,
+    });
+    console.log('View documentation:', node);
   };
 
   return (
-    <ListPageTemplate
-      pageTitle="Global Nodes"
-      pageDescription="Reusable nodes available across all workflows"
-      items={nodes}
-      onView={handleView}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      onCreate={handleCreate}
-      createButtonText="Add Global Node"
-      itemTypeName="global node"
-      isLoading={isLoading}
-      emptyMessage="No global nodes found"
-      emptyDescription="Global nodes are pre-built components you can use in your workflows."
-      searchPlaceholder="Search global nodes..."
-    />
+    <PageLayout>
+      <PageHeader
+        title="Global Nodes"
+        description="Pre-built nodes available across all workflows"
+      />
+      
+      <NodeGrid 
+        nodes={mockGlobalNodes}
+        onDocumentation={handleDocumentation}
+        readOnly={true}
+        columns={2}
+      />
+    </PageLayout>
   );
 };
 
