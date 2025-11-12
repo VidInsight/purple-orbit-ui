@@ -114,7 +114,7 @@ const GlobalNodes = () => {
           description="Pre-built nodes available across all workflows"
         />
         
-        <div className="animate-fade-in">
+        <div>
           <NodeGrid 
             nodes={mockGlobalNodes}
             onDocumentation={handleDocumentation}

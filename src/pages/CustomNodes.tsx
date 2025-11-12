@@ -88,7 +88,7 @@ const CustomNodes = () => {
           }
         />
         
-        <div className="animate-fade-in">
+        <div>
           {nodes.length > 0 ? (
             <NodeGrid 
               nodes={nodes}
@@ -99,7 +99,7 @@ const CustomNodes = () => {
               columns={5}
             />
           ) : (
-            <div className="text-center py-16 bg-surface rounded-lg border border-border animate-fade-in-down">
+            <div className="text-center py-16 bg-surface rounded-lg border border-border">
               <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Settings className="h-8 w-8 text-muted-foreground" />
               </div>

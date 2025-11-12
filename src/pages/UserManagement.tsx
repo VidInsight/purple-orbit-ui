@@ -179,7 +179,7 @@ const UserManagement = () => {
           }
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6 animate-fade-in">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
           <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50">
             <TabsTrigger value="users" className="text-sm">
               Active Users <span className="ml-1.5 text-xs text-muted-foreground">({users.length})</span>

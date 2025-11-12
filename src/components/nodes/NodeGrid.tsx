@@ -50,7 +50,7 @@ export const NodeGrid = ({
   return (
     <div className="space-y-8">
       {Object.entries(groupedNodes).map(([category, subcategories]) => (
-        <div key={category} className="animate-fade-in-up">
+        <div key={category}>
           {/* Category Header */}
           <div className="mb-4">
             <h2 className="text-lg font-bold text-foreground">{category}</h2>

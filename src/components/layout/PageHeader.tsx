@@ -8,14 +8,14 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
   return (
-    <div className="flex items-start justify-between mb-8 animate-fade-in">
+    <div className="flex items-start justify-between mb-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground animate-fade-in-down">{title}</h1>
+        <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
         {description && (
-          <p className="text-sm text-muted-foreground animate-fade-in">{description}</p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2 animate-fade-in">{actions}</div>}
+      {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );
 };

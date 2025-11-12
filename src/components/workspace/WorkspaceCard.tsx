@@ -26,8 +26,7 @@ export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
         'hover:border-primary/60 hover:bg-surface/80 hover:shadow-lg hover:-translate-y-0.5',
         'transition-all duration-300 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
-        'flex items-center gap-4 sm:gap-5',
-        'animate-fade-in-up'
+        'flex items-center gap-4 sm:gap-5'
       )}
     >
       {/* Logo */}

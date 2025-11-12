@@ -23,7 +23,7 @@ export const StatCard = ({
   iconBgColor = 'bg-primary',
 }: StatCardProps) => {
   return (
-    <div className="bg-surface rounded-lg border border-border p-6 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 group animate-fade-in-up">
+    <div className="bg-surface rounded-lg border border-border p-6 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 group">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-muted-foreground mb-2">

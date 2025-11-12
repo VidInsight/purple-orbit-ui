@@ -147,7 +147,7 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
           onCreateClick={onCreate}
         />
 
-        <div className="animate-fade-in">
+        <div>
           <ListTable
             items={paginatedItems}
             isLoading={isLoading}

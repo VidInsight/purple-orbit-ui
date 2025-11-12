@@ -48,7 +48,7 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/80 backdrop-blur-md transition-all duration-300"
@@ -58,7 +58,7 @@ const Modal = ({
       {/* Modal */}
       <div
         className={cn(
-          'relative w-full bg-surface rounded-lg shadow-2xl animate-bounce-in border border-border/50',
+          'relative w-full bg-surface rounded-lg shadow-2xl border border-border/50',
           sizes[size]
         )}
         onClick={(e) => e.stopPropagation()}

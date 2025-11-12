@@ -102,7 +102,7 @@ const WorkspaceSelection = () => {
       {/* Main Content */}
       <div className="container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
         {/* User Card at Top - Enhanced spacing */}
-        <div className="mb-12 sm:mb-16 animate-fade-in">
+        <div className="mb-12 sm:mb-16">
           <UserCard
             user={currentUser}
             onSettings={handleSettings}
@@ -111,7 +111,7 @@ const WorkspaceSelection = () => {
         </div>
 
         {/* Header with Create Button */}
-        <div className="flex items-center justify-between mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
             <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
@@ -129,21 +129,12 @@ const WorkspaceSelection = () => {
 
         {/* Owned Workspaces Section */}
         {ownedWorkspaces.length > 0 && (
-          <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-            <div className="mb-4">
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                Owned Workspaces
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Workspaces you created and manage
-              </p>
-            </div>
+          <div className="mb-10">
+...
             <div className="space-y-2">
               {ownedWorkspaces.map((workspace, index) => (
                 <div
                   key={workspace.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${0.2 + index * 0.05}s` }}
                 >
                   <WorkspaceCard
                     workspace={workspace}
@@ -157,21 +148,12 @@ const WorkspaceSelection = () => {
 
         {/* Joined Workspaces Section */}
         {joinedWorkspaces.length > 0 && (
-          <div className="mb-10 animate-fade-in-up" style={{ animationDelay: `${0.2 + ownedWorkspaces.length * 0.05}s` }}>
-            <div className="mb-4">
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                Joined Workspaces
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Workspaces shared with you
-              </p>
-            </div>
+          <div className="mb-10">
+...
             <div className="space-y-2">
               {joinedWorkspaces.map((workspace, index) => (
                 <div
                   key={workspace.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${0.25 + (ownedWorkspaces.length + index) * 0.05}s` }}
                 >
                   <WorkspaceCard
                     workspace={workspace}
@@ -185,7 +167,7 @@ const WorkspaceSelection = () => {
 
         {/* Empty State */}
         {workspaces.length === 0 && (
-          <div className="text-center py-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="text-center py-16">
             <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -199,7 +181,7 @@ const WorkspaceSelection = () => {
         )}
 
         {/* Footer Info - Better spacing and typography */}
-        <div className="text-center pt-10 mt-10 border-t border-border animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+        <div className="text-center pt-10 mt-10 border-t border-border">
           <p className="text-xs text-muted-foreground leading-relaxed">
             Need help?{' '}
             <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">

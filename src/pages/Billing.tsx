@@ -120,7 +120,7 @@ const Billing = () => {
           description="Manage your subscription, billing, and payment methods"
         />
 
-        <Tabs defaultValue="overview" className="mt-6 animate-fade-in">
+        <Tabs defaultValue="overview" className="mt-6">
           <div className="flex justify-center mb-6">
             <TabsList className="inline-flex">
               <TabsTrigger value="overview">Overview</TabsTrigger>
