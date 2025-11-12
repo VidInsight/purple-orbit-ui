@@ -64,7 +64,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       )}
     >
       {/* Workspace Info */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 border-b border-border min-h-[100px]">
         {!isCollapsed ? (
           <div className="space-y-3">
             <button
@@ -78,11 +78,6 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               <h2 className="text-base font-semibold text-foreground truncate">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
-              {currentWorkspace?.description && (
-                <p className="text-xs text-muted-foreground truncate mt-1">
-                  {currentWorkspace.description}
-                </p>
-              )}
             </div>
           </div>
         ) : (
@@ -97,8 +92,8 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 py-4 overflow-y-auto">
-        <div className="space-y-6 px-2">
+      <div className="flex-1 py-3 overflow-y-auto">
+        <div className="space-y-4 px-2">
           {/* Workspace Section */}
           <div>
             {!isCollapsed && (
@@ -108,13 +103,13 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 </span>
               </div>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {navigationSections.workspace.map((item) => (
                 <li key={item.path}>
-                  <NavLink
+                    <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
                       'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium"
@@ -138,13 +133,13 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 </span>
               </div>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {navigationSections.workflow.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
                       'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium"
@@ -168,13 +163,13 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 </span>
               </div>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {navigationSections.resources.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
                       'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium"
@@ -198,13 +193,13 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 </span>
               </div>
             )}
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {navigationSections.management.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                      'flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors',
                       'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                     activeClassName="bg-accent text-accent-foreground font-medium"
@@ -222,7 +217,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Bottom Section - User Info with Actions */}
-      <div className="px-2 py-4">
+      <div className="px-2 py-3">
         {!isCollapsed && (
           <>
             <div className="flex items-center justify-center gap-1 mb-2">
