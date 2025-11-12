@@ -76,7 +76,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
               )}
             </div>
             {hasActions && (
-              <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-1 ml-4">
                 {onView && (
                   <Button
                     variant="ghost"
