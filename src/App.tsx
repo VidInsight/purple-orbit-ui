@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
+import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
 import Executions from "@/pages/Executions";
 import Credentials from "@/pages/Credentials";
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<WorkspaceSelection />} />
             <Route path="/workspaces" element={<WorkspaceSelection />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/workflows" element={<Workflows />} />
             <Route path="/executions" element={<Executions />} />
             <Route path="/credentials" element={<Credentials />} />

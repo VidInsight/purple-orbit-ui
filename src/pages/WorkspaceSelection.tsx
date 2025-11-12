@@ -36,9 +36,9 @@ const WorkspaceSelection = () => {
       title: 'Workspace Selected',
       description: `Entering ${workspace.name}...`,
     });
-    // Navigate to workflows page
+    // Navigate to dashboard page
     setTimeout(() => {
-      navigate('/workflows');
+      navigate('/dashboard');
     }, 500);
   };
 

@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  LayoutDashboard,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -19,6 +20,7 @@ interface NavbarProps {
 }
 
 const navigationItems = [
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Workflows', path: '/workflows', icon: Workflow },
   { name: 'Executions', path: '/executions', icon: PlayCircle },
   { name: 'Credentials', path: '/credentials', icon: Key },
