@@ -62,11 +62,11 @@ export function ListTable<T extends { id: string; name: string; description?: st
   return (
     <>
       {/* Desktop Table View */}
-      <div className="hidden md:block space-y-1">
-        {items.map((item) => (
+      <div className="hidden md:block space-y-2">
+        {items.map((item, index) => (
           <div
             key={item.id}
-            className="group flex items-center justify-between px-4 py-3 border-b border-border/50 hover:bg-accent/30 transition-colors"
+            className="group flex items-center justify-between px-6 py-5 rounded-lg border border-border bg-surface/50 hover:bg-accent/50 hover:border-primary/30 hover:shadow-sm transition-all duration-200 ease-in-out"
           >
             <div className="flex-1 space-y-0.5">
               <p className="text-[10px] font-mono text-muted-foreground/60">{item.id}</p>
@@ -76,7 +76,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
               )}
             </div>
             {hasActions && (
-              <div className="flex items-center gap-1 ml-4">
+              <div className="flex items-center gap-1 ml-4 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
                 {onView && (
                   <Button
                     variant="ghost"
@@ -117,13 +117,13 @@ export function ListTable<T extends { id: string; name: string; description?: st
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-2">
+      <div className="md:hidden space-y-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className="border-b border-border/50 pb-3"
+            className="p-4 rounded-lg border border-border bg-surface/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200"
           >
-            <div className="space-y-0.5 mb-2">
+            <div className="space-y-0.5 mb-3">
               <p className="text-[10px] font-mono text-muted-foreground/60">{item.id}</p>
               <p className="text-sm font-medium text-foreground">{item.name}</p>
               {item.description && (
