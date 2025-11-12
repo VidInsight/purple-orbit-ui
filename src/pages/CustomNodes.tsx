@@ -94,7 +94,7 @@ const CustomNodes = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           readOnly={false}
-          columns={2}
+          columns={5}
         />
       ) : (
         <div className="text-center py-16 bg-surface rounded-lg border border-border">

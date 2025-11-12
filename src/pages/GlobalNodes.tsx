@@ -117,7 +117,7 @@ const GlobalNodes = () => {
         nodes={mockGlobalNodes}
         onDocumentation={handleDocumentation}
         readOnly={true}
-        columns={2}
+        columns={5}
       />
     </PageLayout>
   );

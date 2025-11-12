@@ -43,7 +43,9 @@ export const NodeGrid = ({
     return acc;
   }, {} as Record<string, Record<string, NodeItem[]>>);
 
-  const gridCols = columns === 2 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 lg:grid-cols-3';
+  const gridCols = columns === 5 
+    ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
+    : 'grid-cols-1 lg:grid-cols-2';
 
   return (
     <div className="space-y-8">
@@ -51,44 +53,44 @@ export const NodeGrid = ({
         <div key={category} className="animate-fade-in-up">
           {/* Category Header */}
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-foreground">{category}</h2>
-            <div className="h-1 w-16 bg-primary rounded-full mt-2"></div>
+            <h2 className="text-lg font-bold text-foreground">{category}</h2>
+            <div className="h-0.5 w-12 bg-primary rounded-full mt-1.5"></div>
           </div>
 
           {/* Subcategories */}
           {Object.entries(subcategories).map(([subcategory, items]) => (
             <div key={`${category}-${subcategory}`} className="mb-6">
               {subcategory !== 'General' && (
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                   {subcategory}
                 </h3>
               )}
 
               {/* Node Grid */}
-              <div className={cn("grid gap-4", gridCols)}>
+              <div className={cn("grid gap-3", gridCols)}>
                 {items.map((node) => (
                   <div
                     key={node.id}
-                    className="group relative bg-surface border border-border rounded-lg p-5 hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                    className="group relative bg-surface border border-border rounded-lg p-4 hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    {/* Icon */}
-                    <div className="flex items-start gap-4 mb-3">
-                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:shadow-glow-primary transition-all duration-300">
-                        <node.icon className="h-6 w-6 text-primary" />
+                    {/* Icon and Actions */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:shadow-glow-primary transition-all duration-300">
+                        <node.icon className="h-5 w-5 text-primary" />
                       </div>
 
                       {/* Actions for Custom Nodes */}
                       {!readOnly && (onEdit || onDelete) && (
-                        <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           {onEdit && (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => onEdit(node)}
-                              className="h-7 w-7 p-0"
+                              className="h-6 w-6 p-0"
                               aria-label="Edit node"
                             >
-                              <Edit className="h-3.5 w-3.5" />
+                              <Edit className="h-3 w-3" />
                             </Button>
                           )}
                           {onDelete && (
@@ -96,10 +98,10 @@ export const NodeGrid = ({
                               variant="ghost"
                               size="sm"
                               onClick={() => onDelete(node)}
-                              className="h-7 w-7 p-0 hover:text-destructive"
+                              className="h-6 w-6 p-0 hover:text-destructive"
                               aria-label="Delete node"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           )}
                         </div>
@@ -107,11 +109,11 @@ export const NodeGrid = ({
                     </div>
 
                     {/* Name & Description */}
-                    <div className="mb-4">
-                      <h4 className="text-base font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                    <div className="mb-3">
+                      <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">
                         {node.name}
                       </h4>
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                         {node.description}
                       </p>
                     </div>
@@ -122,10 +124,10 @@ export const NodeGrid = ({
                         variant="secondary"
                         size="sm"
                         onClick={() => onDocumentation(node)}
-                        className="w-full h-8 text-xs"
+                        className="w-full h-7 text-xs"
                       >
-                        <FileText className="h-3.5 w-3.5 mr-1.5" />
-                        Documentation
+                        <FileText className="h-3 w-3 mr-1" />
+                        Docs
                       </Button>
                     )}
                   </div>
