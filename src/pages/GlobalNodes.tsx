@@ -108,17 +108,19 @@ const GlobalNodes = () => {
 
   return (
     <PageLayout>
-      <PageHeader
-        title="Global Nodes"
-        description="Pre-built nodes available across all workflows"
-      />
-      
-      <NodeGrid 
-        nodes={mockGlobalNodes}
-        onDocumentation={handleDocumentation}
-        readOnly={true}
-        columns={5}
-      />
+      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+        <PageHeader
+          title="Global Nodes"
+          description="Pre-built nodes available across all workflows"
+        />
+        
+        <NodeGrid 
+          nodes={mockGlobalNodes}
+          onDocumentation={handleDocumentation}
+          readOnly={true}
+          columns={5}
+        />
+      </div>
     </PageLayout>
   );
 };
