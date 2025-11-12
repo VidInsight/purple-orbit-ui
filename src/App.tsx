@@ -1,9 +1,16 @@
+import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { WorkspaceProvider } from "@/context/WorkspaceContext";
+import { UserProvider } from "@/context/UserContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
+import { seedDemoData } from "@/utils/seedData";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
@@ -21,35 +28,58 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<WorkspaceSelection />} />
-            <Route path="/workspaces" element={<WorkspaceSelection />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/workflows" element={<Workflows />} />
-            <Route path="/workflows/new" element={<WorkflowEditor />} />
-            <Route path="/workflows/:id/edit" element={<WorkflowEditor />} />
-            <Route path="/executions" element={<Executions />} />
-            <Route path="/executions/:id" element={<ExecutionDetails />} />
-            <Route path="/credentials" element={<Credentials />} />
-            <Route path="/databases" element={<Databases />} />
-          <Route path="/variables" element={<Variables />} />
-          <Route path="/files" element={<Files />} />
-          <Route path="/api-keys" element={<ApiKeys />} />
-          <Route path="/users" element={<UserManagement />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const AppRoutes = () => {
+  useKeyboardShortcuts();
+
+  return (
+    <Routes>
+      <Route path="/" element={<WorkspaceSelection />} />
+      <Route path="/workspaces" element={<WorkspaceSelection />} />
+      
+      {/* Protected Routes - Require Workspace Context */}
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
+      <Route path="/workflows/new" element={<ProtectedRoute><WorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/:id/edit" element={<ProtectedRoute><WorkflowEditor /></ProtectedRoute>} />
+      <Route path="/executions" element={<ProtectedRoute><Executions /></ProtectedRoute>} />
+      <Route path="/executions/:id" element={<ProtectedRoute><ExecutionDetails /></ProtectedRoute>} />
+      <Route path="/credentials" element={<ProtectedRoute><Credentials /></ProtectedRoute>} />
+      <Route path="/databases" element={<ProtectedRoute><Databases /></ProtectedRoute>} />
+      <Route path="/variables" element={<ProtectedRoute><Variables /></ProtectedRoute>} />
+      <Route path="/files" element={<ProtectedRoute><Files /></ProtectedRoute>} />
+      <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  useEffect(() => {
+    seedDemoData();
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark">
+          <WorkspaceProvider>
+            <UserProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </TooltipProvider>
+            </UserProvider>
+          </WorkspaceProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
 
 export default App;

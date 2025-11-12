@@ -1,73 +1,304 @@
-# Welcome to your Lovable project
+# Workflow Automation Platform
 
-## Project info
+A modern, full-featured workflow automation platform built with React, TypeScript, and Vite. Create, manage, and execute automated workflows with a beautiful visual editor.
 
-**URL**: https://lovable.dev/projects/4773bf90-398b-40cc-ab54-054500af4326
+![Tech Stack](https://img.shields.io/badge/React-18.3.1-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![Vite](https://img.shields.io/badge/Vite-5.x-purple)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-cyan)
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+### 🎯 Core Features
+- **Visual Workflow Editor** - Drag-and-drop interface powered by React Flow
+- **Execution Monitoring** - Real-time execution tracking with detailed logs
+- **Credential Management** - Secure storage for API keys and credentials
+- **Database Connections** - Manage multiple database connections
+- **File Storage** - Upload and manage workflow files
+- **API Key Management** - Generate and manage API keys with granular permissions
 
-**Use Lovable**
+### 👥 Collaboration
+- **User Management** - Role-based access control (Admin, Editor, Viewer)
+- **Team Invitations** - Invite users with email and custom messages
+- **Workspace Management** - Multi-workspace support
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4773bf90-398b-40cc-ab54-054500af4326) and start prompting.
+### 💳 Billing & Subscriptions
+- **Flexible Plans** - Free, Pro, and Enterprise tiers
+- **Usage Tracking** - Monitor workflows, executions, and storage
+- **Billing History** - View and download invoices
+- **Payment Management** - Secure payment method updates
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎨 User Experience
+- **Dark/Light Mode** - Fully themed with smooth transitions
+- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
+- **Keyboard Shortcuts** - Quick navigation with Cmd/Ctrl shortcuts
+- **Toast Notifications** - Real-time feedback for all actions
+- **Error Boundary** - Graceful error handling
 
-**Use your preferred IDE**
+## 🚀 Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18+ or Bun
+- npm, yarn, or bun package manager
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd workflow-automation-platform
 ```
 
-**Edit a file directly in GitHub**
+2. Install dependencies:
+```bash
+npm install
+# or
+bun install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Start the development server:
+```bash
+npm run dev
+# or
+bun run dev
+```
 
-**Use GitHub Codespaces**
+4. Open your browser to `http://localhost:8080`
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Demo Data
+The application automatically seeds demo data on first load, including:
+- Sample workspace
+- Demo workflows
+- Mock execution data
+- Sample users and invitations
 
-## What technologies are used for this project?
+## 📁 Project Structure
 
-This project is built with:
+```
+src/
+├── components/
+│   ├── layout/              # Layout components (Navbar, PageLayout, etc.)
+│   ├── shared/              # Reusable components (ListPageTemplate, etc.)
+│   ├── ui/                  # shadcn/ui components
+│   ├── workflow-editor/     # Workflow editor components
+│   ├── executions/          # Execution detail components
+│   ├── user-management/     # User management components
+│   ├── api-keys/            # API key management components
+│   └── billing/             # Billing components
+├── context/
+│   ├── ThemeContext.tsx     # Dark/light mode management
+│   ├── WorkspaceContext.tsx # Workspace state management
+│   └── UserContext.tsx      # User state management
+├── pages/
+│   ├── WorkspaceSelection.tsx
+│   ├── Dashboard.tsx
+│   ├── Workflows.tsx
+│   ├── WorkflowEditor.tsx
+│   ├── Executions.tsx
+│   ├── ExecutionDetails.tsx
+│   ├── Credentials.tsx
+│   ├── Databases.tsx
+│   ├── Variables.tsx
+│   ├── Files.tsx
+│   ├── ApiKeys.tsx
+│   ├── UserManagement.tsx
+│   ├── Billing.tsx
+│   └── NotFound.tsx
+├── types/
+│   ├── common.ts            # Common type definitions
+│   ├── workflow.ts          # Workflow types
+│   ├── execution.ts         # Execution types
+│   ├── workspace.ts         # Workspace types
+│   ├── user.ts              # User types
+│   └── billing.ts           # Billing types
+├── utils/
+│   ├── workspaceStorage.ts  # Workspace localStorage utilities
+│   ├── workflowStorage.ts   # Workflow localStorage utilities
+│   ├── mockData.ts          # Mock data generators
+│   ├── mockExecutionData.ts # Mock execution data
+│   ├── dashboardData.ts     # Dashboard data
+│   ├── keyboardShortcuts.ts # Keyboard shortcut handlers
+│   └── seedData.ts          # Demo data seeding
+├── hooks/
+│   ├── use-toast.ts         # Toast notification hook
+│   ├── use-mobile.tsx       # Mobile detection hook
+│   └── useNavbar.ts         # Navbar state hook
+├── App.tsx                  # Main app with routing
+├── main.tsx                 # Entry point
+└── index.css                # Global styles & design system
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🎨 Tech Stack
 
-## How can I deploy this project?
+### Core
+- **React 18.3** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **React Router DOM** - Client-side routing
 
-Simply open [Lovable](https://lovable.dev/projects/4773bf90-398b-40cc-ab54-054500af4326) and click on Share -> Publish.
+### UI & Styling
+- **TailwindCSS** - Utility-first CSS
+- **shadcn/ui** - Component library
+- **Lucide React** - Icon library
+- **React Flow** - Visual workflow editor
 
-## Can I connect a custom domain to my Lovable project?
+### State Management
+- **React Context** - Global state (Theme, Workspace, User)
+- **React Query** - Server state management (ready for backend)
+- **localStorage** - Client-side persistence
 
-Yes, you can!
+### Development
+- **ESLint** - Code linting
+- **TypeScript ESLint** - TypeScript-specific linting
+- **Vite Plugin React** - Fast refresh
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## ⌨️ Keyboard Shortcuts
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `Cmd/Ctrl + D` - Go to Dashboard
+- `Cmd/Ctrl + W` - Go to Workflows
+- `Cmd/Ctrl + E` - Go to Executions
+- `Cmd/Ctrl + K` - Command Palette (Coming Soon)
+
+## 🎯 Key Pages & Features
+
+### Workflow Editor
+- Visual node-based editor
+- Drag and drop nodes (Trigger, Action, Condition, Loop, End)
+- Connect nodes with edges
+- Node property panel
+- Auto-save functionality
+- Export/import workflows as JSON
+
+### Execution Details
+- Execution overview with status
+- Step-by-step timeline
+- Input/output data viewer
+- Collapsible logs (Console, Errors, Debug)
+- Re-run functionality
+- Download execution reports
+
+### User Management
+- Active users table with role management
+- Pending invitations tracking
+- Inline role editing for admins
+- Bulk user invitations
+- Email validation
+
+### API Keys
+- Generate API keys with custom permissions
+- One-time key reveal with mandatory confirmation
+- Key masking for security
+- Expiration tracking with warnings
+- Copy to clipboard functionality
+
+### Billing
+- Current plan overview with usage bars
+- Plan comparison (Free, Pro, Enterprise)
+- Monthly/annual billing toggle
+- Billing history with invoice downloads
+- Payment method management
+- Billing information editor
+
+## 🔒 Security Features
+
+- API keys are masked after creation
+- One-time key reveal with confirmation
+- Expiration warnings for keys and payment methods
+- Role-based access control
+- Protected routes requiring workspace context
+- Error boundary for graceful error handling
+
+## 📱 Responsive Design
+
+The application is fully responsive with:
+- Desktop-first design (1400px max-width containers)
+- Collapsible sidebar for mobile
+- Responsive tables that convert to cards on mobile
+- Touch-friendly UI elements
+- Mobile-optimized modals and dropdowns
+
+## 🎨 Design System
+
+### Colors
+- **Primary**: Deep purple (Purple-600/500)
+- **Background**: Slate-950 (dark) / White (light)
+- **Surface**: Slate-900 (dark) / Slate-50 (light)
+- **Accent**: Purple-500
+- **Semantic**: Green-500 (success), Amber-500 (warning), Red-500 (error)
+
+### Typography
+- **Font**: Inter (sans-serif)
+- **Headings**: font-semibold
+- **Body**: font-normal
+
+### Spacing
+- **Base Unit**: 4px (Tailwind default)
+- **Container**: 1400px max-width
+- **Padding**: px-6 py-4
+
+## 🚢 Deployment
+
+### Build for Production
+
+```bash
+npm run build
+# or
+bun run build
+```
+
+The build output will be in the `dist/` directory.
+
+### Deploy to Vercel/Netlify
+
+1. Connect your repository
+2. Set build command: `npm run build` or `bun run build`
+3. Set output directory: `dist`
+4. Deploy!
+
+## 🛠️ Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+### Adding New Pages
+
+1. Create page component in `src/pages/`
+2. Add route in `src/App.tsx`
+3. Add navigation item in `src/components/layout/Navbar.tsx`
+4. Wrap with `<ProtectedRoute>` if workspace context is required
+
+### Adding New Features
+
+1. Create types in `src/types/`
+2. Create components in `src/components/`
+3. Add utilities in `src/utils/`
+4. Update mock data generators if needed
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🙏 Acknowledgments
+
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful component library
+- [Lucide](https://lucide.dev/) - Icon library
+- [React Flow](https://reactflow.dev/) - Workflow visualization
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+
+---
+
+Built with ❤️ using React, TypeScript, and Vite

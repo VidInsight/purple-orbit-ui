@@ -90,10 +90,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           {!isCollapsed && (
             <div className="overflow-hidden flex-1">
               <p className="text-sm font-medium text-foreground truncate">
-                John Doe
+                Sarah Johnson
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                john@example.com
+                sarah@company.com
               </p>
             </div>
           )}
