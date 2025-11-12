@@ -116,14 +116,15 @@ const WorkspaceSelection = () => {
             <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
             <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
           </div>
-          <Button
+          <button
             onClick={() => setIsModalOpen(true)}
-            size="lg"
-            className="shadow-glow-primary"
+            className="group flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed border-border hover:border-primary transition-all duration-200 hover:bg-surface/50"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Workspace
-          </Button>
+            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+              New Workspace
+            </span>
+          </button>
         </div>
 
         {/* Owned Workspaces Section */}
