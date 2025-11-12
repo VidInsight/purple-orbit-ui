@@ -96,9 +96,9 @@ const WorkspaceSelection = () => {
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
       {/* Main Content */}
-      <div className="container mx-auto max-w-3xl px-6 py-8">
-        {/* User Card at Top */}
-        <div className="mb-8 animate-fade-in">
+      <div className="container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
+        {/* User Card at Top - Enhanced spacing */}
+        <div className="mb-12 sm:mb-16 animate-fade-in">
           <UserCard
             user={currentUser}
             onSettings={handleSettings}
@@ -106,20 +106,20 @@ const WorkspaceSelection = () => {
           />
         </div>
 
-        {/* Divider with WORKSPACES Label */}
-        <div className="relative mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        {/* Divider with WORKSPACES Label - Better visual weight */}
+        <div className="relative mb-10 sm:mb-14 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
+            <div className="w-full border-t-2 border-border"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-background px-4 text-sm font-semibold text-muted-foreground tracking-wider">
-              WORKSPACES
+            <span className="bg-background px-6 py-1 text-xs font-bold text-muted-foreground tracking-[0.2em] uppercase">
+              Workspaces
             </span>
           </div>
         </div>
 
-        {/* Workspaces Stacked Vertically */}
-        <div className="space-y-4 mb-6">
+        {/* Workspaces Stacked Vertically - Improved spacing */}
+        <div className="space-y-3 mb-10">
           {workspaces.map((workspace, index) => (
             <div
               key={workspace.id}
@@ -133,7 +133,7 @@ const WorkspaceSelection = () => {
             </div>
           ))}
 
-          {/* Create New Workspace Card */}
+          {/* Create New Workspace Card - Refined design */}
           <div
             className="animate-fade-in-up"
             style={{ animationDelay: `${0.15 + workspaces.length * 0.05}s` }}
@@ -141,34 +141,36 @@ const WorkspaceSelection = () => {
             <button
               onClick={() => setIsModalOpen(true)}
               className={cn(
-                'group relative w-full p-6 rounded-lg border-2 border-dashed border-border bg-surface/50',
-                'hover:border-primary hover:bg-surface hover:shadow-lg transition-all duration-200',
+                'group relative w-full p-5 rounded-lg border-2 border-dashed border-border bg-surface/30',
+                'hover:border-primary hover:bg-surface/50 hover:shadow-md transition-all duration-200',
                 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                'min-h-[140px] flex flex-col items-center justify-center'
+                'flex items-center justify-center gap-3'
               )}
             >
-              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
-                <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                Create New Workspace
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Start fresh with a new workspace
-              </p>
+              <div className="text-left">
+                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                  Create New Workspace
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Start fresh with a new workspace
+                </p>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* Footer Info */}
-        <div className="text-center pt-6 border-t border-border animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <p className="text-xs text-muted-foreground">
-            Need help? Check out our{' '}
-            <a href="#" className="text-primary hover:underline font-medium">
-              documentation
+        {/* Footer Info - Better spacing and typography */}
+        <div className="text-center pt-10 mt-10 border-t border-border animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Need help?{' '}
+            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
+              View documentation
             </a>
             {' '}or{' '}
-            <a href="#" className="text-primary hover:underline font-medium">
+            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
               contact support
             </a>
           </p>
