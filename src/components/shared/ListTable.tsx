@@ -62,28 +62,29 @@ export function ListTable<T extends { id: string; name: string; description?: st
   return (
     <>
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-surface rounded-lg border border-border overflow-hidden">
-        <div className="divide-y divide-border">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between px-6 py-4 hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex-1 space-y-1">
-                <p className="text-xs text-muted-foreground">{item.id}</p>
-                <p className="text-base font-medium text-foreground">{item.name}</p>
+      <div className="hidden md:block space-y-3">
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className="group relative bg-surface rounded-lg border border-border overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5"
+          >
+            <div className="flex items-center justify-between px-6 py-5">
+              <div className="flex-1 space-y-1.5">
+                <p className="text-xs font-mono text-muted-foreground/70">{item.id}</p>
+                <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.name}</p>
                 {item.description && (
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
                 )}
               </div>
               {hasActions && (
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-1.5 ml-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {onView && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onView(item)}
                       aria-label="View details"
+                      className="hover:bg-primary/10 hover:text-primary"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -94,6 +95,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
                       size="sm"
                       onClick={() => onEdit(item)}
                       aria-label="Edit"
+                      className="hover:bg-primary/10 hover:text-primary"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -104,7 +106,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
                       size="sm"
                       onClick={() => onDelete(item)}
                       aria-label="Delete"
-                      className="text-destructive hover:text-destructive"
+                      className="hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -112,32 +114,34 @@ export function ListTable<T extends { id: string; name: string; description?: st
                 </div>
               )}
             </div>
-          ))}
-        </div>
+            {/* Accent line on hover */}
+            <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-primary/50 group-hover:w-full transition-all duration-300" />
+          </div>
+        ))}
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
+      <div className="md:hidden space-y-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className="bg-surface rounded-lg border border-border p-4 space-y-3"
+            className="group bg-surface rounded-lg border border-border p-4 space-y-3 transition-all duration-200 hover:shadow-lg hover:border-primary/30"
           >
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{item.id}</p>
-              <p className="text-base font-medium text-foreground">{item.name}</p>
+            <div className="space-y-1.5">
+              <p className="text-xs font-mono text-muted-foreground/70">{item.id}</p>
+              <p className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">{item.name}</p>
               {item.description && (
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               )}
             </div>
             {hasActions && (
-              <div className="flex items-center gap-2 pt-2 border-t border-border">
+              <div className="flex items-center gap-2 pt-3 border-t border-border">
                 {onView && (
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => onView(item)}
-                    className="flex-1"
+                    className="flex-1 hover:bg-primary/10 hover:text-primary"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View
@@ -148,7 +152,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="secondary"
                     size="sm"
                     onClick={() => onEdit(item)}
-                    className="flex-1"
+                    className="flex-1 hover:bg-primary/10 hover:text-primary"
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
