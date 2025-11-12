@@ -221,15 +221,15 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="border-t border-border">
-        {/* User Info */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <User className="h-4 w-4 text-primary-foreground" />
-            </div>
-            {!isCollapsed && (
+      {/* Bottom Section - User Info with Actions */}
+      <div className="border-t border-border p-4">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <User className="h-4 w-4 text-primary-foreground" />
+          </div>
+          
+          {!isCollapsed && (
+            <>
               <div className="overflow-hidden flex-1">
                 <p className="text-sm font-medium text-foreground truncate">
                   Sarah Johnson
@@ -238,36 +238,38 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                   sarah@company.com
                 </p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="p-3">
-          <div className={cn(
-            'flex gap-1',
-            isCollapsed ? 'flex-col' : 'flex-row justify-center'
-          )}>
-            <button
-              onClick={() => {/* Add help handler */}}
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              title="Help"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
+              
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {/* Add help handler */}}
+                  className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  title="Help"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </button>
+                
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => {/* Add user preferences handler */}}
+                  className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                  title="User Preferences"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
