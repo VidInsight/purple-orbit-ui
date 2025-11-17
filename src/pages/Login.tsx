@@ -63,21 +63,22 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <LogIn className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-lg shadow-primary/10 mb-6 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:scale-105">
+            <LogIn className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-semibold text-foreground mb-2">
+          <h1 className="text-4xl font-semibold text-foreground mb-3 tracking-tight">
             {t('auth:login.title')}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-lg">
             {t('auth:login.subtitle')}
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="usernameOrEmail">{t('auth:login.usernameOrEmail')}</Label>
             <Input
@@ -118,7 +119,7 @@ export const Login = () => {
           <Button
             type="submit"
             variant="primary"
-            className="w-full"
+            className="w-full shadow-lg hover:shadow-xl transition-all duration-200"
             loading={loading}
           >
             {t('auth:login.signIn')}
@@ -126,11 +127,12 @@ export const Login = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             {t('auth:login.noAccount')}{' '}
-            <Link to="/register" className="text-primary hover:underline">
+            <Link to="/register" className="text-primary hover:underline font-medium transition-colors">
               {t('auth:login.signUp')}
             </Link>
           </p>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
