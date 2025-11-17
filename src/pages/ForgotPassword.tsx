@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { KeyRound, ArrowLeft } from 'lucide-react';
 
 export const ForgotPassword = () => {
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -17,7 +17,7 @@ export const ForgotPassword = () => {
   const [success, setSuccess] = useState(false);
 
   const emailSchema = z.object({
-    email: z.string().email(t('forgotPassword.errors.emailInvalid')),
+    email: z.string().email(t('auth:forgotPassword.errors.emailInvalid')),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +34,7 @@ export const ForgotPassword = () => {
       setSuccess(true);
       toast({
         title: t('common:messages.success'),
-        description: t('forgotPassword.success'),
+        description: t('auth:forgotPassword.success'),
       });
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -59,17 +59,17 @@ export const ForgotPassword = () => {
             <KeyRound className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">
-            {t('forgotPassword.title')}
+            {t('auth:forgotPassword.title')}
           </h1>
           <p className="text-muted-foreground">
-            {t('forgotPassword.subtitle')}
+            {t('auth:forgotPassword.subtitle')}
           </p>
         </div>
 
         {!success ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="email">{t('forgotPassword.email')}</Label>
+              <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -88,7 +88,7 @@ export const ForgotPassword = () => {
               className="w-full"
               loading={loading}
             >
-              {t('forgotPassword.sendResetLink')}
+              {t('auth:forgotPassword.sendResetLink')}
             </Button>
 
             <Link
@@ -96,14 +96,14 @@ export const ForgotPassword = () => {
               className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t('forgotPassword.backToLogin')}
+              {t('auth:forgotPassword.backToLogin')}
             </Link>
           </form>
         ) : (
-          <div className="space-y-6">
+            <div className="space-y-6">
             <div className="p-4 rounded-lg bg-success/10 border border-success/20">
               <p className="text-success text-center">
-                {t('forgotPassword.success')}
+                {t('auth:forgotPassword.success')}
               </p>
             </div>
 
@@ -112,7 +112,7 @@ export const ForgotPassword = () => {
               className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t('forgotPassword.backToLogin')}
+              {t('auth:forgotPassword.backToLogin')}
             </Link>
           </div>
         )}

@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
 
 export const ResetPassword = () => {
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -20,10 +20,10 @@ export const ResetPassword = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const resetSchema = z.object({
-    password: z.string().min(8, t('resetPassword.errors.passwordMin')),
-    confirmPassword: z.string().min(1, t('resetPassword.errors.passwordMatch')),
+    password: z.string().min(8, t('auth:resetPassword.errors.passwordMin')),
+    confirmPassword: z.string().min(1, t('auth:resetPassword.errors.passwordMatch')),
   }).refine(data => data.password === data.confirmPassword, {
-    message: t('resetPassword.errors.passwordMatch'),
+    message: t('auth:resetPassword.errors.passwordMatch'),
     path: ['confirmPassword'],
   });
 
@@ -40,7 +40,7 @@ export const ResetPassword = () => {
 
       toast({
         title: t('common:messages.success'),
-        description: t('resetPassword.success'),
+        description: t('auth:resetPassword.success'),
       });
 
       navigate('/login');
@@ -73,16 +73,16 @@ export const ResetPassword = () => {
             <Lock className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">
-            {t('resetPassword.title')}
+            {t('auth:resetPassword.title')}
           </h1>
           <p className="text-muted-foreground">
-            {t('resetPassword.subtitle')}
+            {t('auth:resetPassword.subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="password">{t('resetPassword.password')}</Label>
+            <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -96,7 +96,7 @@ export const ResetPassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">{t('resetPassword.confirmPassword')}</Label>
+            <Label htmlFor="confirmPassword">{t('auth:resetPassword.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -115,12 +115,12 @@ export const ResetPassword = () => {
             className="w-full"
             loading={loading}
           >
-            {t('resetPassword.resetPassword')}
+            {t('auth:resetPassword.resetPassword')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
             <Link to="/login" className="text-primary hover:underline">
-              {t('forgotPassword.backToLogin')}
+              {t('auth:forgotPassword.backToLogin')}
             </Link>
           </p>
         </form>

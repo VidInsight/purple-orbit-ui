@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LogIn } from 'lucide-react';
 
 export const Login = () => {
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -20,8 +20,8 @@ export const Login = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const loginSchema = z.object({
-    usernameOrEmail: z.string().min(1, t('login.errors.required')),
-    password: z.string().min(1, t('login.errors.required')),
+    usernameOrEmail: z.string().min(1, t('auth:login.errors.required')),
+    password: z.string().min(1, t('auth:login.errors.required')),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export const Login = () => {
       } else {
         toast({
           title: t('common:messages.error'),
-          description: t('login.errors.invalidCredentials'),
+          description: t('auth:login.errors.invalidCredentials'),
           variant: 'destructive',
         });
       }
@@ -70,16 +70,16 @@ export const Login = () => {
             <LogIn className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">
-            {t('login.title')}
+            {t('auth:login.title')}
           </h1>
           <p className="text-muted-foreground">
-            {t('login.subtitle')}
+            {t('auth:login.subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="usernameOrEmail">{t('login.usernameOrEmail')}</Label>
+            <Label htmlFor="usernameOrEmail">{t('auth:login.usernameOrEmail')}</Label>
             <Input
               id="usernameOrEmail"
               type="text"
@@ -93,7 +93,7 @@ export const Login = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">{t('login.password')}</Label>
+            <Label htmlFor="password">{t('auth:login.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -111,7 +111,7 @@ export const Login = () => {
               to="/forgot-password"
               className="text-sm text-primary hover:underline"
             >
-              {t('login.forgotPassword')}
+              {t('auth:login.forgotPassword')}
             </Link>
           </div>
 
@@ -121,13 +121,13 @@ export const Login = () => {
             className="w-full"
             loading={loading}
           >
-            {t('login.signIn')}
+            {t('auth:login.signIn')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            {t('login.noAccount')}{' '}
+            {t('auth:login.noAccount')}{' '}
             <Link to="/register" className="text-primary hover:underline">
-              {t('login.signUp')}
+              {t('auth:login.signUp')}
             </Link>
           </p>
         </form>
