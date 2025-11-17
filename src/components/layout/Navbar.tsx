@@ -130,6 +130,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             </ul>
           </div>
 
+          {/* Section Separator */}
+          <div className="my-2 mx-2 border-t border-border" />
+
           {/* Workflow Section */}
           <div>
             {!isCollapsed && (
@@ -159,6 +162,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               ))}
             </ul>
           </div>
+
+          {/* Section Separator */}
+          <div className="my-2 mx-2 border-t border-border" />
 
           {/* Resources Section */}
           <div>
@@ -190,6 +196,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             </ul>
           </div>
 
+          {/* Section Separator */}
+          <div className="my-2 mx-2 border-t border-border" />
+
           {/* Nodes Section */}
           <div>
             {!isCollapsed && (
@@ -219,6 +228,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               ))}
             </ul>
           </div>
+
+          {/* Section Separator */}
+          <div className="my-2 mx-2 border-t border-border" />
 
           {/* Management Section */}
           <div>
