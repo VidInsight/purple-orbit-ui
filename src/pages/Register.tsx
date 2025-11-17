@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus } from 'lucide-react';
 
 export const Register = () => {
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -28,21 +28,21 @@ export const Register = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registerSchema = z.object({
-    username: z.string().min(3, t('register.errors.usernameMin')),
-    name: z.string().min(1, t('register.errors.nameRequired')),
-    surname: z.string().min(1, t('register.errors.surnameRequired')),
-    email: z.string().email(t('register.errors.emailInvalid')),
-    password: z.string().min(8, t('register.errors.passwordMin')),
-    confirmPassword: z.string().min(1, t('register.errors.passwordMatch')),
+    username: z.string().min(3, t('auth:register.errors.usernameMin')),
+    name: z.string().min(1, t('auth:register.errors.nameRequired')),
+    surname: z.string().min(1, t('auth:register.errors.surnameRequired')),
+    email: z.string().email(t('auth:register.errors.emailInvalid')),
+    password: z.string().min(8, t('auth:register.errors.passwordMin')),
+    confirmPassword: z.string().min(1, t('auth:register.errors.passwordMatch')),
     privacyPolicy: z.boolean().refine(val => val === true, {
-      message: t('register.errors.privacyRequired'),
+      message: t('auth:register.errors.privacyRequired'),
     }),
     terms: z.boolean().refine(val => val === true, {
-      message: t('register.errors.termsRequired'),
+      message: t('auth:register.errors.termsRequired'),
     }),
     marketing: z.boolean(),
   }).refine(data => data.password === data.confirmPassword, {
-    message: t('register.errors.passwordMatch'),
+    message: t('auth:register.errors.passwordMatch'),
     path: ['confirmPassword'],
   });
 
@@ -92,16 +92,16 @@ export const Register = () => {
             <UserPlus className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2">
-            {t('register.title')}
+            {t('auth:register.title')}
           </h1>
           <p className="text-muted-foreground">
-            {t('register.subtitle')}
+            {t('auth:register.subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="username">{t('register.username')}</Label>
+            <Label htmlFor="username">{t('auth:register.username')}</Label>
             <Input
               id="username"
               type="text"
@@ -116,7 +116,7 @@ export const Register = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">{t('register.name')}</Label>
+              <Label htmlFor="name">{t('auth:register.name')}</Label>
               <Input
                 id="name"
                 type="text"
@@ -130,7 +130,7 @@ export const Register = () => {
             </div>
 
             <div>
-              <Label htmlFor="surname">{t('register.surname')}</Label>
+              <Label htmlFor="surname">{t('auth:register.surname')}</Label>
               <Input
                 id="surname"
                 type="text"
@@ -145,7 +145,7 @@ export const Register = () => {
           </div>
 
           <div>
-            <Label htmlFor="email">{t('register.email')}</Label>
+            <Label htmlFor="email">{t('auth:register.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -159,7 +159,7 @@ export const Register = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">{t('register.password')}</Label>
+            <Label htmlFor="password">{t('auth:register.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -173,7 +173,7 @@ export const Register = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword">{t('register.confirmPassword')}</Label>
+            <Label htmlFor="confirmPassword">{t('auth:register.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -199,7 +199,7 @@ export const Register = () => {
                 htmlFor="privacyPolicy"
                 className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {t('register.privacyPolicy')}
+                {t('auth:register.privacyPolicy')}
               </label>
             </div>
             {errors.privacyPolicy && (
@@ -218,7 +218,7 @@ export const Register = () => {
                 htmlFor="terms"
                 className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {t('register.terms')}
+                {t('auth:register.terms')}
               </label>
             </div>
             {errors.terms && (
@@ -237,7 +237,7 @@ export const Register = () => {
                 htmlFor="marketing"
                 className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {t('register.marketing')}
+                {t('auth:register.marketing')}
               </label>
             </div>
           </div>
@@ -248,13 +248,13 @@ export const Register = () => {
             className="w-full"
             loading={loading}
           >
-            {t('register.createAccount')}
+            {t('auth:register.createAccount')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            {t('register.hasAccount')}{' '}
+            {t('auth:register.hasAccount')}{' '}
             <Link to="/login" className="text-primary hover:underline">
-              {t('register.signIn')}
+              {t('auth:register.signIn')}
             </Link>
           </p>
         </form>
