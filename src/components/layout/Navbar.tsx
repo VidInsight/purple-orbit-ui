@@ -104,23 +104,24 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           <div>
             {!isCollapsed && (
               <div className="px-3 mb-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                   Workspace
                 </span>
               </div>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {navigationSections.workspace.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
-                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -131,29 +132,30 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
 
           {/* Section Separator */}
-          <div className="my-2 mx-2 border-t border-border" />
+          <div className="my-3 mx-2 border-t border-border" />
 
           {/* Workflow Section */}
           <div>
             {!isCollapsed && (
               <div className="px-3 mb-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                   Workflow
                 </span>
               </div>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {navigationSections.workflow.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
-                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -164,29 +166,30 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
 
           {/* Section Separator */}
-          <div className="my-2 mx-2 border-t border-border" />
+          <div className="my-3 mx-2 border-t border-border" />
 
           {/* Resources Section */}
           <div>
             {!isCollapsed && (
               <div className="px-3 mb-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                   Resources
                 </span>
               </div>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {navigationSections.resources.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
-                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -197,29 +200,30 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
 
           {/* Section Separator */}
-          <div className="my-2 mx-2 border-t border-border" />
+          <div className="my-3 mx-2 border-t border-border" />
 
           {/* Nodes Section */}
           <div>
             {!isCollapsed && (
               <div className="px-3 mb-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                   Nodes
                 </span>
               </div>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {navigationSections.nodes.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
-                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -230,29 +234,30 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
 
           {/* Section Separator */}
-          <div className="my-2 mx-2 border-t border-border" />
+          <div className="my-3 mx-2 border-t border-border" />
 
           {/* Management Section */}
           <div>
             {!isCollapsed && (
               <div className="px-3 mb-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
                   Management
                 </span>
               </div>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {navigationSections.management.map((item) => (
                 <li key={item.path}>
                   <NavLink
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-1 rounded-lg transition-all duration-200',
-                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1'
+                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium',
+                      'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-accent text-accent-foreground font-medium shadow-sm"
+                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
                   >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -274,7 +279,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title="Help"
               >
-                <HelpCircle className="h-4 w-4" />
+                <HelpCircle className="h-5 w-5" />
               </button>
               
               <button
@@ -283,9 +288,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-5 w-5" />
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <Moon className="h-5 w-5" />
                 )}
               </button>
               
@@ -294,7 +299,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                 className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title="User Preferences"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-5 w-5" />
               </button>
             </div>
             
@@ -304,7 +309,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         
         <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-all duration-200 cursor-pointer group">
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 group-hover:shadow-glow-primary transition-all duration-200">
-            <User className="h-4 w-4 text-primary-foreground" />
+            <User className="h-5 w-5 text-primary-foreground" />
           </div>
           
           {!isCollapsed && (
