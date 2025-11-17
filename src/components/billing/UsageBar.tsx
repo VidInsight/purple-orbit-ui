@@ -8,13 +8,17 @@ interface UsageBarProps {
 }
 
 export const UsageBar = ({ label, used, limit, unit = '' }: UsageBarProps) => {
-  if (limit === 'unlimited') {
+  // Handle undefined/null values
+  const safeUsed = used ?? 0;
+  const safeLimit = limit === 'unlimited' ? 'unlimited' : (limit ?? 0);
+
+  if (safeLimit === 'unlimited') {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">{label}</span>
           <span className="text-sm text-muted-foreground">
-            {used.toLocaleString()} {unit} (Unlimited)
+            {safeUsed.toLocaleString()} {unit} (Unlimited)
           </span>
         </div>
         <div className="h-2 bg-surface rounded-full overflow-hidden">
@@ -24,7 +28,7 @@ export const UsageBar = ({ label, used, limit, unit = '' }: UsageBarProps) => {
     );
   }
 
-  const percentage = (used / limit) * 100;
+  const percentage = safeLimit > 0 ? (safeUsed / safeLimit) * 100 : 0;
   const isWarning = percentage >= 80;
   const isDanger = percentage >= 95;
 
@@ -42,7 +46,7 @@ export const UsageBar = ({ label, used, limit, unit = '' }: UsageBarProps) => {
               : 'text-muted-foreground'
           )}
         >
-          {used.toLocaleString()} / {limit.toLocaleString()} {unit}
+          {safeUsed.toLocaleString()} / {safeLimit.toLocaleString()} {unit}
         </span>
       </div>
       <div className="h-2 bg-surface rounded-full overflow-hidden">
