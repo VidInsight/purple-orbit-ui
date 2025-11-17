@@ -69,24 +69,24 @@ export const ForgotPassword = () => {
         <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
           {!success ? (
             <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="email">{t('auth:forgotPassword.email')}</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="transition-colors duration-200">{t('auth:forgotPassword.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
               />
               {error && (
-                <p className="text-sm text-destructive mt-1">{error}</p>
+                <p className="text-sm text-destructive mt-1 animate-fade-in">{error}</p>
               )}
             </div>
 
             <Button
               type="submit"
               variant="primary"
-              className="w-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
               loading={loading}
             >
               {t('auth:forgotPassword.sendResetLink')}
@@ -94,15 +94,15 @@ export const ForgotPassword = () => {
 
             <Link
               to="/login"
-              className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 font-medium group"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
               {t('auth:forgotPassword.backToLogin')}
             </Link>
             </form>
           ) : (
             <div className="space-y-6">
-              <div className="p-6 rounded-xl bg-gradient-to-br from-success/20 to-success/5 border border-success/30 shadow-lg">
+              <div className="p-6 rounded-xl bg-gradient-to-br from-success/20 to-success/5 border border-success/30 shadow-lg transition-all duration-300">
                 <p className="text-success text-center font-medium text-lg">
                   {t('auth:forgotPassword.success')}
                 </p>
@@ -110,9 +110,9 @@ export const ForgotPassword = () => {
 
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+                className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 font-medium group"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
                 {t('auth:forgotPassword.backToLogin')}
               </Link>
             </div>
