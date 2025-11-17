@@ -19,10 +19,10 @@ const Dashboard = () => {
             {/* Content removed */}
           </div>
 
-          {/* Right Side - Updates & Quotas (Sticky) */}
+          {/* Right Side - Quotas & Updates (Sticky) */}
           <div className="space-y-6 sticky top-6 self-start">
-            <UpdatesFeed />
             <QuotasWidget />
+            <UpdatesFeed />
           </div>
         </div>
       </div>
