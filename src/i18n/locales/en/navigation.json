@@ -1,0 +1,20 @@
+{
+  "logo": "AutoFlow",
+  "workspace": "Workspace",
+  "dashboard": "Dashboard",
+  "workflows": "Workflows",
+  "executions": "Executions",
+  "resources": "Resources",
+  "credentials": "Credentials",
+  "databases": "Databases",
+  "variables": "Variables",
+  "files": "Files",
+  "nodes": "Nodes",
+  "globalNodes": "Global Nodes",
+  "customNodes": "Custom Nodes",
+  "settings": "Settings",
+  "apiKeys": "API Keys",
+  "users": "Users",
+  "billing": "Billing",
+  "logout": "Logout"
+}

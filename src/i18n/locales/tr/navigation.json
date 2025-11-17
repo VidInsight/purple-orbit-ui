@@ -1,0 +1,20 @@
+{
+  "logo": "AutoFlow",
+  "workspace": "Çalışma Alanı",
+  "dashboard": "Kontrol Paneli",
+  "workflows": "İş Akışları",
+  "executions": "Çalıştırmalar",
+  "resources": "Kaynaklar",
+  "credentials": "Kimlik Bilgileri",
+  "databases": "Veritabanları",
+  "variables": "Değişkenler",
+  "files": "Dosyalar",
+  "nodes": "Düğümler",
+  "globalNodes": "Global Düğümler",
+  "customNodes": "Özel Düğümler",
+  "settings": "Ayarlar",
+  "apiKeys": "API Anahtarları",
+  "users": "Kullanıcılar",
+  "billing": "Faturalama",
+  "logout": "Çıkış"
+}
