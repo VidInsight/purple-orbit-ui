@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/Button';
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, Edit, Trash2, Share2 } from 'lucide-react';
 
 interface ListTableProps<T> {
   items: T[];
   onView?: (item: T) => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
+  onShare?: (item: T) => void;
   isLoading?: boolean;
   error?: string;
   emptyMessage?: string;
@@ -17,6 +18,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
   onView,
   onEdit,
   onDelete,
+  onShare,
   isLoading = false,
   error,
   emptyMessage = 'No items found',
@@ -57,7 +59,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
     );
   }
 
-  const hasActions = onView || onEdit || onDelete;
+  const hasActions = onView || onEdit || onDelete || onShare;
 
   return (
     <>
@@ -76,16 +78,16 @@ export function ListTable<T extends { id: string; name: string; description?: st
               )}
             </div>
             {hasActions && (
-              <div className="flex items-center gap-0.5 ml-4 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="flex items-center gap-1 ml-4 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
                 {onView && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onView(item)}
                     aria-label="View details"
-                    className="h-6 w-6 p-0"
+                    className="h-9 w-9 p-0"
                   >
-                    <Eye className="h-3 w-3" />
+                    <Eye className="h-4 w-4" />
                   </Button>
                 )}
                 {onEdit && (
@@ -94,9 +96,20 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     size="sm"
                     onClick={() => onEdit(item)}
                     aria-label="Edit"
-                    className="h-6 w-6 p-0"
+                    className="h-9 w-9 p-0"
                   >
-                    <Edit className="h-3 w-3" />
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
+                {onShare && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onShare(item)}
+                    aria-label="Share"
+                    className="h-9 w-9 p-0"
+                  >
+                    <Share2 className="h-4 w-4" />
                   </Button>
                 )}
                 {onDelete && (
@@ -105,9 +118,9 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     size="sm"
                     onClick={() => onDelete(item)}
                     aria-label="Delete"
-                    className="h-6 w-6 p-0 hover:text-destructive"
+                    className="h-9 w-9 p-0 hover:text-destructive"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -137,9 +150,9 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="secondary"
                     size="sm"
                     onClick={() => onView(item)}
-                    className="flex-1 h-7 text-xs"
+                    className="flex-1 h-9 text-xs"
                   >
-                    <Eye className="h-3 w-3 mr-1" />
+                    <Eye className="h-4 w-4 mr-1" />
                     View
                   </Button>
                 )}
@@ -148,10 +161,21 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="secondary"
                     size="sm"
                     onClick={() => onEdit(item)}
-                    className="flex-1 h-7 text-xs"
+                    className="flex-1 h-9 text-xs"
                   >
-                    <Edit className="h-3 w-3 mr-1" />
+                    <Edit className="h-4 w-4 mr-1" />
                     Edit
+                  </Button>
+                )}
+                {onShare && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onShare(item)}
+                    className="flex-1 h-9 text-xs"
+                  >
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Share
                   </Button>
                 )}
                 {onDelete && (
@@ -159,9 +183,9 @@ export function ListTable<T extends { id: string; name: string; description?: st
                     variant="danger"
                     size="sm"
                     onClick={() => onDelete(item)}
-                    className="flex-1 h-7 text-xs"
+                    className="flex-1 h-9 text-xs"
                   >
-                    <Trash2 className="h-3 w-3 mr-1" />
+                    <Trash2 className="h-4 w-4 mr-1" />
                     Delete
                   </Button>
                 )}
