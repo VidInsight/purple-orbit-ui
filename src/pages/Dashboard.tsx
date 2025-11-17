@@ -13,14 +13,14 @@ const Dashboard = () => {
           description="Overview of your automation workspace"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex gap-6">
           {/* Left Side - Empty for now */}
-          <div className="lg:col-span-2">
+          <div className="flex-1">
             {/* Content removed */}
           </div>
 
-          {/* Right Side - Quotas & Updates (Sticky) */}
-          <div className="space-y-6 sticky top-6 self-start">
+          {/* Right Side - Quotas & Updates (Sticky) - Fixed width to match sidebar */}
+          <div className="w-64 space-y-6 sticky top-6 self-start flex-shrink-0">
             <QuotasWidget />
             <UpdatesFeed />
           </div>
