@@ -82,45 +82,45 @@ export const ResetPassword = () => {
 
         <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <Label htmlFor="password">{t('auth:resetPassword.password')}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="transition-colors duration-200">{t('auth:resetPassword.password')}</Label>
             <Input
               id="password"
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="mt-1"
+              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
             />
             {errors.password && (
-              <p className="text-sm text-destructive mt-1">{errors.password}</p>
+              <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.password}</p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="confirmPassword">{t('auth:resetPassword.confirmPassword')}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="transition-colors duration-200">{t('auth:resetPassword.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="mt-1"
+              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>
+              <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.confirmPassword}</p>
             )}
           </div>
 
           <Button
             type="submit"
             variant="primary"
-            className="w-full shadow-lg hover:shadow-xl transition-all duration-200"
+            className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
             loading={loading}
           >
             {t('auth:resetPassword.resetPassword')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            <Link to="/login" className="text-primary hover:underline font-medium transition-colors">
+            <Link to="/login" className="text-primary hover:underline font-medium transition-all duration-200 hover:text-primary/80">
               {t('auth:forgotPassword.backToLogin')}
             </Link>
           </p>

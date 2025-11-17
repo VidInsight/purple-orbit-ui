@@ -101,142 +101,145 @@ export const Register = () => {
 
         <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <Label htmlFor="username">{t('auth:register.username')}</Label>
-            <Input
-              id="username"
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="mt-1"
-            />
-            {errors.username && (
-              <p className="text-sm text-destructive mt-1">{errors.username}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">{t('auth:register.name')}</Label>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="transition-colors duration-200">{t('auth:register.username')}</Label>
               <Input
-                id="name"
+                id="username"
                 type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-1"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
               />
-              {errors.name && (
-                <p className="text-sm text-destructive mt-1">{errors.name}</p>
+              {errors.username && (
+                <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.username}</p>
               )}
             </div>
 
-            <div>
-              <Label htmlFor="surname">{t('auth:register.surname')}</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="transition-colors duration-200">{t('auth:register.name')}</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.name}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="surname" className="transition-colors duration-200">{t('auth:register.surname')}</Label>
+                <Input
+                  id="surname"
+                  type="text"
+                  value={formData.surname}
+                  onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
+                  className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                />
+                {errors.surname && (
+                  <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.surname}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="transition-colors duration-200">{t('auth:register.email')}</Label>
               <Input
-                id="surname"
-                type="text"
-                value={formData.surname}
-                onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
-                className="mt-1"
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
               />
-              {errors.surname && (
-                <p className="text-sm text-destructive mt-1">{errors.surname}</p>
+              {errors.email && (
+                <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.email}</p>
               )}
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="email">{t('auth:register.email')}</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="mt-1"
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="password">{t('auth:register.password')}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="transition-colors duration-200">{t('auth:register.password')}</Label>
             <Input
               id="password"
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="mt-1"
+              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
             />
             {errors.password && (
-              <p className="text-sm text-destructive mt-1">{errors.password}</p>
+              <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.password}</p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="confirmPassword">{t('auth:register.confirmPassword')}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="transition-colors duration-200">{t('auth:register.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="mt-1"
+              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>
+              <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.confirmPassword}</p>
             )}
           </div>
 
           <div className="space-y-3 pt-2">
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 group">
               <Checkbox
                 id="privacyPolicy"
                 checked={formData.privacyPolicy}
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, privacyPolicy: checked as boolean })
                 }
+                className="transition-transform duration-200 hover:scale-110"
               />
               <label
                 htmlFor="privacyPolicy"
-                className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer transition-colors duration-200 group-hover:text-primary"
               >
                 {t('auth:register.privacyPolicy')}
               </label>
             </div>
             {errors.privacyPolicy && (
-              <p className="text-sm text-destructive">{errors.privacyPolicy}</p>
+              <p className="text-sm text-destructive animate-fade-in">{errors.privacyPolicy}</p>
             )}
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 group">
               <Checkbox
                 id="terms"
                 checked={formData.terms}
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, terms: checked as boolean })
                 }
+                className="transition-transform duration-200 hover:scale-110"
               />
               <label
                 htmlFor="terms"
-                className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm text-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer transition-colors duration-200 group-hover:text-primary"
               >
                 {t('auth:register.terms')}
               </label>
             </div>
             {errors.terms && (
-              <p className="text-sm text-destructive">{errors.terms}</p>
+              <p className="text-sm text-destructive animate-fade-in">{errors.terms}</p>
             )}
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 group">
               <Checkbox
                 id="marketing"
                 checked={formData.marketing}
                 onCheckedChange={(checked) =>
                   setFormData({ ...formData, marketing: checked as boolean })
                 }
+                className="transition-transform duration-200 hover:scale-110"
               />
               <label
                 htmlFor="marketing"
-                className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer transition-colors duration-200 group-hover:text-foreground"
               >
                 {t('auth:register.marketing')}
               </label>
@@ -246,7 +249,7 @@ export const Register = () => {
           <Button
             type="submit"
             variant="primary"
-            className="w-full shadow-lg hover:shadow-xl transition-all duration-200"
+            className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
             loading={loading}
           >
             {t('auth:register.createAccount')}
@@ -254,7 +257,7 @@ export const Register = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             {t('auth:register.hasAccount')}{' '}
-            <Link to="/login" className="text-primary hover:underline font-medium transition-colors">
+            <Link to="/login" className="text-primary hover:underline font-medium transition-all duration-200 hover:text-primary/80">
               {t('auth:register.signIn')}
             </Link>
           </p>
