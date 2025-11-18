@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, GripVertical, Copy } from 'lucide-react';
+import { ChevronDown, GripVertical, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { usePathContext } from './PathContext';
 
@@ -106,11 +106,14 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   if (!isOpen) return null;
 
   // Filter outputs to only show nodes before current node
-  const availableOutputs = outputs.filter(output => {
-    if (!currentNodeId) return true;
-    // In real implementation, check if output.nodeId comes before currentNodeId
-    return true;
-  });
+  const availableOutputs = currentNodeId 
+    ? outputs.filter((output, index) => {
+        // Find the index of the current node
+        const currentIndex = outputs.findIndex(o => o.nodeId === currentNodeId);
+        // Only show outputs from nodes before the current one
+        return index < currentIndex;
+      })
+    : [];
 
   return (
     <div className="fixed left-0 top-0 h-full w-[350px] bg-surface border-r border-border shadow-2xl z-40 animate-slide-in-left flex flex-col">
@@ -118,7 +121,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       <div className="px-6 py-4 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground">Previous Outputs</h2>
         <p className="text-xs text-muted-foreground mt-1">
-          Click to expand node outputs
+          Only nodes before the current one
         </p>
       </div>
 
@@ -126,7 +129,10 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       <div className="flex-1 overflow-y-auto">
         {availableOutputs.length === 0 ? (
           <div className="px-6 py-8 text-center text-muted-foreground text-sm">
-            No previous outputs available
+            {currentNodeId 
+              ? "Öncesinde düğüm olmadığı için değer yok"
+              : "No node selected"
+            }
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -138,7 +144,12 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{output.icon}</span>
+                    <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10">
+                      {output.icon === '⚡' && <Zap className="h-4 w-4 text-primary" />}
+                      {output.icon === '💬' && <MessageSquare className="h-4 w-4 text-accent" />}
+                      {output.icon === '📋' && <FileText className="h-4 w-4 text-muted-foreground" />}
+                      {output.icon === '⚙️' && <Settings className="h-4 w-4 text-accent" />}
+                    </div>
                     <span className="text-sm font-medium text-foreground">
                       {output.nodeName}
                     </span>

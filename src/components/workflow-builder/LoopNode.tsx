@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Repeat, Edit2, CheckCircle2, Trash2 } from 'lucide-react';
+import { Repeat, Edit2, CheckCircle2, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,39 +20,27 @@ interface LoopNodeProps {
 
 export const LoopNode = ({ node, onUpdate, onDelete, onClick }: LoopNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const isConfigured = node.configured ?? false;
 
   const handleNodeClick = () => {
-    console.log('Loop node clicked:', {
-      id: node.id,
-      title: node.title,
-      type: 'Loop',
-      configured: isConfigured,
-      loopBody: node.loopBody,
-    });
-    if (onClick) {
+    if (onClick && !isViewing) {
       onClick();
     }
-    setIsExpanded(!isExpanded);
   };
 
   const hasLoopBody = node.loopBody && node.loopBody.length > 0;
 
   return (
     <div 
-      className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
-        isConfigured 
-          ? 'border-success hover:border-success/80 hover:shadow-lg' 
-          : 'border-warning hover:border-warning/80 hover:shadow-lg'
-      }`}
-      onClick={handleNodeClick}
+      className="bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary hover:border-primary/80 hover:shadow-lg"
     >
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-              {node.icon || '🔁'}
+          <div className="flex items-center gap-3" onClick={handleNodeClick}>
+            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Repeat className="h-6 w-6 text-primary" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
@@ -64,9 +52,22 @@ export const LoopNode = ({ node, onUpdate, onDelete, onClick }: LoopNodeProps) =
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsExpanded(!isExpanded);
+                setIsViewing(!isViewing);
               }}
               className="h-8 w-8 p-0"
+              title="View"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onClick) onClick();
+              }}
+              className="h-8 w-8 p-0"
+              title="Edit"
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -78,6 +79,7 @@ export const LoopNode = ({ node, onUpdate, onDelete, onClick }: LoopNodeProps) =
                 onDelete();
               }}
               className="h-8 w-8 p-0 hover:text-destructive"
+              title="Delete"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

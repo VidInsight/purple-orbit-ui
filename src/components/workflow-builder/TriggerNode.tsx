@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Edit2, CheckCircle2 } from 'lucide-react';
+import { Zap, Edit2, CheckCircle2, Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/badge';
@@ -23,23 +23,16 @@ interface TriggerNodeProps {
 
 export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [variables, setVariables] = useState<Variable[]>(node.variables || []);
   
   const isConfigured = variables.length > 0 && variables.every(v => v.name && v.type);
 
   const handleNodeClick = () => {
-    console.log('Node clicked:', {
-      id: node.id,
-      title: node.title,
-      type: 'Trigger',
-      configured: isConfigured,
-      variables,
-    });
-    if (onClick) {
+    if (onClick && !isViewing && !isEditing) {
       onClick();
     }
-    setIsExpanded(!isExpanded);
   };
 
   const handleVariableChange = (index: number, field: keyof Variable, value: string) => {
@@ -59,38 +52,48 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
 
   return (
     <div 
-      className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
-        isConfigured 
-          ? 'border-success hover:border-success/80 hover:shadow-lg' 
-          : 'border-warning hover:border-warning/80 hover:shadow-lg'
-      }`}
-      onClick={() => !isEditing && handleNodeClick()}
+      className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary hover:border-primary/80 hover:shadow-lg`}
     >
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-              {node.icon || '⚡'}
+          <div className="flex items-center gap-3" onClick={handleNodeClick}>
+            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Zap className="h-6 w-6 text-primary" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
             </div>
           </div>
-          {!isEditing && (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsViewing(!isViewing);
+                setIsEditing(false);
+              }}
+              className="h-8 w-8 p-0"
+              title="View"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
-                setIsExpanded(true);
+                setIsViewing(false);
+                if (onClick) onClick();
               }}
               className="h-8 w-8 p-0"
+              title="Edit"
             >
               <Edit2 className="h-4 w-4" />
             </Button>
-          )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 mb-2">
@@ -114,9 +117,35 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
         </div>
       </div>
 
-      {/* Content */}
-      {isExpanded && (
-        <div className="px-6 py-4 space-y-4 border-t border-border bg-surface/50">
+      {/* Content - View Mode */}
+      {isViewing && (
+        <div className="px-6 py-4 border-t border-border bg-surface/50">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-foreground">Variables (Read-only)</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsViewing(false)}
+              className="h-6 w-6 p-0"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {variables.map((variable, index) => (
+              <div key={index} className="grid grid-cols-3 gap-3 text-sm">
+                <div className="text-foreground font-medium">{variable.name}</div>
+                <div className="text-muted-foreground">{variable.type}</div>
+                <div className="text-muted-foreground">{variable.defaultValue || '-'}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Content - Edit Mode */}
+      {isEditing && (
+        <div className="px-6 py-4 border-t border-border bg-surface/50 space-y-4">
           <div>
             <h4 className="text-sm font-medium text-foreground mb-3">Variables</h4>
             <div className="space-y-3">

@@ -107,7 +107,7 @@ export default function ZapierWorkflowEditor() {
         id: `node-${Date.now()}`,
         type: 'conditional',
         title: nodeType,
-        icon: nodeIcons[nodeType] || '⚖️',
+        icon: nodeIcons[nodeType],
         category: `${category} > ${subcategory}`,
         nodeType: 'Conditional',
         configured: false,
@@ -148,7 +148,7 @@ export default function ZapierWorkflowEditor() {
         id: `node-${Date.now()}`,
         type: 'loop',
         title: nodeType,
-        icon: nodeIcons[nodeType] || '🔁',
+        icon: nodeIcons[nodeType],
         category: `${category} > ${subcategory}`,
         nodeType: 'Loop',
         configured: false,
@@ -255,7 +255,7 @@ export default function ZapierWorkflowEditor() {
       id: `node-${Date.now()}`,
       type: 'action',
       title: nodeType,
-      icon: nodeIcons[nodeType] || '⚙️',
+      icon: nodeIcons[nodeType],
       category: `${category} > ${subcategory}`,
       nodeType: category,
       configured: false,
@@ -308,7 +308,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: node.icon || '⚡',
+          icon: '⚡',
           output: {
             user_id: '12345',
             email: 'user@example.com',
@@ -325,7 +325,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: node.icon || '💬',
+          icon: '💬',
           output: {
             id: 'resp_abc123',
             object: 'response',
@@ -353,7 +353,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: node.icon || '📋',
+          icon: '📋',
           output: {
             parsed_data: {
               field1: 'value1',
@@ -369,7 +369,7 @@ export default function ZapierWorkflowEditor() {
       return {
         nodeId: node.id,
         nodeName: node.title,
-        icon: node.icon || '⚙️',
+        icon: '⚙️',
         output: {
           status: 'success',
           data: {
@@ -489,10 +489,9 @@ export default function ZapierWorkflowEditor() {
               <div key={node.id} className="relative">
                 {/* Connection Line - Dashed */}
                 {index > 0 && (
-                  <div className="flex justify-center py-4">
+                  <div className="flex justify-center -my-2">
                     <div 
-                      className="w-0.5 h-8 border-l-2 border-dashed"
-                      style={{ borderColor: '#d1d5db' }}
+                      className="w-0.5 h-8 bg-border"
                     />
                   </div>
                 )}
@@ -537,13 +536,13 @@ export default function ZapierWorkflowEditor() {
                 )}
 
                 {/* Add Button */}
-                <div className="flex justify-center py-4">
-                  <div 
-                    className="w-0.5 h-8 border-l-2 border-dashed mb-2"
-                    style={{ borderColor: '#d1d5db' }}
-                  />
-                  <div className="absolute">
-                    <AddNodeButton onAddNode={handleAddNode} />
+                <div className="flex justify-center -my-2">
+                  <div className="relative">
+                    <div className="w-0.5 h-6 bg-border absolute left-1/2 -translate-x-1/2 top-0" />
+                    <div className="relative z-10 pt-6">
+                      <AddNodeButton onAddNode={handleAddNode} />
+                    </div>
+                    <div className="w-0.5 h-6 bg-border absolute left-1/2 -translate-x-1/2 bottom-0" />
                   </div>
                 </div>
               </div>
