@@ -36,26 +36,27 @@ import {
   Upload,
   Bell,
   Search,
-  Clock
+  Clock,
+  LucideIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 
 interface NodeType {
   name: string;
-  icon: any;
+  icon: LucideIcon;
   description: string;
 }
 
 interface Subcategory {
   name: string;
-  icon: any;
+  icon: LucideIcon;
   nodes: NodeType[];
 }
 
 interface Category {
   name: string;
-  icon: any;
+  icon: LucideIcon;
   subcategories: Subcategory[];
 }
 
@@ -204,7 +205,6 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
     categoryName: string;
     subcategoryName: string;
     nodeName: string;
-    nodeIcon: any;
     nodeDescription: string;
   }>>([]);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -277,9 +277,9 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
     const node = subcategory?.nodes.find(n => n.name === nodeName);
 
     if (node) {
-      // Update recently used
+      // Update recently used (don't store icon, we'll look it up when rendering)
       const newRecentlyUsed = [
-        { categoryName, subcategoryName, nodeName, nodeIcon: node.icon, nodeDescription: node.description },
+        { categoryName, subcategoryName, nodeName, nodeDescription: node.description },
         ...recentlyUsed.filter(item => item.nodeName !== nodeName)
       ].slice(0, 5); // Keep only 5 most recent
       
@@ -349,7 +349,12 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
                 </div>
                 <div className="bg-surface">
                   {recentlyUsed.map((item, index) => {
-                    const NodeIcon = item.nodeIcon;
+                    // Find the icon from categories
+                    const category = categories.find(c => c.name === item.categoryName);
+                    const subcategory = category?.subcategories.find(sc => sc.name === item.subcategoryName);
+                    const node = subcategory?.nodes.find(n => n.name === item.nodeName);
+                    const NodeIcon = node?.icon || Settings; // Fallback to Settings icon
+                    
                     return (
                       <button
                         key={`${item.nodeName}-${index}`}
