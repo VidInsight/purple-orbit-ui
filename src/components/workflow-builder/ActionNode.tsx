@@ -15,9 +15,10 @@ interface ActionNodeProps {
   };
   onUpdate: (updates: any) => void;
   onDelete: () => void;
+  onClick?: () => void;
 }
 
-export const ActionNode = ({ node, onUpdate, onDelete }: ActionNodeProps) => {
+export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isConfigured = node.configured ?? false;
 
@@ -30,6 +31,9 @@ export const ActionNode = ({ node, onUpdate, onDelete }: ActionNodeProps) => {
       category: node.category,
       config: node.config,
     });
+    if (onClick) {
+      onClick();
+    }
     setIsExpanded(!isExpanded);
   };
 

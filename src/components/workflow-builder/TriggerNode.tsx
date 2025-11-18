@@ -18,9 +18,10 @@ interface TriggerNodeProps {
     variables?: Variable[];
   };
   onUpdate: (updates: any) => void;
+  onClick?: () => void;
 }
 
-export const TriggerNode = ({ node, onUpdate }: TriggerNodeProps) => {
+export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [variables, setVariables] = useState<Variable[]>(node.variables || []);
@@ -35,6 +36,9 @@ export const TriggerNode = ({ node, onUpdate }: TriggerNodeProps) => {
       configured: isConfigured,
       variables,
     });
+    if (onClick) {
+      onClick();
+    }
     setIsExpanded(!isExpanded);
   };
 
