@@ -262,9 +262,9 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
       </Button>
 
       {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-[560px] bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
+        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-[320px] bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-3 bg-accent/10 border-b border-border">
+          <div className="px-4 py-3 bg-accent/10 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Add Node</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Select a node to add to your workflow</p>
           </div>
@@ -278,7 +278,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
                   {/* Category Header */}
                   <button
                     onClick={() => toggleCategory(category.name)}
-                    className="w-full px-6 py-2.5 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
+                    className="w-full pl-4 pr-4 py-2.5 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
                   >
                     <div className="flex items-center gap-3">
                       <CategoryIcon className="h-4 w-4 text-primary flex-shrink-0" />
@@ -301,7 +301,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
                             {/* Subcategory Header */}
                             <button
                               onClick={() => toggleSubcategory(subcategory.name)}
-                              className="w-full pl-12 pr-6 py-2 flex items-center justify-between hover:bg-accent/20 transition-colors bg-surface"
+                              className="w-full pl-8 pr-4 py-2 flex items-center justify-between hover:bg-accent/20 transition-colors bg-surface"
                             >
                               <div className="flex items-center gap-3">
                                 <SubcategoryIcon className="h-4 w-4 text-accent-foreground flex-shrink-0" />
@@ -323,7 +323,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
                                     <button
                                       key={node.name}
                                       onClick={() => handleNodeClick(category.name, subcategory.name, node.name)}
-                                      className="w-full pl-20 pr-6 py-2 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-colors text-left group bg-surface"
+                                      className="w-full pl-12 pr-4 py-2 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-colors text-left group bg-surface"
                                     >
                                       <NodeIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                                       <span className="text-sm text-foreground whitespace-nowrap">{node.name}</span>
