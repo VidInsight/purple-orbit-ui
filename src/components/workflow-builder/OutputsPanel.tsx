@@ -51,7 +51,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   };
 
   const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
-    const indent = depth * 4;
+    const indent = depth * 6;
     const isCollapsed = collapsedPaths.has(parentPath);
     const shouldAutoCollapse = depth > 1;
 
@@ -81,7 +81,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
       return (
         <div className="inline-block">
-          <div className="flex items-center gap-1" style={{ paddingLeft: `${indent}px` }}>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleToggleCollapse(arrayPath)}
               className="hover:bg-accent/50 rounded p-0.5 transition-colors"
@@ -101,7 +101,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
           {!isArrayCollapsed && (
             <>
               {value.map((item, index) => (
-                <div key={index} style={{ paddingLeft: `${indent + 12}px` }} className="group">
+                <div key={index} style={{ paddingLeft: `${indent + 6}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
                       onClick={() => handleDragClick(`${parentPath}[${index}]`)}
@@ -119,7 +119,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   </div>
                 </div>
               ))}
-              <div style={{ paddingLeft: `${indent}px` }} className="text-foreground">]</div>
+              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
             </>
           )}
         </div>
@@ -137,7 +137,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
       return (
         <div className="inline-block">
-          <div className="flex items-center gap-1" style={{ paddingLeft: `${indent}px` }}>
+          <div className="flex items-center gap-1">
             <button
               onClick={() => handleToggleCollapse(objectPath)}
               className="hover:bg-accent/50 rounded p-0.5 transition-colors"
@@ -157,7 +157,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
           {!isObjectCollapsed && (
             <>
               {entries.map(([key, val], index) => (
-                <div key={key} style={{ paddingLeft: `${indent + 12}px` }} className="group">
+                <div key={key} style={{ paddingLeft: `${indent + 6}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
                       onClick={() => handleDragClick(`${parentPath}.${key}`)}
@@ -175,7 +175,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   </div>
                 </div>
               ))}
-              <div style={{ paddingLeft: `${indent}px` }} className="text-foreground">{'}'}</div>
+              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
             </>
           )}
         </div>
