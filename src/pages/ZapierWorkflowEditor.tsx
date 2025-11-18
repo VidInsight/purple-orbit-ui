@@ -5,6 +5,8 @@ import { ArrowLeft, Save, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
+import { ConditionalNode } from '@/components/workflow-builder/ConditionalNode';
+import { LoopNode } from '@/components/workflow-builder/LoopNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
 import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
@@ -18,7 +20,7 @@ interface Variable {
 
 interface WorkflowNode {
   id: string;
-  type: 'trigger' | 'action';
+  type: 'trigger' | 'action' | 'conditional' | 'loop';
   title: string;
   icon?: string;
   category?: string;
@@ -26,6 +28,12 @@ interface WorkflowNode {
   configured?: boolean;
   variables?: Variable[];
   config?: Record<string, any>;
+  branches?: {
+    true: string[];
+    false: string[];
+  };
+  loopBody?: string[];
+  parentBranch?: { nodeId: string; branchType: 'true' | 'false' } | null;
   parameters?: Array<{
     id: string;
     label: string;
@@ -89,7 +97,92 @@ export default function ZapierWorkflowEditor() {
       'JSON Parse': '📋',
       'Text Replace': '✏️',
       'Date Format': '📅',
+      'If/Else': '⚖️',
+      'For Each': '➰',
     };
+
+    // Check if this is a conditional or loop node
+    if (nodeType === 'If/Else') {
+      const newNode: WorkflowNode = {
+        id: `node-${Date.now()}`,
+        type: 'conditional',
+        title: nodeType,
+        icon: nodeIcons[nodeType] || '⚖️',
+        category: `${category} > ${subcategory}`,
+        nodeType: 'Conditional',
+        configured: false,
+        branches: {
+          true: [],
+          false: [],
+        },
+        parameters: [
+          {
+            id: 'condition_type',
+            label: 'Condition Type',
+            type: 'dropdown',
+            options: ['equals', 'not_equals', 'contains', 'greater_than', 'less_than'],
+            value: 'equals',
+          },
+          {
+            id: 'value1',
+            label: 'Value 1',
+            type: 'text',
+            placeholder: 'First value to compare',
+            value: '',
+          },
+          {
+            id: 'value2',
+            label: 'Value 2',
+            type: 'text',
+            placeholder: 'Second value to compare',
+            value: '',
+          },
+        ],
+      };
+      setNodes([...nodes, newNode]);
+      return;
+    }
+
+    if (nodeType === 'For Each') {
+      const newNode: WorkflowNode = {
+        id: `node-${Date.now()}`,
+        type: 'loop',
+        title: nodeType,
+        icon: nodeIcons[nodeType] || '🔁',
+        category: `${category} > ${subcategory}`,
+        nodeType: 'Loop',
+        configured: false,
+        loopBody: [],
+        parameters: [
+          {
+            id: 'input_array',
+            label: 'Input Array',
+            type: 'text',
+            placeholder: 'Array to iterate over',
+            value: '',
+            isDynamic: false,
+          },
+          {
+            id: 'item_name',
+            label: 'Item Variable Name',
+            type: 'text',
+            placeholder: 'e.g., "item", "user", "record"',
+            value: 'item',
+          },
+          {
+            id: 'max_iterations',
+            label: 'Max Iterations',
+            type: 'number',
+            placeholder: 'Optional limit',
+            min: 1,
+            max: 10000,
+            value: 100,
+          },
+        ],
+      };
+      setNodes([...nodes, newNode]);
+      return;
+    }
 
     // Define parameters based on node type
     const getNodeParameters = (nodeType: string) => {
@@ -171,6 +264,12 @@ export default function ZapierWorkflowEditor() {
     };
 
     setNodes([...nodes, newNode]);
+  };
+
+  const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
+    console.log('Adding branch:', { conditionalNodeId, branchType });
+    // In a real implementation, this would open a node selector
+    // For now, just log the action
   };
 
   const handleNodeClick = (node: WorkflowNode) => {
@@ -405,6 +504,25 @@ export default function ZapierWorkflowEditor() {
                     onUpdate={(updates) => {
                       setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
                     }}
+                    onClick={() => handleNodeClick(node)}
+                  />
+                ) : node.type === 'conditional' ? (
+                  <ConditionalNode
+                    node={node}
+                    onUpdate={(updates) => {
+                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                    }}
+                    onDelete={() => handleDeleteNode(node.id)}
+                    onClick={() => handleNodeClick(node)}
+                    onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
+                  />
+                ) : node.type === 'loop' ? (
+                  <LoopNode
+                    node={node}
+                    onUpdate={(updates) => {
+                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                    }}
+                    onDelete={() => handleDeleteNode(node.id)}
                     onClick={() => handleNodeClick(node)}
                   />
                 ) : (
