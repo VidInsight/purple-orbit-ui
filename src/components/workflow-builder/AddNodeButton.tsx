@@ -317,7 +317,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
       </Button>
 
       {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-3/4 bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
+        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-[1280px] bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
           {/* Header */}
           <div className="px-4 py-3 bg-accent/10 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Add Node</h3>

@@ -508,8 +508,7 @@ export default function ZapierWorkflowEditor() {
 
         {/* Workflow Canvas */}
         <div className="max-w-screen-xl mx-auto px-6 py-8">
-          <div className="flex flex-col items-center w-full">
-            <div className="w-4/5 space-y-0">
+          <div className="space-y-0">
             {nodes.map((node, index) => (
               <div key={node.id} className="relative">
                 {/* Node */}
@@ -559,7 +558,6 @@ export default function ZapierWorkflowEditor() {
                 </div>
               </div>
             ))}
-            </div>
           </div>
         </div>
 
