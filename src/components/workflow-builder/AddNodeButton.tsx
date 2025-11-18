@@ -1,46 +1,152 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+
+interface NodeType {
+  name: string;
+  icon: string;
+}
+
+interface Subcategory {
+  name: string;
+  icon: string;
+  nodes: NodeType[];
+}
 
 interface Category {
   name: string;
-  subcategories: {
-    name: string;
-    nodes: string[];
-  }[];
+  icon: string;
+  subcategories: Subcategory[];
 }
 
 const categories: Category[] = [
   {
-    name: 'AI',
+    name: 'AI Models',
+    icon: '🤖',
     subcategories: [
-      { name: 'Text', nodes: ['Text Generation', 'Text Completion', 'Text Summarization'] },
-      { name: 'Image', nodes: ['Image Analysis', 'Image Generation', 'Object Detection'] },
-      { name: 'Analysis', nodes: ['Sentiment Analysis', 'Entity Recognition', 'Classification'] },
+      {
+        name: 'OpenAI',
+        icon: '🟢',
+        nodes: [
+          { name: 'GPT-4 Completion', icon: '💬' },
+          { name: 'DALL-E Image', icon: '🎨' },
+          { name: 'Embeddings', icon: '🔢' },
+        ],
+      },
+      {
+        name: 'Anthropic',
+        icon: '🔵',
+        nodes: [
+          { name: 'Claude', icon: '💭' },
+          { name: 'Claude Instant', icon: '⚡' },
+        ],
+      },
+      {
+        name: 'Google AI',
+        icon: '🔴',
+        nodes: [
+          { name: 'Gemini', icon: '✨' },
+          { name: 'PaLM', icon: '🌴' },
+        ],
+      },
     ],
   },
   {
-    name: 'Data',
+    name: 'Data Processing',
+    icon: '⚙️',
     subcategories: [
-      { name: 'Transform', nodes: ['Map Data', 'Filter Data', 'Sort Data'] },
-      { name: 'Process', nodes: ['Aggregate', 'Group By', 'Merge'] },
-      { name: 'Validate', nodes: ['Validate Schema', 'Check Format', 'Clean Data'] },
+      {
+        name: 'Transform',
+        icon: '🔄',
+        nodes: [
+          { name: 'JSON Parse', icon: '📋' },
+          { name: 'Text Replace', icon: '✏️' },
+          { name: 'Date Format', icon: '📅' },
+        ],
+      },
+      {
+        name: 'Filter',
+        icon: '🔍',
+        nodes: [
+          { name: 'Filter Array', icon: '📊' },
+          { name: 'Remove Duplicates', icon: '🧹' },
+          { name: 'Conditional Filter', icon: '🎯' },
+        ],
+      },
+      {
+        name: 'Aggregate',
+        icon: '📈',
+        nodes: [
+          { name: 'Sum', icon: '➕' },
+          { name: 'Average', icon: '📊' },
+          { name: 'Count', icon: '🔢' },
+        ],
+      },
     ],
   },
   {
-    name: 'Logic',
+    name: 'Logic & Flow',
+    icon: '🔀',
     subcategories: [
-      { name: 'Conditions', nodes: ['If/Else', 'Switch', 'Compare Values'] },
-      { name: 'Loops', nodes: ['For Each', 'While Loop', 'Repeat'] },
-      { name: 'Control', nodes: ['Break', 'Continue', 'Stop Workflow'] },
+      {
+        name: 'Conditions',
+        icon: '❓',
+        nodes: [
+          { name: 'If/Else', icon: '⚖️' },
+          { name: 'Switch', icon: '🔀' },
+          { name: 'Compare', icon: '⚡' },
+        ],
+      },
+      {
+        name: 'Loops',
+        icon: '🔁',
+        nodes: [
+          { name: 'For Each', icon: '➰' },
+          { name: 'While', icon: '🔄' },
+          { name: 'Repeat', icon: '🔂' },
+        ],
+      },
+      {
+        name: 'Branches',
+        icon: '🌿',
+        nodes: [
+          { name: 'Split', icon: '✂️' },
+          { name: 'Merge', icon: '🔗' },
+          { name: 'Parallel', icon: '⚡' },
+        ],
+      },
     ],
   },
   {
-    name: 'Utilities',
+    name: 'Integrations',
+    icon: '🔌',
     subcategories: [
-      { name: 'Time', nodes: ['Delay', 'Schedule', 'Wait Until'] },
-      { name: 'Communication', nodes: ['Send Email', 'Webhook', 'HTTP Request'] },
-      { name: 'Storage', nodes: ['Save Data', 'Load Data', 'Delete Data'] },
+      {
+        name: 'HTTP',
+        icon: '🌐',
+        nodes: [
+          { name: 'GET Request', icon: '📥' },
+          { name: 'POST Request', icon: '📤' },
+          { name: 'Webhook', icon: '🔔' },
+        ],
+      },
+      {
+        name: 'Database',
+        icon: '🗄️',
+        nodes: [
+          { name: 'Query', icon: '🔍' },
+          { name: 'Insert', icon: '➕' },
+          { name: 'Update', icon: '✏️' },
+        ],
+      },
+      {
+        name: 'Email',
+        icon: '📧',
+        nodes: [
+          { name: 'Send Email', icon: '📨' },
+          { name: 'Parse Email', icon: '📖' },
+        ],
+      },
     ],
   },
 ];
@@ -51,60 +157,61 @@ interface AddNodeButtonProps {
 
 export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'categories' | 'subcategories' | 'nodes'>('categories');
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<{ name: string; nodes: string[] } | null>(null);
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [openSubcategory, setOpenSubcategory] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        resetMenu();
+        handleClose();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen]);
 
-  const resetMenu = () => {
-    setCurrentView('categories');
-    setSelectedCategory(null);
-    setSelectedSubcategory(null);
+  const handleClose = () => {
+    setIsOpen(false);
+    setOpenCategory(null);
+    setOpenSubcategory(null);
   };
 
-  const handleCategoryClick = (category: Category) => {
-    setSelectedCategory(category);
-    setCurrentView('subcategories');
-  };
-
-  const handleSubcategoryClick = (subcategory: { name: string; nodes: string[] }) => {
-    setSelectedSubcategory(subcategory);
-    setCurrentView('nodes');
-  };
-
-  const handleNodeClick = (node: string) => {
-    if (selectedCategory && selectedSubcategory) {
-      onAddNode(selectedCategory.name, selectedSubcategory.name, node);
-      setIsOpen(false);
-      resetMenu();
+  const toggleCategory = (categoryName: string) => {
+    if (openCategory === categoryName) {
+      setOpenCategory(null);
+      setOpenSubcategory(null);
+    } else {
+      setOpenCategory(categoryName);
+      setOpenSubcategory(null);
     }
   };
 
-  const handleBack = () => {
-    if (currentView === 'nodes') {
-      setCurrentView('subcategories');
-      setSelectedSubcategory(null);
-    } else if (currentView === 'subcategories') {
-      setCurrentView('categories');
-      setSelectedCategory(null);
+  const toggleSubcategory = (subcategoryName: string) => {
+    if (openSubcategory === subcategoryName) {
+      setOpenSubcategory(null);
+    } else {
+      setOpenSubcategory(subcategoryName);
     }
+  };
+
+  const handleNodeClick = (categoryName: string, subcategoryName: string, nodeName: string) => {
+    onAddNode(categoryName, subcategoryName, nodeName);
+    handleClose();
   };
 
   return (
@@ -119,71 +226,77 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
       </Button>
 
       {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-64 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-80 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 bg-accent/10 border-b border-border flex items-center justify-between">
-            {currentView !== 'categories' && (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </button>
-            )}
-            <h3 className="text-sm font-medium text-foreground">
-              {currentView === 'categories' && 'Select Category'}
-              {currentView === 'subcategories' && selectedCategory?.name}
-              {currentView === 'nodes' && selectedSubcategory?.name}
-            </h3>
-            {currentView === 'categories' && <div className="w-12" />}
+          <div className="px-4 py-3 bg-accent/10 border-b border-border">
+            <h3 className="text-sm font-semibold text-foreground">Add Node</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Select a node to add to your workflow</p>
           </div>
 
-          {/* Content */}
-          <div className="max-h-80 overflow-y-auto">
-            {currentView === 'categories' && (
-              <div className="py-2">
-                {categories.map((category) => (
-                  <button
-                    key={category.name}
-                    onClick={() => handleCategoryClick(category)}
-                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-accent/50 transition-colors group"
-                  >
+          {/* Content - Accordion Style */}
+          <div className="max-h-96 overflow-y-auto">
+            {categories.map((category) => (
+              <div key={category.name} className="border-b border-border last:border-b-0">
+                {/* Category Header */}
+                <button
+                  onClick={() => toggleCategory(category.name)}
+                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-accent/30 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{category.icon}</span>
                     <span className="text-sm font-medium text-foreground">{category.name}</span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </button>
-                ))}
-              </div>
-            )}
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                      openCategory === category.name ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
 
-            {currentView === 'subcategories' && selectedCategory && (
-              <div className="py-2">
-                {selectedCategory.subcategories.map((subcategory) => (
-                  <button
-                    key={subcategory.name}
-                    onClick={() => handleSubcategoryClick(subcategory)}
-                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-accent/50 transition-colors group"
-                  >
-                    <span className="text-sm font-medium text-foreground">{subcategory.name}</span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </button>
-                ))}
-              </div>
-            )}
+                {/* Subcategories */}
+                {openCategory === category.name && (
+                  <div className="bg-surface/50">
+                    {category.subcategories.map((subcategory) => (
+                      <div key={subcategory.name} className="border-t border-border/50">
+                        {/* Subcategory Header */}
+                        <button
+                          onClick={() => toggleSubcategory(subcategory.name)}
+                          className="w-full px-6 py-2.5 flex items-center justify-between hover:bg-accent/20 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{subcategory.icon}</span>
+                            <span className="text-sm text-foreground">{subcategory.name}</span>
+                          </div>
+                          <ChevronRight
+                            className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
+                              openSubcategory === subcategory.name ? 'rotate-90' : ''
+                            }`}
+                          />
+                        </button>
 
-            {currentView === 'nodes' && selectedSubcategory && (
-              <div className="py-2">
-                {selectedSubcategory.nodes.map((node) => (
-                  <button
-                    key={node}
-                    onClick={() => handleNodeClick(node)}
-                    className="w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors"
-                  >
-                    <span className="text-sm text-foreground">{node}</span>
-                  </button>
-                ))}
+                        {/* Nodes */}
+                        {openSubcategory === subcategory.name && (
+                          <div className="bg-background/30">
+                            {subcategory.nodes.map((node) => (
+                              <button
+                                key={node.name}
+                                onClick={() => handleNodeClick(category.name, subcategory.name, node.name)}
+                                className="w-full px-8 py-2.5 flex items-center gap-2 hover:bg-primary/10 hover:text-primary transition-colors text-left group"
+                              >
+                                <span className="text-base group-hover:scale-110 transition-transform">
+                                  {node.icon}
+                                </span>
+                                <span className="text-sm text-foreground">{node.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
         </div>
       )}
