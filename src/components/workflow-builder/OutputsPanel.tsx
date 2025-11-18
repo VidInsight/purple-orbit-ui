@@ -1,0 +1,186 @@
+import { useState } from 'react';
+import { ChevronDown, GripVertical, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+
+interface OutputData {
+  nodeId: string;
+  nodeName: string;
+  icon: string;
+  output: any;
+}
+
+interface OutputsPanelProps {
+  outputs: OutputData[];
+  isOpen: boolean;
+  currentNodeId?: string;
+}
+
+export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelProps) => {
+  const [expandedNode, setExpandedNode] = useState<string | null>(null);
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
+
+  const handleToggleNode = (nodeId: string) => {
+    setExpandedNode(expandedNode === nodeId ? null : nodeId);
+  };
+
+  const handleDragClick = (path: string) => {
+    console.log('Drag path:', path);
+    setCopiedPath(path);
+    setTimeout(() => setCopiedPath(null), 2000);
+  };
+
+  const handleCopyOutput = (output: any) => {
+    navigator.clipboard.writeText(JSON.stringify(output, null, 2));
+    console.log('Copied output to clipboard');
+  };
+
+  const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
+    const indent = depth * 16;
+
+    if (value === null) {
+      return <span className="text-muted-foreground">null</span>;
+    }
+
+    if (typeof value === 'boolean') {
+      return <span className="text-warning">{String(value)}</span>;
+    }
+
+    if (typeof value === 'number') {
+      return <span className="text-success">{value}</span>;
+    }
+
+    if (typeof value === 'string') {
+      return <span className="text-primary">"{value}"</span>;
+    }
+
+    if (Array.isArray(value)) {
+      return (
+        <div>
+          <span className="text-foreground">[</span>
+          {value.map((item, index) => (
+            <div key={index} style={{ marginLeft: `${indent + 16}px` }} className="py-0.5">
+              {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
+              {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
+            </div>
+          ))}
+          <span className="text-foreground" style={{ marginLeft: `${indent}px` }}>]</span>
+        </div>
+      );
+    }
+
+    if (typeof value === 'object') {
+      const entries = Object.entries(value);
+      return (
+        <div>
+          <span className="text-foreground">{'{'}</span>
+          {entries.map(([key, val], index) => (
+            <div key={key} style={{ marginLeft: `${indent + 16}px` }} className="py-0.5 group">
+              <div className="flex items-start gap-2">
+                <button
+                  onClick={() => handleDragClick(`${parentPath}.${key}`)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1"
+                  title={`Path: ${parentPath}.${key}`}
+                >
+                  <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                </button>
+                <div className="flex-1">
+                  <span className="text-accent-foreground">"{key}"</span>
+                  <span className="text-muted-foreground">: </span>
+                  {renderValue(val, `${parentPath}.${key}`, depth + 1)}
+                  {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+          <span className="text-foreground" style={{ marginLeft: `${indent}px` }}>{'}'}</span>
+        </div>
+      );
+    }
+
+    return <span>{String(value)}</span>;
+  };
+
+  if (!isOpen) return null;
+
+  // Filter outputs to only show nodes before current node
+  const availableOutputs = outputs.filter(output => {
+    if (!currentNodeId) return true;
+    // In real implementation, check if output.nodeId comes before currentNodeId
+    return true;
+  });
+
+  return (
+    <div className="fixed left-0 top-0 h-full w-[350px] bg-surface border-r border-border shadow-2xl z-40 animate-slide-in-left flex flex-col">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-border">
+        <h2 className="text-lg font-semibold text-foreground">Previous Outputs</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Click to expand node outputs
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        {availableOutputs.length === 0 ? (
+          <div className="px-6 py-8 text-center text-muted-foreground text-sm">
+            No previous outputs available
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {availableOutputs.map((output) => (
+              <div key={output.nodeId} className="border-b border-border last:border-b-0">
+                {/* Accordion Header */}
+                <button
+                  onClick={() => handleToggleNode(output.nodeId)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{output.icon}</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {output.nodeName}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                      expandedNode === output.nodeId ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Accordion Content */}
+                {expandedNode === output.nodeId && (
+                  <div className="px-6 py-4 bg-background/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-medium text-muted-foreground">JSON Output</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyOutput(output.output)}
+                        className="h-7 px-2"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        <span className="text-xs">Copy</span>
+                      </Button>
+                    </div>
+
+                    <div className="bg-background rounded-lg p-4 border border-border overflow-x-auto">
+                      <pre className="text-xs font-mono leading-relaxed">
+                        {renderValue(output.output, output.nodeId)}
+                      </pre>
+                    </div>
+
+                    {copiedPath && (
+                      <div className="mt-2 px-3 py-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary">
+                        Path copied: <code className="font-mono">{copiedPath}</code>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

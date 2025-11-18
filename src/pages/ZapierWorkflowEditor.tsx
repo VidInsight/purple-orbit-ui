@@ -7,6 +7,7 @@ import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
 import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
+import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 
 interface Variable {
   name: string;
@@ -42,6 +43,7 @@ export default function ZapierWorkflowEditor() {
   const [workflowName, setWorkflowName] = useState('Untitled Workflow');
   const [isEditingName, setIsEditingName] = useState(false);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
+  const [showOutputsPanel, setShowOutputsPanel] = useState(false);
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -171,6 +173,7 @@ export default function ZapierWorkflowEditor() {
   const handleNodeClick = (node: WorkflowNode) => {
     console.log('Node selected:', node);
     setSelectedNode(node);
+    setShowOutputsPanel(true); // Show outputs panel when a node is selected
   };
 
   const handleParameterChange = (parameterId: string, value: any) => {
@@ -187,6 +190,85 @@ export default function ZapierWorkflowEditor() {
       }
       return node;
     }));
+  };
+
+  // Generate mock outputs for demonstration
+  const generateMockOutputs = () => {
+    return nodes.map(node => {
+      if (node.type === 'trigger') {
+        return {
+          nodeId: node.id,
+          nodeName: node.title,
+          icon: node.icon || '⚡',
+          output: {
+            user_id: '12345',
+            email: 'user@example.com',
+            timestamp: '2025-01-15T10:30:00Z',
+            data: {
+              name: 'John Doe',
+              age: 30,
+            },
+          },
+        };
+      }
+
+      if (node.title === 'GPT-4 Completion') {
+        return {
+          nodeId: node.id,
+          nodeName: node.title,
+          icon: node.icon || '💬',
+          output: {
+            id: 'resp_abc123',
+            object: 'response',
+            created_at: 1741476542,
+            output: [
+              {
+                type: 'message',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'Generated response here...',
+                  },
+                ],
+              },
+            ],
+            usage: {
+              input_tokens: 36,
+              output_tokens: 87,
+            },
+          },
+        };
+      }
+
+      if (node.title === 'JSON Parse') {
+        return {
+          nodeId: node.id,
+          nodeName: node.title,
+          icon: node.icon || '📋',
+          output: {
+            parsed_data: {
+              field1: 'value1',
+              field2: 123,
+              nested: {
+                field3: true,
+              },
+            },
+          },
+        };
+      }
+
+      return {
+        nodeId: node.id,
+        nodeName: node.title,
+        icon: node.icon || '⚙️',
+        output: {
+          status: 'success',
+          data: {
+            result: 'processed',
+          },
+        },
+      };
+    });
   };
 
   const handleDeleteNode = (nodeId: string) => {
@@ -345,10 +427,20 @@ export default function ZapierWorkflowEditor() {
           <ParametersPanel
             node={selectedNode}
             isOpen={!!selectedNode}
-            onClose={() => setSelectedNode(null)}
+            onClose={() => {
+              setSelectedNode(null);
+              setShowOutputsPanel(false);
+            }}
             onParameterChange={handleParameterChange}
           />
         )}
+
+        {/* Outputs Panel */}
+        <OutputsPanel
+          outputs={generateMockOutputs()}
+          isOpen={showOutputsPanel}
+          currentNodeId={selectedNode?.id}
+        />
       </div>
     </PageLayout>
   );
