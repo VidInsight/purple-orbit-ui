@@ -226,7 +226,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
       </Button>
 
       {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-80 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-80 bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
           {/* Header */}
           <div className="px-4 py-3 bg-accent/10 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Add Node</h3>
@@ -234,13 +234,13 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
           </div>
 
           {/* Content - Accordion Style */}
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto bg-surface">
             {categories.map((category) => (
               <div key={category.name} className="border-b border-border last:border-b-0">
                 {/* Category Header */}
                 <button
                   onClick={() => toggleCategory(category.name)}
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-accent/30 transition-colors"
+                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{category.icon}</span>
@@ -255,13 +255,13 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
 
                 {/* Subcategories */}
                 {openCategory === category.name && (
-                  <div className="bg-surface/50">
+                  <div className="bg-surface">
                     {category.subcategories.map((subcategory) => (
                       <div key={subcategory.name} className="border-t border-border/50">
                         {/* Subcategory Header */}
                         <button
                           onClick={() => toggleSubcategory(subcategory.name)}
-                          className="w-full px-6 py-2.5 flex items-center justify-between hover:bg-accent/20 transition-colors"
+                          className="w-full px-6 py-2.5 flex items-center justify-between hover:bg-accent/20 transition-colors bg-surface"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-base">{subcategory.icon}</span>
@@ -276,12 +276,12 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
 
                         {/* Nodes */}
                         {openSubcategory === subcategory.name && (
-                          <div className="bg-background/30">
+                          <div className="bg-surface">
                             {subcategory.nodes.map((node) => (
                               <button
                                 key={node.name}
                                 onClick={() => handleNodeClick(category.name, subcategory.name, node.name)}
-                                className="w-full px-8 py-2.5 flex items-center gap-2 hover:bg-primary/10 hover:text-primary transition-colors text-left group"
+                                className="w-full px-8 py-2.5 flex items-center gap-2 hover:bg-primary/10 hover:text-primary transition-colors text-left group bg-surface"
                               >
                                 <span className="text-base group-hover:scale-110 transition-transform">
                                   {node.icon}

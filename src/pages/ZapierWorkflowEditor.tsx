@@ -498,15 +498,6 @@ export default function ZapierWorkflowEditor() {
           <div className="space-y-0">
             {nodes.map((node, index) => (
               <div key={node.id} className="relative">
-                {/* Connection Line */}
-                {index > 0 && (
-                  <div className="flex justify-center my-4">
-                    <div 
-                      className="w-0.5 h-8 bg-border"
-                    />
-                  </div>
-                )}
-
                 {/* Node */}
                 {node.type === 'trigger' ? (
                   <TriggerNode
@@ -546,15 +537,11 @@ export default function ZapierWorkflowEditor() {
                   />
                 )}
 
-                {/* Add Button with connection lines */}
-                <div className="flex justify-center my-4">
-                  <div className="relative">
-                    <div className="w-0.5 h-6 bg-border absolute left-1/2 -translate-x-1/2 top-0" />
-                    <div className="relative z-10 py-2">
-                      <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
-                    </div>
-                    <div className="w-0.5 h-6 bg-border absolute left-1/2 -translate-x-1/2 bottom-0" />
-                  </div>
+                {/* Connection line and Add button */}
+                <div className="flex flex-col items-center my-6">
+                  <div className="w-0.5 h-8 bg-border" />
+                  <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
+                  <div className="w-0.5 h-8 bg-border" />
                 </div>
               </div>
             ))}
