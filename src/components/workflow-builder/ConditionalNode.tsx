@@ -55,8 +55,7 @@ export const ConditionalNode = ({
               <GitBranch className="h-6 w-6 text-warning" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground text-lg mb-2">{node.title}</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="text-xs bg-warning/20 text-warning-foreground">
                   If/Else
                 </Badge>
@@ -74,6 +73,7 @@ export const ConditionalNode = ({
                   )}
                 </div>
               </div>
+              <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
             </div>
           </div>
           <div className="flex items-center gap-1">
