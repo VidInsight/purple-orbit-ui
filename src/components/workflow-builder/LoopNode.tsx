@@ -36,7 +36,7 @@ export const LoopNode = ({ node, onUpdate, onDelete, onClick }: LoopNodeProps) =
       className="bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary hover:border-primary/80 hover:shadow-lg"
     >
       {/* Header */}
-      <div className="px-6 py-4">
+      <div className="px-5 py-3">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 flex-1" onClick={handleNodeClick}>
             <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
