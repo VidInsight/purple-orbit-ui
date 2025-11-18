@@ -151,38 +151,28 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
             <div className="space-y-3">
               {variables.map((variable, index) => (
                 <div key={index} className="grid grid-cols-3 gap-3">
-                  {isEditing ? (
-                    <>
-                      <Input
-                        value={variable.name}
-                        onChange={(e) => handleVariableChange(index, 'name', e.target.value)}
-                        placeholder="Variable name"
-                        className="text-sm"
-                      />
-                      <select
-                        value={variable.type}
-                        onChange={(e) => handleVariableChange(index, 'type', e.target.value)}
-                        className="px-3 py-2 rounded-lg bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                      >
-                        <option value="string">String</option>
-                        <option value="number">Number</option>
-                        <option value="boolean">Boolean</option>
-                        <option value="object">Object</option>
-                      </select>
-                      <Input
-                        value={variable.defaultValue}
-                        onChange={(e) => handleVariableChange(index, 'defaultValue', e.target.value)}
-                        placeholder="Default value"
-                        className="text-sm"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-sm text-foreground font-medium">{variable.name}</div>
-                      <div className="text-sm text-muted-foreground">{variable.type}</div>
-                      <div className="text-sm text-muted-foreground">{variable.defaultValue || '-'}</div>
-                    </>
-                  )}
+                  <Input
+                    value={variable.name}
+                    onChange={(e) => handleVariableChange(index, 'name', e.target.value)}
+                    placeholder="Variable name"
+                    className="text-sm"
+                  />
+                  <select
+                    value={variable.type}
+                    onChange={(e) => handleVariableChange(index, 'type', e.target.value)}
+                    className="px-3 py-2 rounded-lg bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="string">String</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Boolean</option>
+                    <option value="object">Object</option>
+                  </select>
+                  <Input
+                    value={variable.defaultValue}
+                    onChange={(e) => handleVariableChange(index, 'defaultValue', e.target.value)}
+                    placeholder="Default value"
+                    className="text-sm"
+                  />
                 </div>
               ))}
             </div>
