@@ -39,29 +39,26 @@ export const LoopNode = ({ node, onUpdate, onDelete, onClick }: LoopNodeProps) =
       <div className="px-5 py-3">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 flex-1" onClick={handleNodeClick}>
-            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Repeat className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Repeat className="h-5 w-5 text-primary" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="text-xs bg-primary/20 text-primary-foreground">
-                  Loop/Iteration
-                </Badge>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
                 <div className="flex items-center gap-1.5">
                   {isConfigured ? (
                     <>
-                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      <CheckCircle2 className="h-3 w-3 text-success" />
                       <span className="text-xs text-success font-medium">Configured</span>
                     </>
                   ) : (
                     <>
-                      <div className="h-3.5 w-3.5 rounded-full border-2 border-warning" />
+                      <div className="h-3 w-3 rounded-full border-2 border-warning" />
                       <span className="text-xs text-warning font-medium">Unconfigured</span>
                     </>
                   )}
                 </div>
               </div>
-              <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
+              <h3 className="font-semibold text-foreground">{node.title}</h3>
             </div>
           </div>
           <div className="flex items-center gap-1">
