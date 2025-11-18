@@ -538,10 +538,10 @@ export default function ZapierWorkflowEditor() {
                 )}
 
                 {/* Connection line and Add button */}
-                <div className="flex flex-col items-center my-4">
-                  <div className="w-0.5 h-6 bg-border" />
+                <div className="flex flex-col items-center my-6">
+                  <div className="w-0.5 h-8 bg-border" />
                   <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
-                  <div className="w-0.5 h-6 bg-border" />
+                  <div className="w-0.5 h-8 bg-border" />
                 </div>
               </div>
             ))}
