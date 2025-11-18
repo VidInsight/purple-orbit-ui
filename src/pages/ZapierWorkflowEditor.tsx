@@ -507,7 +507,7 @@ export default function ZapierWorkflowEditor() {
         </div>
 
         {/* Workflow Canvas */}
-        <div className="max-w-screen-xl mx-auto px-6 py-8">
+        <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="space-y-0">
             {nodes.map((node, index) => (
               <div key={node.id} className="relative">
