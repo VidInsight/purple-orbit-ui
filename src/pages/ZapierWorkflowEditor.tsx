@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -430,14 +429,19 @@ export default function ZapierWorkflowEditor() {
     // Implement test logic
   };
 
+  const handlePublish = () => {
+    console.log('Publishing workflow:', { name: workflowName, nodes });
+    // Implement publish logic
+  };
+
   return (
-    <PageLayout>
-      <PathProvider>
-        <div className="min-h-screen bg-background">
+    <PathProvider>
+      <div className="min-h-screen bg-background">
         {/* Toolbar */}
         <div className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
+              {/* Left Side */}
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
@@ -471,14 +475,15 @@ export default function ZapierWorkflowEditor() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Right Side */}
+              <div className="flex items-center gap-3">
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleTest}
                 >
                   <Play className="h-4 w-4 mr-2" />
-                  Test
+                  Test Result
                 </Button>
                 <Button
                   variant="primary"
@@ -487,6 +492,14 @@ export default function ZapierWorkflowEditor() {
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handlePublish}
+                  className="bg-success hover:bg-success/90"
+                >
+                  Activate
                 </Button>
               </div>
             </div>
@@ -568,7 +581,6 @@ export default function ZapierWorkflowEditor() {
           currentNodeId={selectedNode?.id}
         />
       </div>
-      </PathProvider>
-    </PageLayout>
+    </PathProvider>
   );
 }
