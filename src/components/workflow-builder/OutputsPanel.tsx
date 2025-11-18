@@ -81,7 +81,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
       return (
         <div className="inline-block">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" style={{ paddingLeft: `${indent}px` }}>
             <button
               onClick={() => handleToggleCollapse(arrayPath)}
               className="hover:bg-accent/50 rounded p-0.5 transition-colors"
@@ -101,7 +101,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
           {!isArrayCollapsed && (
             <>
               {value.map((item, index) => (
-                <div key={index} style={{ paddingLeft: `${indent + 4}px` }} className="group">
+                <div key={index} style={{ paddingLeft: `${indent + 12}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
                       onClick={() => handleDragClick(`${parentPath}[${index}]`)}
@@ -137,7 +137,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
       return (
         <div className="inline-block">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" style={{ paddingLeft: `${indent}px` }}>
             <button
               onClick={() => handleToggleCollapse(objectPath)}
               className="hover:bg-accent/50 rounded p-0.5 transition-colors"
@@ -157,7 +157,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
           {!isObjectCollapsed && (
             <>
               {entries.map(([key, val], index) => (
-                <div key={key} style={{ paddingLeft: `${indent + 4}px` }} className="group">
+                <div key={key} style={{ paddingLeft: `${indent + 12}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
                       onClick={() => handleDragClick(`${parentPath}.${key}`)}
