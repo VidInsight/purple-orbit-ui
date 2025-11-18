@@ -131,10 +131,27 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
           </div>
           <div className="space-y-3">
             {variables.map((variable, index) => (
-              <div key={index} className="grid grid-cols-3 gap-3 text-sm">
-                <div className="text-foreground font-medium">{variable.name}</div>
-                <div className="text-muted-foreground">{variable.type}</div>
-                <div className="text-muted-foreground">{variable.defaultValue || '-'}</div>
+              <div key={index} className="grid grid-cols-3 gap-3">
+                <Input
+                  value={variable.name}
+                  disabled
+                  className="text-sm"
+                />
+                <select
+                  value={variable.type}
+                  disabled
+                  className="px-3 py-2 rounded-lg bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring opacity-60 cursor-not-allowed"
+                >
+                  <option value="string">String</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="object">Object</option>
+                </select>
+                <Input
+                  value={variable.defaultValue}
+                  disabled
+                  className="text-sm"
+                />
               </div>
             ))}
           </div>
