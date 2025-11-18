@@ -6,6 +6,14 @@ export type NodeType = 'trigger' | 'action' | 'condition' | 'loop' | 'end';
 
 export interface WorkflowNode extends Node {
   type: NodeType;
+  icon?: string;
+  nodeType?: string;
+  configured?: boolean;
+  variables?: Array<{
+    name: string;
+    type: string;
+    defaultValue: string;
+  }>;
   data: {
     label: string;
     description?: string;

@@ -17,7 +17,10 @@ interface WorkflowNode {
   id: string;
   type: 'trigger' | 'action';
   title: string;
+  icon?: string;
   category?: string;
+  nodeType?: string;
+  configured?: boolean;
   variables?: Variable[];
   config?: Record<string, any>;
 }
@@ -31,6 +34,7 @@ export default function ZapierWorkflowEditor() {
       id: 'trigger-1',
       type: 'trigger',
       title: 'API Trigger',
+      icon: '⚡',
       variables: [
         { name: 'user_id', type: 'string', defaultValue: '' },
         { name: 'event_type', type: 'string', defaultValue: 'create' },
@@ -40,11 +44,25 @@ export default function ZapierWorkflowEditor() {
   ]);
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string) => {
+    // Map node types to icons and configured status
+    const nodeIcons: Record<string, string> = {
+      'GPT-4 Completion': '💬',
+      'DALL-E Image': '🎨',
+      'Embeddings': '🔢',
+      'Claude': '💭',
+      'JSON Parse': '📋',
+      'Text Replace': '✏️',
+      'Date Format': '📅',
+    };
+
     const newNode: WorkflowNode = {
       id: `node-${Date.now()}`,
       type: 'action',
       title: nodeType,
+      icon: nodeIcons[nodeType] || '⚙️',
       category: `${category} > ${subcategory}`,
+      nodeType: category,
+      configured: false,
       config: {},
     };
 
@@ -134,13 +152,18 @@ export default function ZapierWorkflowEditor() {
         </div>
 
         {/* Workflow Canvas */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="space-y-4">
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          <div className="space-y-0">
             {nodes.map((node, index) => (
               <div key={node.id} className="relative">
-                {/* Connection Line */}
+                {/* Connection Line - Dashed */}
                 {index > 0 && (
-                  <div className="absolute left-1/2 -translate-x-1/2 -top-4 w-0.5 h-4 bg-border" />
+                  <div className="flex justify-center py-4">
+                    <div 
+                      className="w-0.5 h-8 border-l-2 border-dashed"
+                      style={{ borderColor: '#d1d5db' }}
+                    />
+                  </div>
                 )}
 
                 {/* Node */}
@@ -158,8 +181,14 @@ export default function ZapierWorkflowEditor() {
                 )}
 
                 {/* Add Button */}
-                <div className="flex justify-center mt-4">
-                  <AddNodeButton onAddNode={handleAddNode} />
+                <div className="flex justify-center py-4">
+                  <div 
+                    className="w-0.5 h-8 border-l-2 border-dashed mb-2"
+                    style={{ borderColor: '#d1d5db' }}
+                  />
+                  <div className="absolute">
+                    <AddNodeButton onAddNode={handleAddNode} />
+                  </div>
                 </div>
               </div>
             ))}
