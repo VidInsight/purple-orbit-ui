@@ -48,12 +48,33 @@ export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProp
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3" onClick={handleNodeClick}>
+          <div className="flex items-center gap-3 flex-1" onClick={handleNodeClick}>
             <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center">
               <Icon className="h-6 w-6 text-accent-foreground" />
             </div>
-            <div>
-              <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground text-lg mb-2">{node.title}</h3>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {node.nodeType || 'Action'}
+                </Badge>
+                {node.category && (
+                  <span className="text-xs text-muted-foreground">{node.category}</span>
+                )}
+                <div className="flex items-center gap-1.5">
+                  {isConfigured ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      <span className="text-xs text-success font-medium">Configured</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-3.5 w-3.5 rounded-full border-2 border-warning" />
+                      <span className="text-xs text-warning font-medium">Unconfigured</span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -88,32 +109,12 @@ export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProp
                 e.stopPropagation();
                 onDelete();
               }}
-              className="h-8 w-8 p-0 hover:text-destructive"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
               title="Delete"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {node.nodeType || 'Action'}
-          </Badge>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isConfigured ? (
-            <>
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span className="text-sm text-success font-medium">Configured</span>
-            </>
-          ) : (
-            <>
-              <div className="h-4 w-4 rounded-full border-2 border-warning" />
-              <span className="text-sm text-warning font-medium">Unconfigured</span>
-            </>
-          )}
         </div>
       </div>
 

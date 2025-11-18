@@ -57,12 +57,30 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3" onClick={handleNodeClick}>
+          <div className="flex items-center gap-3 flex-1" onClick={handleNodeClick}>
             <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
               <Zap className="h-6 w-6 text-primary" />
             </div>
-            <div>
-              <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground text-lg mb-2">{node.title}</h3>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  Trigger
+                </Badge>
+                <div className="flex items-center gap-1.5">
+                  {isConfigured ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      <span className="text-xs text-success font-medium">Configured</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-3.5 w-3.5 rounded-full border-2 border-warning" />
+                      <span className="text-xs text-warning font-medium">Unconfigured</span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -94,26 +112,6 @@ export const TriggerNode = ({ node, onUpdate, onClick }: TriggerNodeProps) => {
               <Edit2 className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" className="text-xs">
-            Trigger
-          </Badge>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isConfigured ? (
-            <>
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span className="text-sm text-success font-medium">Configured</span>
-            </>
-          ) : (
-            <>
-              <div className="h-4 w-4 rounded-full border-2 border-warning" />
-              <span className="text-sm text-warning font-medium">Unconfigured</span>
-            </>
-          )}
         </div>
       </div>
 
