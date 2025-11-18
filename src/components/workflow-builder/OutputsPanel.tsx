@@ -119,7 +119,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   </div>
                 </div>
               ))}
-              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
+              <div className="text-foreground">]</div>
             </>
           )}
         </div>
@@ -175,7 +175,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   </div>
                 </div>
               ))}
-              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
+              <div className="text-foreground">{'}'}</div>
             </>
           )}
         </div>
