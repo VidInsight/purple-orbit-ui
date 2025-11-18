@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Zap, ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { Zap, Edit2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/badge';
 
 interface Variable {
   name: string;
@@ -13,15 +14,29 @@ interface TriggerNodeProps {
   node: {
     id: string;
     title: string;
+    icon?: string;
     variables?: Variable[];
   };
   onUpdate: (updates: any) => void;
 }
 
 export const TriggerNode = ({ node, onUpdate }: TriggerNodeProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [variables, setVariables] = useState<Variable[]>(node.variables || []);
+  
+  const isConfigured = variables.length > 0 && variables.every(v => v.name && v.type);
+
+  const handleNodeClick = () => {
+    console.log('Node clicked:', {
+      id: node.id,
+      title: node.title,
+      type: 'Trigger',
+      configured: isConfigured,
+      variables,
+    });
+    setIsExpanded(!isExpanded);
+  };
 
   const handleVariableChange = (index: number, field: keyof Variable, value: string) => {
     const updated = [...variables];
@@ -39,22 +54,25 @@ export const TriggerNode = ({ node, onUpdate }: TriggerNodeProps) => {
   };
 
   return (
-    <div className="bg-surface border-2 border-primary rounded-lg shadow-lg overflow-hidden transition-all duration-200 hover:shadow-xl">
+    <div 
+      className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
+        isConfigured 
+          ? 'border-success hover:border-success/80 hover:shadow-lg' 
+          : 'border-warning hover:border-warning/80 hover:shadow-lg'
+      }`}
+      onClick={() => !isEditing && handleNodeClick()}
+    >
       {/* Header */}
-      <div 
-        className="bg-primary/10 border-b border-primary/20 px-6 py-4 flex items-center justify-between cursor-pointer"
-        onClick={() => !isEditing && setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Zap className="h-5 w-5 text-primary" />
+      <div className="px-6 py-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
+              {node.icon || '⚡'}
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-foreground">{node.title}</h3>
-            <p className="text-xs text-muted-foreground">When this happens...</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
           {!isEditing && (
             <Button
               variant="ghost"
@@ -69,17 +87,32 @@ export const TriggerNode = ({ node, onUpdate }: TriggerNodeProps) => {
               <Edit2 className="h-4 w-4" />
             </Button>
           )}
-          {isExpanded ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+        </div>
+
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant="secondary" className="text-xs">
+            Trigger
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isConfigured ? (
+            <>
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm text-success font-medium">Configured</span>
+            </>
           ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+            <>
+              <div className="h-4 w-4 rounded-full border-2 border-warning" />
+              <span className="text-sm text-warning font-medium">Unconfigured</span>
+            </>
           )}
         </div>
       </div>
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-6 py-4 space-y-4">
+        <div className="px-6 py-4 space-y-4 border-t border-border bg-surface/50">
           <div>
             <h4 className="text-sm font-medium text-foreground mb-3">Variables</h4>
             <div className="space-y-3">
