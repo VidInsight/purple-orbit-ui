@@ -34,13 +34,17 @@ import {
   Mail,
   Download,
   Upload,
-  Bell
+  Bell,
+  Search,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
 
 interface NodeType {
   name: string;
   icon: any;
+  description: string;
 }
 
 interface Subcategory {
@@ -64,25 +68,25 @@ const categories: Category[] = [
         name: 'OpenAI',
         icon: Circle,
         nodes: [
-          { name: 'GPT-4 Completion', icon: MessageSquare },
-          { name: 'DALL-E Image', icon: Image },
-          { name: 'Embeddings', icon: Hash },
+          { name: 'GPT-4 Completion', icon: MessageSquare, description: 'Generate text using GPT-4' },
+          { name: 'DALL-E Image', icon: Image, description: 'Create AI-generated images' },
+          { name: 'Embeddings', icon: Hash, description: 'Convert text to vector embeddings' },
         ],
       },
       {
         name: 'Anthropic',
         icon: Circle,
         nodes: [
-          { name: 'Claude', icon: MessageSquare },
-          { name: 'Claude Instant', icon: Zap },
+          { name: 'Claude', icon: MessageSquare, description: 'Chat with Claude AI model' },
+          { name: 'Claude Instant', icon: Zap, description: 'Fast Claude responses' },
         ],
       },
       {
         name: 'Google AI',
         icon: Circle,
         nodes: [
-          { name: 'Gemini', icon: Sparkles },
-          { name: 'PaLM', icon: Brain },
+          { name: 'Gemini', icon: Sparkles, description: 'Google\'s multimodal AI' },
+          { name: 'PaLM', icon: Brain, description: 'Google\'s language model' },
         ],
       },
     ],
@@ -95,27 +99,27 @@ const categories: Category[] = [
         name: 'Transform',
         icon: RotateCw,
         nodes: [
-          { name: 'JSON Parse', icon: FileJson },
-          { name: 'Text Replace', icon: Type },
-          { name: 'Date Format', icon: Calendar },
+          { name: 'JSON Parse', icon: FileJson, description: 'Parse JSON strings to objects' },
+          { name: 'Text Replace', icon: Type, description: 'Find and replace text' },
+          { name: 'Date Format', icon: Calendar, description: 'Format dates and times' },
         ],
       },
       {
         name: 'Filter',
         icon: Filter,
         nodes: [
-          { name: 'Filter Array', icon: Filter },
-          { name: 'Remove Duplicates', icon: Trash2 },
-          { name: 'Conditional Filter', icon: Target },
+          { name: 'Filter Array', icon: Filter, description: 'Filter array items by condition' },
+          { name: 'Remove Duplicates', icon: Trash2, description: 'Remove duplicate values' },
+          { name: 'Conditional Filter', icon: Target, description: 'Advanced filtering logic' },
         ],
       },
       {
         name: 'Aggregate',
         icon: TrendingUp,
         nodes: [
-          { name: 'Sum', icon: PlusCircle },
-          { name: 'Average', icon: BarChart3 },
-          { name: 'Count', icon: Hash },
+          { name: 'Sum', icon: PlusCircle, description: 'Calculate sum of numbers' },
+          { name: 'Average', icon: BarChart3, description: 'Calculate average value' },
+          { name: 'Count', icon: Hash, description: 'Count array items' },
         ],
       },
     ],
@@ -128,27 +132,27 @@ const categories: Category[] = [
         name: 'Conditions',
         icon: HelpCircle,
         nodes: [
-          { name: 'If/Else', icon: GitBranch },
-          { name: 'Switch', icon: Shuffle },
-          { name: 'Compare', icon: Target },
+          { name: 'If/Else', icon: GitBranch, description: 'Branch workflow based on condition' },
+          { name: 'Switch', icon: Shuffle, description: 'Multiple conditional branches' },
+          { name: 'Compare', icon: Target, description: 'Compare values' },
         ],
       },
       {
         name: 'Loops',
         icon: Repeat,
         nodes: [
-          { name: 'For Each', icon: Repeat },
-          { name: 'While', icon: RotateCw },
-          { name: 'Repeat', icon: Repeat },
+          { name: 'For Each', icon: Repeat, description: 'Loop through array items' },
+          { name: 'While', icon: RotateCw, description: 'Loop while condition is true' },
+          { name: 'Repeat', icon: Repeat, description: 'Repeat action N times' },
         ],
       },
       {
         name: 'Branches',
         icon: Split,
         nodes: [
-          { name: 'Split', icon: Split },
-          { name: 'Merge', icon: Merge },
-          { name: 'Parallel', icon: Layers },
+          { name: 'Split', icon: Split, description: 'Split workflow into branches' },
+          { name: 'Merge', icon: Merge, description: 'Merge multiple branches' },
+          { name: 'Parallel', icon: Layers, description: 'Execute actions in parallel' },
         ],
       },
     ],
@@ -161,26 +165,26 @@ const categories: Category[] = [
         name: 'HTTP',
         icon: Globe,
         nodes: [
-          { name: 'GET Request', icon: Download },
-          { name: 'POST Request', icon: Upload },
-          { name: 'Webhook', icon: Bell },
+          { name: 'GET Request', icon: Download, description: 'Fetch data from API' },
+          { name: 'POST Request', icon: Upload, description: 'Send data to API' },
+          { name: 'Webhook', icon: Bell, description: 'Receive webhook triggers' },
         ],
       },
       {
         name: 'Database',
         icon: Database,
         nodes: [
-          { name: 'Query', icon: Filter },
-          { name: 'Insert', icon: PlusCircle },
-          { name: 'Update', icon: Type },
+          { name: 'Query', icon: Filter, description: 'Query database records' },
+          { name: 'Insert', icon: PlusCircle, description: 'Insert new records' },
+          { name: 'Update', icon: Type, description: 'Update existing records' },
         ],
       },
       {
         name: 'Email',
         icon: Mail,
         nodes: [
-          { name: 'Send Email', icon: Upload },
-          { name: 'Parse Email', icon: FileJson },
+          { name: 'Send Email', icon: Upload, description: 'Send email messages' },
+          { name: 'Parse Email', icon: FileJson, description: 'Parse email content' },
         ],
       },
     ],
@@ -195,7 +199,27 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [openSubcategory, setOpenSubcategory] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [recentlyUsed, setRecentlyUsed] = useState<Array<{
+    categoryName: string;
+    subcategoryName: string;
+    nodeName: string;
+    nodeIcon: any;
+    nodeDescription: string;
+  }>>([]);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Load recently used nodes from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentlyUsedNodes');
+    if (stored) {
+      try {
+        setRecentlyUsed(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to parse recently used nodes:', e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -225,6 +249,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
     setIsOpen(false);
     setOpenCategory(null);
     setOpenSubcategory(null);
+    setSearchTerm('');
   };
 
   const toggleCategory = (categoryName: string) => {
@@ -246,9 +271,39 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   };
 
   const handleNodeClick = (categoryName: string, subcategoryName: string, nodeName: string) => {
+    // Find the node details
+    const category = categories.find(c => c.name === categoryName);
+    const subcategory = category?.subcategories.find(sc => sc.name === subcategoryName);
+    const node = subcategory?.nodes.find(n => n.name === nodeName);
+
+    if (node) {
+      // Update recently used
+      const newRecentlyUsed = [
+        { categoryName, subcategoryName, nodeName, nodeIcon: node.icon, nodeDescription: node.description },
+        ...recentlyUsed.filter(item => item.nodeName !== nodeName)
+      ].slice(0, 5); // Keep only 5 most recent
+      
+      setRecentlyUsed(newRecentlyUsed);
+      localStorage.setItem('recentlyUsedNodes', JSON.stringify(newRecentlyUsed));
+    }
+
     onAddNode(categoryName, subcategoryName, nodeName);
     handleClose();
   };
+
+  // Filter categories based on search term
+  const filteredCategories = searchTerm
+    ? categories.map(category => ({
+        ...category,
+        subcategories: category.subcategories.map(subcategory => ({
+          ...subcategory,
+          nodes: subcategory.nodes.filter(node =>
+            node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            node.description.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        })).filter(subcategory => subcategory.nodes.length > 0)
+      })).filter(category => category.subcategories.length > 0)
+    : categories;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -267,79 +322,139 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
           <div className="px-4 py-3 bg-accent/10 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Add Node</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Select a node to add to your workflow</p>
+            
+            {/* Search Input */}
+            <div className="mt-3 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search nodes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-9 text-sm bg-background border-border"
+              />
+            </div>
           </div>
 
           {/* Content - Accordion Style */}
           <div className="max-h-96 overflow-y-auto bg-surface">
-            {categories.map((category) => {
-              const CategoryIcon = category.icon;
-              return (
-                <div key={category.name} className="border-b border-border last:border-b-0">
-                  {/* Category Header */}
-                  <button
-                    onClick={() => toggleCategory(category.name)}
-                    className="w-full pl-4 pr-4 py-2.5 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
-                  >
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span className="text-sm font-medium text-foreground whitespace-nowrap">{category.name}</span>
-                    </div>
-                    <ChevronDown
-                      className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
-                        openCategory === category.name ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {/* Subcategories */}
-                  {openCategory === category.name && (
-                    <div className="bg-surface">
-                      {category.subcategories.map((subcategory) => {
-                        const SubcategoryIcon = subcategory.icon;
-                        return (
-                          <div key={subcategory.name} className="border-t border-border/50">
-                            {/* Subcategory Header */}
-                            <button
-                              onClick={() => toggleSubcategory(subcategory.name)}
-                              className="w-full pl-8 pr-4 py-2 flex items-center justify-between hover:bg-accent/20 transition-colors bg-surface"
-                            >
-                              <div className="flex items-center gap-3">
-                                <SubcategoryIcon className="h-4 w-4 text-accent-foreground flex-shrink-0" />
-                                <span className="text-sm text-foreground whitespace-nowrap">{subcategory.name}</span>
-                              </div>
-                              <ChevronRight
-                                className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
-                                  openSubcategory === subcategory.name ? 'rotate-90' : ''
-                                }`}
-                              />
-                            </button>
-
-                            {/* Nodes */}
-                            {openSubcategory === subcategory.name && (
-                              <div className="bg-surface">
-                                {subcategory.nodes.map((node) => {
-                                  const NodeIcon = node.icon;
-                                  return (
-                                    <button
-                                      key={node.name}
-                                      onClick={() => handleNodeClick(category.name, subcategory.name, node.name)}
-                                      className="w-full pl-12 pr-4 py-2 flex items-center gap-3 hover:bg-primary/10 hover:text-primary transition-colors text-left group bg-surface"
-                                    >
-                                      <NodeIcon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-                                      <span className="text-sm text-foreground whitespace-nowrap">{node.name}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+            {/* Recently Used Section */}
+            {!searchTerm && recentlyUsed.length > 0 && (
+              <div className="border-b border-border">
+                <div className="px-4 py-2 bg-accent/5">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recently Used</span>
+                  </div>
                 </div>
-              );
-            })}
+                <div className="bg-surface">
+                  {recentlyUsed.map((item, index) => {
+                    const NodeIcon = item.nodeIcon;
+                    return (
+                      <button
+                        key={`${item.nodeName}-${index}`}
+                        onClick={() => handleNodeClick(item.categoryName, item.subcategoryName, item.nodeName)}
+                        className="w-full pl-4 pr-4 py-2.5 flex items-start gap-3 hover:bg-accent/30 transition-colors text-left group"
+                      >
+                        <NodeIcon className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                            {item.nodeName}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                            {item.nodeDescription}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Categories */}
+            {filteredCategories.length === 0 ? (
+              <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+                No nodes found matching "{searchTerm}"
+              </div>
+            ) : (
+              filteredCategories.map((category) => {
+                const CategoryIcon = category.icon;
+                return (
+                  <div key={category.name} className="border-b border-border last:border-b-0">
+                    {/* Category Header */}
+                    <button
+                      onClick={() => toggleCategory(category.name)}
+                      className="w-full pl-4 pr-4 py-2.5 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
+                    >
+                      <div className="flex items-center gap-3">
+                        <CategoryIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="text-sm font-medium text-foreground whitespace-nowrap">{category.name}</span>
+                      </div>
+                      <ChevronDown
+                        className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                          openCategory === category.name ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    {/* Subcategories */}
+                    {openCategory === category.name && (
+                      <div className="bg-surface">
+                        {category.subcategories.map((subcategory) => {
+                          const SubcategoryIcon = subcategory.icon;
+                          return (
+                            <div key={subcategory.name} className="border-t border-border/50">
+                              {/* Subcategory Header */}
+                              <button
+                                onClick={() => toggleSubcategory(subcategory.name)}
+                                className="w-full pl-8 pr-4 py-2 flex items-center justify-between hover:bg-accent/20 transition-colors bg-surface"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <SubcategoryIcon className="h-4 w-4 text-accent-foreground flex-shrink-0" />
+                                  <span className="text-sm text-foreground whitespace-nowrap">{subcategory.name}</span>
+                                </div>
+                                <ChevronRight
+                                  className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
+                                    openSubcategory === subcategory.name ? 'rotate-90' : ''
+                                  }`}
+                                />
+                              </button>
+
+                              {/* Nodes */}
+                              {openSubcategory === subcategory.name && (
+                                <div className="bg-surface">
+                                  {subcategory.nodes.map((node) => {
+                                    const NodeIcon = node.icon;
+                                    return (
+                                      <button
+                                        key={node.name}
+                                        onClick={() => handleNodeClick(category.name, subcategory.name, node.name)}
+                                        className="w-full pl-14 pr-4 py-2.5 flex items-start gap-3 hover:bg-accent/30 transition-colors text-left group"
+                                      >
+                                        <NodeIcon className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                                            {node.name}
+                                          </div>
+                                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                            {node.description}
+                                          </div>
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}
