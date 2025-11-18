@@ -38,7 +38,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   };
 
   const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
-    const indent = depth * 12;
+    const indent = depth * 8;
 
     if (value === null) {
       return <span className="text-muted-foreground">null</span>;
@@ -64,7 +64,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
         <div className="inline-block">
           <div className="text-foreground">[</div>
           {value.map((item, index) => (
-            <div key={index} style={{ paddingLeft: `${indent + 12}px` }} className="py-0.5">
+            <div key={index} style={{ paddingLeft: `${indent + 8}px` }}>
               {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
               {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
             </div>
@@ -83,11 +83,11 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
         <div className="inline-block">
           <div className="text-foreground">{'{'}</div>
           {entries.map(([key, val], index) => (
-            <div key={key} style={{ paddingLeft: `${indent + 12}px` }} className="py-0.5 group">
+            <div key={key} style={{ paddingLeft: `${indent + 8}px` }} className="group">
               <div className="flex items-start gap-1.5">
                 <button
                   onClick={() => handleDragClick(`${parentPath}.${key}`)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                   title={`Path: ${parentPath}.${key}`}
                 >
                   <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
@@ -169,7 +169,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
                 {/* Accordion Content */}
                 {expandedNode === output.nodeId && (
-                  <div className="px-6 py-4 bg-background/50">
+                  <div className="px-6 py-3 bg-background/50">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-medium text-muted-foreground">JSON Output</span>
                       <Button
@@ -183,8 +183,8 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                       </Button>
                     </div>
 
-                    <div className="bg-background rounded-lg p-4 border border-border overflow-x-auto">
-                      <pre className="text-xs font-mono leading-relaxed">
+                    <div className="bg-background rounded-lg p-3 border border-border overflow-x-auto">
+                      <pre className="text-xs font-mono leading-snug">
                         {renderValue(output.output, output.nodeId)}
                       </pre>
                     </div>
