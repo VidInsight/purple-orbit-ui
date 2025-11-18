@@ -38,7 +38,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   };
 
   const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
-    const indent = depth * 16;
+    const indent = depth * 12;
 
     if (value === null) {
       return <span className="text-muted-foreground">null</span>;
@@ -57,45 +57,51 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     }
 
     if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-foreground">[]</span>;
+      }
       return (
-        <div>
-          <span className="text-foreground">[</span>
+        <div className="inline-block">
+          <div className="text-foreground">[</div>
           {value.map((item, index) => (
-            <div key={index} style={{ marginLeft: `${indent + 16}px` }} className="py-0.5">
+            <div key={index} style={{ paddingLeft: `${indent + 12}px` }} className="py-0.5">
               {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
               {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
             </div>
           ))}
-          <span className="text-foreground" style={{ marginLeft: `${indent}px` }}>]</span>
+          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
         </div>
       );
     }
 
     if (typeof value === 'object') {
       const entries = Object.entries(value);
+      if (entries.length === 0) {
+        return <span className="text-foreground">{'{}'}</span>;
+      }
       return (
-        <div>
-          <span className="text-foreground">{'{'}</span>
+        <div className="inline-block">
+          <div className="text-foreground">{'{'}</div>
           {entries.map(([key, val], index) => (
-            <div key={key} style={{ marginLeft: `${indent + 16}px` }} className="py-0.5 group">
-              <div className="flex items-start gap-2">
+            <div key={key} style={{ paddingLeft: `${indent + 12}px` }} className="py-0.5 group">
+              <div className="flex items-start gap-1.5">
                 <button
                   onClick={() => handleDragClick(`${parentPath}.${key}`)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5"
                   title={`Path: ${parentPath}.${key}`}
                 >
                   <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
                 </button>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <span className="text-accent-foreground">"{key}"</span>
                   <span className="text-muted-foreground">: </span>
-                  {renderValue(val, `${parentPath}.${key}`, depth + 1)}
+                  <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1)}</span>
                   {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
                 </div>
               </div>
             </div>
           ))}
-          <span className="text-foreground" style={{ marginLeft: `${indent}px` }}>{'}'}</span>
+          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
         </div>
       );
     }
