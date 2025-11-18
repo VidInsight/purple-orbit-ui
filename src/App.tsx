@@ -14,7 +14,7 @@ import { seedDemoData } from "@/utils/seedData";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
-import WorkflowEditor from "@/pages/WorkflowEditor";
+import ZapierWorkflowEditor from "@/pages/ZapierWorkflowEditor";
 import Executions from "@/pages/Executions";
 import ExecutionDetails from "@/pages/ExecutionDetails";
 import Credentials from "@/pages/Credentials";
@@ -51,8 +51,8 @@ const AppRoutes = () => {
       {/* Protected Routes - Require Workspace Context */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
-      <Route path="/workflows/new" element={<ProtectedRoute><WorkflowEditor /></ProtectedRoute>} />
-      <Route path="/workflows/:id/edit" element={<ProtectedRoute><WorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/new" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/:id/edit" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />
       <Route path="/executions" element={<ProtectedRoute><Executions /></ProtectedRoute>} />
       <Route path="/executions/:id" element={<ProtectedRoute><ExecutionDetails /></ProtectedRoute>} />
       <Route path="/credentials" element={<ProtectedRoute><Credentials /></ProtectedRoute>} />

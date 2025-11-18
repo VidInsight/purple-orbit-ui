@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Play } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
@@ -27,8 +27,27 @@ interface WorkflowNode {
 
 export default function ZapierWorkflowEditor() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [workflowName, setWorkflowName] = useState('Untitled Workflow');
   const [isEditingName, setIsEditingName] = useState(false);
+
+  // Load workflow from localStorage if editing existing workflow
+  useEffect(() => {
+    if (id && id !== 'new') {
+      // Load workflow from storage
+      const savedWorkflows = localStorage.getItem('workflows');
+      if (savedWorkflows) {
+        const workflows = JSON.parse(savedWorkflows);
+        const workflow = workflows.find((w: any) => w.id === id);
+        if (workflow) {
+          setWorkflowName(workflow.name);
+          if (workflow.nodes) {
+            setNodes(workflow.nodes);
+          }
+        }
+      }
+    }
+  }, [id]);
   const [nodes, setNodes] = useState<WorkflowNode[]>([
     {
       id: 'trigger-1',
@@ -80,8 +99,33 @@ export default function ZapierWorkflowEditor() {
   };
 
   const handleSave = () => {
-    console.log('Saving workflow:', { name: workflowName, nodes });
-    // Implement save logic
+    const workflowId = id === 'new' ? `workflow-${Date.now()}` : id;
+    const workflow: any = {
+      id: workflowId,
+      name: workflowName,
+      nodes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Save to localStorage
+    const savedWorkflows = localStorage.getItem('workflows');
+    const workflows = savedWorkflows ? JSON.parse(savedWorkflows) : [];
+    const existingIndex = workflows.findIndex((w: any) => w.id === workflowId);
+    
+    if (existingIndex >= 0) {
+      workflows[existingIndex] = workflow;
+    } else {
+      workflow.createdAt = new Date().toISOString();
+      workflows.push(workflow);
+    }
+    
+    localStorage.setItem('workflows', JSON.stringify(workflows));
+    console.log('Workflow saved:', workflow);
+
+    // If new workflow, navigate to edit URL
+    if (id === 'new') {
+      navigate(`/workflows/${workflowId}/edit`, { replace: true });
+    }
   };
 
   const handleTest = () => {
