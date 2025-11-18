@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, GripVertical, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { usePathContext } from './PathContext';
 
 interface OutputData {
   nodeId: string;
@@ -18,15 +19,17 @@ interface OutputsPanelProps {
 export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelProps) => {
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const { setActivePath } = usePathContext();
 
   const handleToggleNode = (nodeId: string) => {
     setExpandedNode(expandedNode === nodeId ? null : nodeId);
   };
 
   const handleDragClick = (path: string) => {
-    console.log('Drag path:', path);
+    console.log('Path selected:', path);
+    setActivePath(path);
     setCopiedPath(path);
-    setTimeout(() => setCopiedPath(null), 2000);
+    setTimeout(() => setCopiedPath(null), 3000);
   };
 
   const handleCopyOutput = (output: any) => {
@@ -170,8 +173,11 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                     </div>
 
                     {copiedPath && (
-                      <div className="mt-2 px-3 py-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary">
-                        Path copied: <code className="font-mono">{copiedPath}</code>
+                      <div className="mt-2 px-3 py-2 bg-success/10 border border-success/30 rounded text-xs text-success animate-fade-in">
+                        ✓ Path copied: <code className="font-mono font-semibold">{copiedPath}</code>
+                        <div className="text-xs mt-1 opacity-80">
+                          Click on an input field in the right panel to paste
+                        </div>
                       </div>
                     )}
                   </div>

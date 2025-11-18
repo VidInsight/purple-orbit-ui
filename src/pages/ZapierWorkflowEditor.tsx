@@ -8,6 +8,7 @@ import { ActionNode } from '@/components/workflow-builder/ActionNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
 import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
+import { PathProvider } from '@/components/workflow-builder/PathContext';
 
 interface Variable {
   name: string;
@@ -34,6 +35,8 @@ interface WorkflowNode {
     min?: number;
     max?: number;
     value?: any;
+    isDynamic?: boolean;
+    dynamicPath?: string;
   }>;
 }
 
@@ -176,13 +179,20 @@ export default function ZapierWorkflowEditor() {
     setShowOutputsPanel(true); // Show outputs panel when a node is selected
   };
 
-  const handleParameterChange = (parameterId: string, value: any) => {
+  const handleParameterChange = (parameterId: string, value: any, isDynamic: boolean = false) => {
     if (!selectedNode) return;
 
     setNodes(nodes.map(node => {
       if (node.id === selectedNode.id) {
         const updatedParameters = node.parameters?.map(param =>
-          param.id === parameterId ? { ...param, value } : param
+          param.id === parameterId 
+            ? { 
+                ...param, 
+                value, 
+                isDynamic,
+                dynamicPath: isDynamic ? value : undefined 
+              } 
+            : param
         );
         const updatedNode = { ...node, parameters: updatedParameters };
         setSelectedNode(updatedNode); // Update selected node too
@@ -312,7 +322,8 @@ export default function ZapierWorkflowEditor() {
 
   return (
     <PageLayout>
-      <div className="min-h-screen bg-background">
+      <PathProvider>
+        <div className="min-h-screen bg-background">
         {/* Toolbar */}
         <div className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-6 py-4">
@@ -442,6 +453,7 @@ export default function ZapierWorkflowEditor() {
           currentNodeId={selectedNode?.id}
         />
       </div>
+      </PathProvider>
     </PageLayout>
   );
 }
