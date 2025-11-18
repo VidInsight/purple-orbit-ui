@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { ChevronDown, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
+import { ChevronDown, GripVertical, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { usePathContext } from './PathContext';
-import JsonView from '@uiw/react-json-view';
-import { darkTheme } from '@uiw/react-json-view/dark';
 
 interface OutputData {
   nodeId: string;
@@ -39,13 +37,76 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     console.log('Copied output to clipboard');
   };
 
-  const handleJsonClick = (path: string[], value: any) => {
-    // Convert array path to dot notation: ["nodeId", "key", "subkey"] -> "nodeId.key.subkey"
-    const fullPath = path.join('.');
-    console.log('Selected path:', fullPath);
-    setActivePath(fullPath);
-    setCopiedPath(fullPath);
-    setTimeout(() => setCopiedPath(null), 2000);
+  const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
+    const indent = depth * 8;
+
+    if (value === null) {
+      return <span className="text-muted-foreground">null</span>;
+    }
+
+    if (typeof value === 'boolean') {
+      return <span className="text-warning">{String(value)}</span>;
+    }
+
+    if (typeof value === 'number') {
+      return <span className="text-success">{value}</span>;
+    }
+
+    if (typeof value === 'string') {
+      return <span className="text-primary">"{value}"</span>;
+    }
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-foreground">[]</span>;
+      }
+      return (
+        <div className="inline-block">
+          <div className="text-foreground">[</div>
+          {value.map((item, index) => (
+            <div key={index} style={{ paddingLeft: `${indent + 8}px` }}>
+              {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
+              {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
+            </div>
+          ))}
+          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
+        </div>
+      );
+    }
+
+    if (typeof value === 'object') {
+      const entries = Object.entries(value);
+      if (entries.length === 0) {
+        return <span className="text-foreground">{'{}'}</span>;
+      }
+      return (
+        <div className="inline-block">
+          <div className="text-foreground">{'{'}</div>
+          {entries.map(([key, val], index) => (
+            <div key={key} style={{ paddingLeft: `${indent + 8}px` }} className="group">
+              <div className="flex items-start gap-1.5">
+                <button
+                  onClick={() => handleDragClick(`${parentPath}.${key}`)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                  title={`Path: ${parentPath}.${key}`}
+                >
+                  <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <span className="text-accent-foreground">"{key}"</span>
+                  <span className="text-muted-foreground">: </span>
+                  <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1)}</span>
+                  {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
+        </div>
+      );
+    }
+
+    return <span>{String(value)}</span>;
   };
 
   if (!isOpen) return null;
@@ -123,25 +184,9 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                     </div>
 
                     <div className="bg-background rounded-lg p-3 border border-border overflow-x-auto">
-                      <JsonView
-                        value={output.output}
-                        collapsed={2}
-                        style={{
-                          ...darkTheme,
-                          fontSize: '11px',
-                          lineHeight: '1.4',
-                          fontFamily: 'monospace',
-                        }}
-                        displayDataTypes={false}
-                        displayObjectSize={true}
-                        enableClipboard={false}
-                        onClick={(params: any) => {
-                          if (params.indexPath) {
-                            const pathArray = [output.nodeId, ...params.indexPath];
-                            handleJsonClick(pathArray, params.value);
-                          }
-                        }}
-                      />
+                      <pre className="text-xs font-mono leading-snug">
+                        {renderValue(output.output, output.nodeId)}
+                      </pre>
                     </div>
 
                     {copiedPath && (
