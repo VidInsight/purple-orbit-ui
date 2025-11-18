@@ -101,9 +101,22 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
           {!isArrayCollapsed && (
             <>
               {value.map((item, index) => (
-                <div key={index} style={{ paddingLeft: `${indent + 6}px` }}>
-                  {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
-                  {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
+                <div key={index} style={{ paddingLeft: `${indent + 6}px` }} className="group">
+                  <div className="flex items-start gap-1">
+                    <button
+                      onClick={() => handleDragClick(`${parentPath}[${index}]`)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      title={`Path: ${parentPath}[${index}]`}
+                    >
+                      <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-warning">{index}</span>
+                      <span className="text-muted-foreground">: </span>
+                      <span className="inline-block">{renderValue(item, `${parentPath}[${index}]`, depth + 1)}</span>
+                      {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
+                    </div>
+                  </div>
                 </div>
               ))}
               <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
