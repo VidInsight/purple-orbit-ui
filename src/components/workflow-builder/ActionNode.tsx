@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, Edit2, CheckCircle2 } from 'lucide-react';
+import { Settings, Trash2, Edit2, CheckCircle2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -12,6 +12,7 @@ interface ActionNodeProps {
     nodeType?: string;
     configured?: boolean;
     config?: Record<string, any>;
+    parameters?: any[];
   };
   onUpdate: (updates: any) => void;
   onDelete: () => void;
@@ -19,39 +20,37 @@ interface ActionNodeProps {
 }
 
 export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const isConfigured = node.configured ?? false;
 
   const handleNodeClick = () => {
-    console.log('Node clicked:', {
-      id: node.id,
-      title: node.title,
-      type: node.nodeType || 'Action',
-      configured: isConfigured,
-      category: node.category,
-      config: node.config,
-    });
-    if (onClick) {
+    if (onClick && !isViewing) {
       onClick();
     }
-    setIsExpanded(!isExpanded);
   };
+
+  const getIconForNode = () => {
+    const iconMap: Record<string, any> = {
+      'GPT-4': Settings,
+      'AI': Settings,
+      'Data': Settings,
+      'Logic': Settings,
+    };
+    return iconMap[node.nodeType || ''] || Settings;
+  };
+
+  const Icon = getIconForNode();
 
   return (
     <div 
-      className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
-        isConfigured 
-          ? 'border-success hover:border-success/80 hover:shadow-lg' 
-          : 'border-warning hover:border-warning/80 hover:shadow-lg'
-      }`}
-      onClick={handleNodeClick}
+      className="bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary hover:border-primary/80 hover:shadow-lg"
     >
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center text-2xl">
-              {node.icon || '⚙️'}
+          <div className="flex items-center gap-3" onClick={handleNodeClick}>
+            <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Icon className="h-6 w-6 text-accent-foreground" />
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
@@ -63,9 +62,22 @@ export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProp
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsExpanded(!isExpanded);
+                setIsViewing(!isViewing);
               }}
               className="h-8 w-8 p-0"
+              title="View"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onClick) onClick();
+              }}
+              className="h-8 w-8 p-0"
+              title="Edit"
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -77,6 +89,7 @@ export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProp
                 onDelete();
               }}
               className="h-8 w-8 p-0 hover:text-destructive"
+              title="Delete"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -104,12 +117,35 @@ export const ActionNode = ({ node, onUpdate, onDelete, onClick }: ActionNodeProp
         </div>
       </div>
 
-      {/* Content */}
-      {isExpanded && (
+      {/* Content - View Mode */}
+      {isViewing && node.parameters && (
         <div className="px-6 py-4 border-t border-border bg-surface/50">
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">Configuration options will be displayed here.</p>
-            <p className="text-xs">This node will execute the selected action.</p>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-foreground">Parameters (Read-only)</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsViewing(false)}
+              className="h-6 w-6 p-0"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {node.parameters.map((param: any) => (
+              <div key={param.id} className="space-y-1">
+                <div className="text-xs font-medium text-muted-foreground">{param.label}</div>
+                <div className="text-sm text-foreground">
+                  {param.isDynamic ? (
+                    <code className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                      {param.dynamicPath || 'No path set'}
+                    </code>
+                  ) : (
+                    <span>{param.value || '-'}</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

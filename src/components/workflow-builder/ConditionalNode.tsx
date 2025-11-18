@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GitBranch, Edit2, CheckCircle2, Plus } from 'lucide-react';
+import { GitBranch, Edit2, CheckCircle2, Plus, Eye, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,20 +30,13 @@ export const ConditionalNode = ({
   onAddBranch 
 }: ConditionalNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const isConfigured = node.configured ?? false;
 
   const handleNodeClick = () => {
-    console.log('Conditional node clicked:', {
-      id: node.id,
-      title: node.title,
-      type: 'Conditional',
-      configured: isConfigured,
-      branches: node.branches,
-    });
-    if (onClick) {
+    if (onClick && !isViewing) {
       onClick();
     }
-    setIsExpanded(!isExpanded);
   };
 
   const hasTrueBranch = node.branches?.true && node.branches.true.length > 0;
@@ -52,19 +45,14 @@ export const ConditionalNode = ({
   return (
     <div>
       <div 
-        className={`bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 cursor-pointer ${
-          isConfigured 
-            ? 'border-success hover:border-success/80 hover:shadow-lg' 
-            : 'border-warning hover:border-warning/80 hover:shadow-lg'
-        }`}
-        onClick={handleNodeClick}
+        className="bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary hover:border-primary/80 hover:shadow-lg"
       >
         {/* Header */}
         <div className="px-6 py-4">
           <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-warning/10 flex items-center justify-center text-2xl">
-                {node.icon || '⚖️'}
+            <div className="flex items-center gap-3" onClick={handleNodeClick}>
+              <div className="h-12 w-12 rounded-lg bg-warning/10 flex items-center justify-center">
+                <GitBranch className="h-6 w-6 text-warning" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground text-lg">{node.title}</h3>
@@ -76,11 +64,36 @@ export const ConditionalNode = ({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsExpanded(!isExpanded);
+                  setIsViewing(!isViewing);
                 }}
                 className="h-8 w-8 p-0"
+                title="View"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onClick) onClick();
+                }}
+                className="h-8 w-8 p-0"
+                title="Edit"
               >
                 <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="h-8 w-8 p-0 hover:text-destructive"
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
