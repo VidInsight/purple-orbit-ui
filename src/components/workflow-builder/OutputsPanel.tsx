@@ -51,7 +51,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   };
 
   const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
-    const indent = depth * 6;
+    const indent = Math.min(depth, 2) * 6;
     const isCollapsed = collapsedPaths.has(parentPath);
     const shouldAutoCollapse = depth > 1;
 
