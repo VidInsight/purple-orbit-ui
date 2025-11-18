@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
+import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 
 interface Variable {
   name: string;
@@ -23,6 +24,16 @@ interface WorkflowNode {
   configured?: boolean;
   variables?: Variable[];
   config?: Record<string, any>;
+  parameters?: Array<{
+    id: string;
+    label: string;
+    type: 'text' | 'dropdown' | 'number' | 'toggle' | 'textarea' | 'credential';
+    placeholder?: string;
+    options?: string[];
+    min?: number;
+    max?: number;
+    value?: any;
+  }>;
 }
 
 export default function ZapierWorkflowEditor() {
@@ -30,6 +41,7 @@ export default function ZapierWorkflowEditor() {
   const { id } = useParams<{ id: string }>();
   const [workflowName, setWorkflowName] = useState('Untitled Workflow');
   const [isEditingName, setIsEditingName] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -74,6 +86,73 @@ export default function ZapierWorkflowEditor() {
       'Date Format': '📅',
     };
 
+    // Define parameters based on node type
+    const getNodeParameters = (nodeType: string) => {
+      if (nodeType === 'GPT-4 Completion') {
+        return [
+          {
+            id: 'model',
+            label: 'Model',
+            type: 'dropdown' as const,
+            options: ['gpt-4', 'gpt-4-turbo', 'gpt-4o'],
+            value: 'gpt-4',
+          },
+          {
+            id: 'temperature',
+            label: 'Temperature',
+            type: 'number' as const,
+            min: 0,
+            max: 2,
+            value: 0.7,
+            placeholder: '0.7',
+          },
+          {
+            id: 'max_tokens',
+            label: 'Max Tokens',
+            type: 'number' as const,
+            min: 1,
+            max: 4000,
+            value: 1000,
+            placeholder: '1000',
+          },
+          {
+            id: 'prompt',
+            label: 'Prompt',
+            type: 'textarea' as const,
+            placeholder: 'Enter your prompt here...',
+            value: '',
+          },
+          {
+            id: 'api_key',
+            label: 'API Key',
+            type: 'credential' as const,
+            options: ['OpenAI Production', 'OpenAI Development'],
+            value: '',
+          },
+        ];
+      }
+      
+      if (nodeType === 'JSON Parse') {
+        return [
+          {
+            id: 'input',
+            label: 'JSON Input',
+            type: 'textarea' as const,
+            placeholder: 'Paste JSON here...',
+            value: '',
+          },
+          {
+            id: 'strict',
+            label: 'Strict Mode',
+            type: 'toggle' as const,
+            value: false,
+          },
+        ];
+      }
+
+      return [];
+    };
+
     const newNode: WorkflowNode = {
       id: `node-${Date.now()}`,
       type: 'action',
@@ -83,15 +162,31 @@ export default function ZapierWorkflowEditor() {
       nodeType: category,
       configured: false,
       config: {},
+      parameters: getNodeParameters(nodeType),
     };
 
     setNodes([...nodes, newNode]);
   };
 
-  const handleUpdateNode = (nodeId: string, updates: Partial<WorkflowNode>) => {
-    setNodes(nodes.map(node => 
-      node.id === nodeId ? { ...node, ...updates } : node
-    ));
+  const handleNodeClick = (node: WorkflowNode) => {
+    console.log('Node selected:', node);
+    setSelectedNode(node);
+  };
+
+  const handleParameterChange = (parameterId: string, value: any) => {
+    if (!selectedNode) return;
+
+    setNodes(nodes.map(node => {
+      if (node.id === selectedNode.id) {
+        const updatedParameters = node.parameters?.map(param =>
+          param.id === parameterId ? { ...param, value } : param
+        );
+        const updatedNode = { ...node, parameters: updatedParameters };
+        setSelectedNode(updatedNode); // Update selected node too
+        return updatedNode;
+      }
+      return node;
+    }));
   };
 
   const handleDeleteNode = (nodeId: string) => {
@@ -214,13 +309,19 @@ export default function ZapierWorkflowEditor() {
                 {node.type === 'trigger' ? (
                   <TriggerNode
                     node={node}
-                    onUpdate={(updates) => handleUpdateNode(node.id, updates)}
+                    onUpdate={(updates) => {
+                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                    }}
+                    onClick={() => handleNodeClick(node)}
                   />
                 ) : (
                   <ActionNode
                     node={node}
-                    onUpdate={(updates) => handleUpdateNode(node.id, updates)}
+                    onUpdate={(updates) => {
+                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                    }}
                     onDelete={() => handleDeleteNode(node.id)}
+                    onClick={() => handleNodeClick(node)}
                   />
                 )}
 
@@ -238,6 +339,16 @@ export default function ZapierWorkflowEditor() {
             ))}
           </div>
         </div>
+
+        {/* Parameters Panel */}
+        {selectedNode && (
+          <ParametersPanel
+            node={selectedNode}
+            isOpen={!!selectedNode}
+            onClose={() => setSelectedNode(null)}
+            onParameterChange={handleParameterChange}
+          />
+        )}
       </div>
     </PageLayout>
   );
