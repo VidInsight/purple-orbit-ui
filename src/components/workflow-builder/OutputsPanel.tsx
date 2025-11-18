@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, GripVertical, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { usePathContext } from './PathContext';
 
@@ -19,10 +19,23 @@ interface OutputsPanelProps {
 export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelProps) => {
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
   const { setActivePath } = usePathContext();
 
   const handleToggleNode = (nodeId: string) => {
     setExpandedNode(expandedNode === nodeId ? null : nodeId);
+  };
+
+  const handleToggleCollapse = (path: string) => {
+    setCollapsedPaths(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(path)) {
+        newSet.delete(path);
+      } else {
+        newSet.add(path);
+      }
+      return newSet;
+    });
   };
 
   const handleDragClick = (path: string) => {
@@ -38,7 +51,9 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   };
 
   const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
-    const indent = depth * 8;
+    const indent = depth * 6;
+    const isCollapsed = collapsedPaths.has(parentPath);
+    const shouldAutoCollapse = depth > 1;
 
     if (value === null) {
       return <span className="text-muted-foreground">null</span>;
@@ -60,16 +75,40 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       if (value.length === 0) {
         return <span className="text-foreground">[]</span>;
       }
+
+      const arrayPath = parentPath;
+      const isArrayCollapsed = shouldAutoCollapse ? !collapsedPaths.has(arrayPath) : collapsedPaths.has(arrayPath);
+
       return (
         <div className="inline-block">
-          <div className="text-foreground">[</div>
-          {value.map((item, index) => (
-            <div key={index} style={{ paddingLeft: `${indent + 8}px` }}>
-              {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
-              {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
-            </div>
-          ))}
-          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleToggleCollapse(arrayPath)}
+              className="hover:bg-accent/50 rounded p-0.5 transition-colors"
+            >
+              {isArrayCollapsed ? (
+                <ChevronRight className="h-3 w-3 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              )}
+            </button>
+            <span className="text-foreground">[</span>
+            {isArrayCollapsed && (
+              <span className="text-muted-foreground text-[10px]">{value.length} items</span>
+            )}
+            {isArrayCollapsed && <span className="text-foreground">]</span>}
+          </div>
+          {!isArrayCollapsed && (
+            <>
+              {value.map((item, index) => (
+                <div key={index} style={{ paddingLeft: `${indent + 6}px` }}>
+                  {renderValue(item, `${parentPath}[${index}]`, depth + 1)}
+                  {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
+                </div>
+              ))}
+              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
+            </>
+          )}
         </div>
       );
     }
@@ -79,29 +118,53 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       if (entries.length === 0) {
         return <span className="text-foreground">{'{}'}</span>;
       }
+
+      const objectPath = parentPath;
+      const isObjectCollapsed = shouldAutoCollapse ? !collapsedPaths.has(objectPath) : collapsedPaths.has(objectPath);
+
       return (
         <div className="inline-block">
-          <div className="text-foreground">{'{'}</div>
-          {entries.map(([key, val], index) => (
-            <div key={key} style={{ paddingLeft: `${indent + 8}px` }} className="group">
-              <div className="flex items-start gap-1.5">
-                <button
-                  onClick={() => handleDragClick(`${parentPath}.${key}`)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                  title={`Path: ${parentPath}.${key}`}
-                >
-                  <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
-                </button>
-                <div className="flex-1 min-w-0">
-                  <span className="text-accent-foreground">"{key}"</span>
-                  <span className="text-muted-foreground">: </span>
-                  <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1)}</span>
-                  {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleToggleCollapse(objectPath)}
+              className="hover:bg-accent/50 rounded p-0.5 transition-colors"
+            >
+              {isObjectCollapsed ? (
+                <ChevronRight className="h-3 w-3 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              )}
+            </button>
+            <span className="text-foreground">{'{'}</span>
+            {isObjectCollapsed && (
+              <span className="text-muted-foreground text-[10px]">{entries.length} keys</span>
+            )}
+            {isObjectCollapsed && <span className="text-foreground">{'}'}</span>}
+          </div>
+          {!isObjectCollapsed && (
+            <>
+              {entries.map(([key, val], index) => (
+                <div key={key} style={{ paddingLeft: `${indent + 6}px` }} className="group">
+                  <div className="flex items-start gap-1">
+                    <button
+                      onClick={() => handleDragClick(`${parentPath}.${key}`)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      title={`Path: ${parentPath}.${key}`}
+                    >
+                      <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-accent-foreground">"{key}"</span>
+                      <span className="text-muted-foreground">: </span>
+                      <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1)}</span>
+                      {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-          <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
+              ))}
+              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
+            </>
+          )}
         </div>
       );
     }
@@ -184,7 +247,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                     </div>
 
                     <div className="bg-background rounded-lg p-3 border border-border overflow-x-auto">
-                      <pre className="text-xs font-mono leading-snug">
+                      <pre className="text-[11px] font-mono leading-tight">
                         {renderValue(output.output, output.nodeId)}
                       </pre>
                     </div>
