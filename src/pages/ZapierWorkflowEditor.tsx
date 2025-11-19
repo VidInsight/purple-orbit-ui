@@ -54,6 +54,13 @@ export default function ZapierWorkflowEditor() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
+  
+  // Pan and Zoom state
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isPanning, setIsPanning] = useState(false);
+  const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -434,6 +441,50 @@ export default function ZapierWorkflowEditor() {
     // Implement publish logic
   };
 
+  // Zoom and Pan handlers
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY * -0.001;
+      const newZoom = Math.min(Math.max(0.5, zoom + delta), 1.5);
+      setZoom(newZoom);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+      setIsPanning(true);
+      setStartPan({ x: e.clientX - panX, y: e.clientY - panY });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isPanning) {
+      const newPanX = Math.min(Math.max(e.clientX - startPan.x, -1000), 1000);
+      const newPanY = Math.min(Math.max(e.clientY - startPan.y, -1000), 1000);
+      setPanX(newPanX);
+      setPanY(newPanY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+  };
+
+  const handleZoomIn = () => {
+    setZoom(Math.min(zoom + 0.1, 1.5));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(Math.max(zoom - 0.1, 0.5));
+  };
+
+  const handleResetView = () => {
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
+  };
+
   return (
     <PathProvider>
       <div className="min-h-screen bg-background">
@@ -507,8 +558,57 @@ export default function ZapierWorkflowEditor() {
         </div>
 
         {/* Workflow Canvas */}
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          <div className="space-y-0">
+        <div 
+          className="relative h-[calc(100vh-80px)] overflow-hidden bg-background"
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* Zoom Controls */}
+          <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2 bg-surface border border-border rounded-lg shadow-lg p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleZoomIn}
+              className="h-8 w-8 p-0"
+              title="Zoom In"
+            >
+              +
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetView}
+              className="h-8 w-8 p-0 text-xs"
+              title="Reset View"
+            >
+              {Math.round(zoom * 100)}%
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleZoomOut}
+              className="h-8 w-8 p-0"
+              title="Zoom Out"
+            >
+              −
+            </Button>
+          </div>
+
+          {/* Canvas Content */}
+          <div 
+            className="absolute inset-0 flex items-start justify-center py-8"
+            style={{
+              transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+              transformOrigin: 'center top',
+              transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+              cursor: isPanning ? 'grabbing' : 'grab',
+            }}
+          >
+            <div className="max-w-3xl w-full px-6">
+              <div className="space-y-0">
             {nodes.map((node, index) => (
               <div key={node.id} className="relative">
                 {/* Node */}
@@ -558,6 +658,8 @@ export default function ZapierWorkflowEditor() {
                 </div>
               </div>
             ))}
+              </div>
+            </div>
           </div>
         </div>
 
