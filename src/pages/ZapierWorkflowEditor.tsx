@@ -651,9 +651,33 @@ export default function ZapierWorkflowEditor() {
                 )}
 
                 {/* Connection line and Add button */}
-                <div className="flex flex-col items-center my-3">
+                <div className="flex flex-col items-center my-3" id={`add-node-${index}`}>
                   <div className="w-0.5 h-4 bg-border" />
-                  <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
+                  <AddNodeButton 
+                    onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} 
+                    onMenuOpen={() => {
+                      // Scroll to align the menu at the bottom of the viewport
+                      const addNodeElement = document.getElementById(`add-node-${index}`);
+                      if (addNodeElement) {
+                        const menuHeight = 384 + 48; // max-h-96 (384px) + top offset (48px)
+                        const viewportHeight = window.innerHeight - 80; // minus toolbar height
+                        const elementRect = addNodeElement.getBoundingClientRect();
+                        const scrollContainer = document.querySelector('.overflow-auto');
+                        
+                        if (scrollContainer) {
+                          // Calculate the scroll position to align menu bottom with viewport bottom
+                          const currentScroll = scrollContainer.scrollTop;
+                          const elementTop = elementRect.top + currentScroll - 80; // minus toolbar
+                          const targetScroll = elementTop + menuHeight - viewportHeight * 0.95;
+                          
+                          scrollContainer.scrollTo({
+                            top: Math.max(0, targetScroll),
+                            behavior: 'smooth'
+                          });
+                        }
+                      }
+                    }}
+                  />
                   <div className="w-0.5 h-4 bg-border" />
                 </div>
               </div>
