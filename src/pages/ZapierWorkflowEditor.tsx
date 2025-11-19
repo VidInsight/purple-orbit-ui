@@ -100,19 +100,20 @@ export default function ZapierWorkflowEditor() {
     setTimeout(() => {
       if (!canvasRef.current) return;
       
-      // Calculate Y position of the node where menu is opened
+      // Calculate Y position where menu opens (after the node)
       const nodeHeight = 180; // Approximate height of each node with spacing
-      const nodeY = nodeIndex * nodeHeight;
+      const menuStartY = (nodeIndex + 1) * nodeHeight; // Menu starts after current node
       
-      // Menu height estimate (including search, categories, etc.)
-      const menuHeight = 500;
-      const menuBottomY = nodeY + menuHeight;
+      // Menu height estimate (header + search + content)
+      const menuHeight = 480;
+      const menuBottomY = menuStartY + menuHeight;
       
       // Get viewport height
       const viewportHeight = canvasRef.current.clientHeight;
       
-      // Scroll so menu bottom is visible in lower portion of screen (70% down from top)
-      const targetY = -(menuBottomY - viewportHeight * 0.7);
+      // Scroll so menu bottom is visible at 75% of screen height from top
+      // This positions menu in lower portion with some padding at bottom
+      const targetY = -(menuBottomY - viewportHeight * 0.75);
       
       // Apply pan limits
       const clampedY = Math.min(Math.max(targetY, -1000), 1000);
