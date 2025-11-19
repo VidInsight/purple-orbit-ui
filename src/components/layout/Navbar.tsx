@@ -119,7 +119,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
+                    activeClassName="bg-primary/10 text-primary border-l-3 border-primary font-semibold [&>svg]:text-primary"
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
@@ -153,7 +153,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
+                    activeClassName="bg-primary/10 text-primary border-l-3 border-primary font-semibold [&>svg]:text-primary"
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
@@ -187,7 +187,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
+                    activeClassName="bg-primary/10 text-primary border-l-3 border-primary font-semibold [&>svg]:text-primary"
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
@@ -221,7 +221,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
+                    activeClassName="bg-primary/10 text-primary border-l-3 border-primary font-semibold [&>svg]:text-primary"
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
@@ -255,7 +255,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
+                    activeClassName="bg-primary/10 text-primary border-l-3 border-primary font-semibold [&>svg]:text-primary"
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
