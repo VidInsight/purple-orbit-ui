@@ -106,13 +106,13 @@ const WorkspaceSettings = () => {
   }
 
   const planFeatures = [
-    { name: 'Team Members', value: `${currentWorkspace.current_member_count} / ${currentWorkspace.member_limit}`, available: true },
-    { name: 'Workflows', value: `${currentWorkspace.current_workflow_count} / ${currentWorkspace.workflow_limit}`, available: true },
-    { name: 'Custom Scripts', value: `${currentWorkspace.current_custom_script_count} / ${currentWorkspace.custom_script_limit}`, available: true },
-    { name: 'Storage', value: `${(currentWorkspace.current_storage_mb / 1024).toFixed(1)} / ${(currentWorkspace.storage_limit_mb / 1024).toFixed(0)} GB`, available: true },
-    { name: 'API Keys', value: `${currentWorkspace.current_api_key_count} / ${currentWorkspace.api_key_limit}`, available: true },
-    { name: 'Monthly Executions', value: `${currentWorkspace.current_month_executions.toLocaleString()} / ${currentWorkspace.monthly_execution_limit.toLocaleString()}`, available: true },
-    { name: 'Concurrent Executions', value: `${currentWorkspace.current_month_concurrent_executions} / ${currentWorkspace.monthly_concurrent_executions}`, available: true },
+    { name: 'Team Members', value: `${currentWorkspace?.current_member_count || 0} / ${currentWorkspace?.member_limit || 0}`, available: true },
+    { name: 'Workflows', value: `${currentWorkspace?.current_workflow_count || 0} / ${currentWorkspace?.workflow_limit || 0}`, available: true },
+    { name: 'Custom Scripts', value: `${currentWorkspace?.current_custom_script_count || 0} / ${currentWorkspace?.custom_script_limit || 0}`, available: true },
+    { name: 'Storage', value: `${((currentWorkspace?.current_storage_mb || 0) / 1024).toFixed(1)} / ${((currentWorkspace?.storage_limit_mb || 0) / 1024).toFixed(0)} GB`, available: true },
+    { name: 'API Keys', value: `${currentWorkspace?.current_api_key_count || 0} / ${currentWorkspace?.api_key_limit || 0}`, available: true },
+    { name: 'Monthly Executions', value: `${(currentWorkspace?.current_month_executions || 0).toLocaleString()} / ${(currentWorkspace?.monthly_execution_limit || 0).toLocaleString()}`, available: true },
+    { name: 'Concurrent Executions', value: `${currentWorkspace?.current_month_concurrent_executions || 0} / ${currentWorkspace?.monthly_concurrent_executions || 0}`, available: true },
   ];
 
   return (
