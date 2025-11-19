@@ -81,39 +81,42 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
       {/* Panel */}
       <div className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 animate-slide-in-right flex flex-col">
         {/* Header */}
-        <div className="p-3 border-b border-border flex items-center justify-between">
-          <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-            Node Configuration
-          </h3>
+        <div className="px-6 py-4 border-b border-border flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Node Configuration</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Configure parameters for this node
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="h-6 w-6 flex items-center justify-center hover:bg-accent/50 rounded transition-colors"
+            className="h-6 w-6 flex items-center justify-center hover:bg-accent/50 rounded transition-colors flex-shrink-0"
           >
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-3">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="space-y-4">
             {node.parameters?.map((param) => (
-              <div key={param.id} className="space-y-1.5">
-                <label className="text-[11px] font-medium text-foreground flex items-center justify-between leading-tight">
+              <div key={param.id} className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center justify-between">
                   {param.label}
                   {!param.isDynamic && (
                     <button
                       onClick={() => handleToggleMode(param.id, false)}
-                      className="h-6 px-2 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 transition-all text-[10px] font-medium"
+                      className="h-7 px-2.5 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-all text-xs font-medium"
                       title="Switch to dynamic mode"
                     >
-                      <Link className="h-3 w-3" />
+                      <Link className="h-3.5 w-3.5" />
                       Dynamic
                     </button>
                   )}
                 </label>
 
                 {waitingForDrop === param.id && !param.isDynamic && (
-                  <div className="px-2 py-1.5 bg-primary/10 border border-dashed border-primary/40 rounded text-[11px] text-primary">
+                  <div className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary">
                     Select value from Previous Outputs
                   </div>
                 )}
@@ -135,7 +138,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                         value={param.value || ''}
                         onChange={(e) => handleValueChange(param.id, e.target.value)}
                         placeholder={param.placeholder}
-                        className="w-full px-2.5 py-1.5 text-[11px] h-auto rounded"
+                        className="w-full"
                       />
                     )}
 
@@ -144,7 +147,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                   <select
                     value={param.value || ''}
                     onChange={(e) => handleValueChange(param.id, e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded bg-background border border-input text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 rounded bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">Select option...</option>
                     {param.options?.map((option) => (
@@ -165,7 +168,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                     min={param.min}
                     max={param.max}
                     step="0.1"
-                    className="w-full px-2.5 py-1.5 text-[11px] h-auto rounded"
+                    className="w-full"
                   />
                 )}
 
@@ -179,10 +182,10 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                         onChange={(e) => handleValueChange(param.id, e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-accent rounded-full peer peer-checked:bg-primary transition-colors"></div>
-                      <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-background rounded-full transition-transform peer-checked:translate-x-4"></div>
+                      <div className="w-11 h-6 bg-accent rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                      <div className="absolute left-1 top-1 w-4 h-4 bg-background rounded-full transition-transform peer-checked:translate-x-5"></div>
                     </div>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {param.value ? 'Enabled' : 'Disabled'}
                     </span>
                   </label>
@@ -194,8 +197,8 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                     value={param.value || ''}
                     onChange={(e) => handleValueChange(param.id, e.target.value)}
                     placeholder={param.placeholder}
-                    rows={3}
-                    className="w-full px-2.5 py-1.5 rounded bg-background border border-input text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none leading-tight"
+                    rows={4}
+                    className="w-full px-3 py-2 rounded bg-background border border-input text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                   />
                 )}
 
@@ -204,7 +207,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                       <select
                         value={param.value || ''}
                         onChange={(e) => handleValueChange(param.id, e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded bg-background border border-input text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="w-full px-3 py-2 rounded bg-background border border-input text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         <option value="">Select credential...</option>
                         <option value="new" className="text-primary font-medium">
@@ -225,10 +228,10 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border">
+        <div className="px-6 py-4 border-t border-border">
           <Button
             variant="primary"
-            className="w-full h-8 text-[11px]"
+            className="w-full"
             onClick={onClose}
           >
             Save Changes
