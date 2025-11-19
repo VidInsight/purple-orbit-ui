@@ -116,8 +116,8 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                 </label>
 
                 {waitingForDrop === param.id && !param.isDynamic && (
-                  <div className="px-3 py-2 bg-warning/10 border-2 border-dashed border-warning rounded-lg text-sm text-warning animate-pulse">
-                    ⏳ Click a value in the left panel to link it here...
+                  <div className="px-3 py-2 bg-primary/10 border-2 border-dashed border-primary/40 rounded-lg text-sm text-primary animate-pulse">
+                    👈 Select a value from the Outputs panel on the left to link it here
                   </div>
                 )}
 
