@@ -201,7 +201,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [openSubcategory, setOpenSubcategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isRecentlyUsedOpen, setIsRecentlyUsedOpen] = useState(true);
+  const [isRecentlyUsedOpen, setIsRecentlyUsedOpen] = useState(false);
   const [recentlyUsed, setRecentlyUsed] = useState<Array<{
     categoryName: string;
     subcategoryName: string;
