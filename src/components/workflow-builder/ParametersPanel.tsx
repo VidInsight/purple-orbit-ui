@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Link, RefreshCw } from 'lucide-react';
+import { X, Link } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PathChip } from './PathChip';
@@ -103,29 +103,16 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
               <div key={param.id} className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center justify-between">
                   {param.label}
-                  <div className="flex items-center gap-1">
+                  {!param.isDynamic && (
                     <button
-                      onClick={() => handleToggleMode(param.id, param.isDynamic || false)}
-                      className={`h-7 px-2 rounded flex items-center gap-1 transition-all text-xs ${
-                        param.isDynamic
-                          ? 'bg-primary/20 text-primary'
-                          : 'bg-accent/50 text-muted-foreground hover:bg-accent'
-                      }`}
-                      title={param.isDynamic ? 'Switch to static mode' : 'Switch to dynamic mode'}
+                      onClick={() => handleToggleMode(param.id, false)}
+                      className="h-7 px-3 rounded-md bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-all text-xs font-medium"
+                      title="Switch to dynamic mode"
                     >
-                      {param.isDynamic ? (
-                        <>
-                          <Link className="h-3 w-3" />
-                          Dynamic
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-3 w-3" />
-                          Static
-                        </>
-                      )}
+                      <Link className="h-3.5 w-3.5" />
+                      Turn into Dynamic
                     </button>
-                  </div>
+                  )}
                 </label>
 
                 {waitingForDrop === param.id && !param.isDynamic && (
