@@ -145,7 +145,12 @@ export const NodeCanvas = ({
         fitView
       >
         <Background />
-        <Controls />
+        <Controls 
+          showInteractive={false}
+          showFitView={true}
+          position="bottom-left"
+          className="!bg-surface !border !border-border !shadow-lg !rounded-lg [&>button]:!bg-surface [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-accent"
+        />
         <MiniMap
           nodeColor={(node) => {
             const colors: Record<string, string> = {
