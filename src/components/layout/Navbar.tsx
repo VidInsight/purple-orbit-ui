@@ -53,7 +53,7 @@ const navigationSections = {
     { name: 'API Keys', path: '/api-keys', icon: Shield },
     { name: 'Users', path: '/users', icon: Users },
     { name: 'Billing', path: '/billing', icon: CreditCard },
-    { name: 'Settings', path: '/settings', icon: Settings },
+    { name: 'Settings', path: '/workspace/settings', icon: Settings },
   ],
 };
 

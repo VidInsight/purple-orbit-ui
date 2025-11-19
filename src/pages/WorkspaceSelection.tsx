@@ -59,7 +59,7 @@ const WorkspaceSelection = () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
     try {
-      const newWorkspace = createWorkspaceUtil(data.name, data.description);
+      const newWorkspace = createWorkspaceUtil(data.name, data.slug, data.description);
       loadWorkspaces();
       setIsModalOpen(false);
       

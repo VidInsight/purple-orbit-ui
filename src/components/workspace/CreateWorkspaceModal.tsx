@@ -19,13 +19,33 @@ export const CreateWorkspaceModal = ({
 }: CreateWorkspaceModalProps) => {
   const [formData, setFormData] = useState<CreateWorkspaceData>({
     name: '',
+    slug: '',
     description: '',
   });
   const [errors, setErrors] = useState<Partial<CreateWorkspaceData>>({});
 
+  // Auto-generate slug from name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setFormData({
+      ...formData,
+      name: newName,
+      slug: generateSlug(newName),
+    });
+  };
+
   const handleClose = () => {
     if (!isCreating) {
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', slug: '', description: '' });
       setErrors({});
       onClose();
     }
@@ -42,6 +62,14 @@ export const CreateWorkspaceModal = ({
       newErrors.name = 'Workspace name must be less than 50 characters';
     }
 
+    if (!formData.slug.trim()) {
+      newErrors.slug = 'Workspace slug is required';
+    } else if (formData.slug.trim().length < 3) {
+      newErrors.slug = 'Workspace slug must be at least 3 characters';
+    } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+      newErrors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
+    }
+
     if (formData.description && formData.description.length > 200) {
       newErrors.description = 'Description must be less than 200 characters';
     }
@@ -56,6 +84,7 @@ export const CreateWorkspaceModal = ({
     if (validate()) {
       onSubmit({
         name: formData.name.trim(),
+        slug: formData.slug.trim(),
         description: formData.description?.trim() || undefined,
       });
     }
@@ -76,10 +105,20 @@ export const CreateWorkspaceModal = ({
             type="text"
             placeholder="My Workspace"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleNameChange}
             error={errors.name}
             disabled={isCreating}
             autoFocus
+          />
+
+          <Input
+            label="Workspace Slug"
+            type="text"
+            placeholder="my-workspace"
+            value={formData.slug}
+            onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
+            error={errors.slug}
+            disabled={isCreating}
           />
 
           <div>

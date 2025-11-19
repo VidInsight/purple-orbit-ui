@@ -12,6 +12,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
 import { seedDemoData } from "@/utils/seedData";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
+import WorkspaceSettings from "@/pages/WorkspaceSettings";
 import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
 import ZapierWorkflowEditor from "@/pages/ZapierWorkflowEditor";
@@ -50,6 +51,7 @@ const AppRoutes = () => {
       
       {/* Protected Routes - Require Workspace Context */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/workspace/settings" element={<ProtectedRoute><WorkspaceSettings /></ProtectedRoute>} />
       <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
       <Route path="/workflows/new" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />
       <Route path="/workflows/:id/edit" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />

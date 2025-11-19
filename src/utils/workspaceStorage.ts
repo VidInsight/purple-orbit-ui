@@ -7,6 +7,7 @@ const defaultWorkspaces: Workspace[] = [
   {
     id: 'workspace-1',
     name: 'Personal Projects',
+    slug: 'personal-projects',
     description: 'My personal automation workflows',
     memberCount: 1,
     lastAccessed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -32,6 +33,7 @@ const defaultWorkspaces: Workspace[] = [
   {
     id: 'workspace-2',
     name: 'Company Automations',
+    slug: 'company-automations',
     description: 'Team workflows and integrations for daily operations',
     memberCount: 8,
     lastAccessed: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -57,6 +59,7 @@ const defaultWorkspaces: Workspace[] = [
   {
     id: 'workspace-3',
     name: 'Client Projects',
+    slug: 'client-projects',
     description: 'Automation solutions for client requirements',
     memberCount: 3,
     lastAccessed: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
@@ -82,6 +85,7 @@ const defaultWorkspaces: Workspace[] = [
   {
     id: 'workspace-4',
     name: 'Marketing Team',
+    slug: 'marketing-team',
     description: 'Shared workspace for marketing automations',
     memberCount: 5,
     lastAccessed: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -129,10 +133,11 @@ export const saveWorkspaces = (workspaces: Workspace[]): void => {
   }
 };
 
-export const createWorkspace = (name: string, description?: string): Workspace => {
+export const createWorkspace = (name: string, slug: string, description?: string): Workspace => {
   const newWorkspace: Workspace = {
     id: `workspace-${Date.now()}`,
     name,
+    slug,
     description,
     memberCount: 1,
     lastAccessed: new Date().toISOString(),
