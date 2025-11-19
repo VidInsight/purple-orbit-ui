@@ -111,9 +111,10 @@ export default function ZapierWorkflowEditor() {
       // Get viewport height
       const viewportHeight = canvasRef.current.clientHeight;
       
-      // Scroll so menu bottom is visible at 75% of screen height from top
-      // This positions menu in lower portion with some padding at bottom
-      const targetY = -(menuBottomY - viewportHeight * 0.75);
+      // Position canvas so menu's bottom edge is at 85% of viewport height
+      // This ensures entire menu is visible with some padding at bottom
+      const targetViewportY = viewportHeight * 0.85;
+      const targetY = targetViewportY - menuBottomY;
       
       // Apply pan limits
       const clampedY = Math.min(Math.max(targetY, -1000), 1000);
