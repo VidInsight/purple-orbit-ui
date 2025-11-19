@@ -201,6 +201,7 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [openSubcategory, setOpenSubcategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isRecentlyUsedOpen, setIsRecentlyUsedOpen] = useState(true);
   const [recentlyUsed, setRecentlyUsed] = useState<Array<{
     categoryName: string;
     subcategoryName: string;
@@ -341,39 +342,49 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
             {/* Recently Used Section */}
             {!searchTerm && recentlyUsed.length > 0 && (
               <div className="border-b border-border">
-                <div className="px-4 py-2 bg-accent/5">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recently Used</span>
+                <button
+                  onClick={() => setIsRecentlyUsedOpen(!isRecentlyUsedOpen)}
+                  className="w-full pl-4 pr-4 py-2.5 flex items-center justify-between hover:bg-accent/30 transition-colors bg-surface"
+                >
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-sm font-medium text-foreground whitespace-nowrap">Recently Used</span>
                   </div>
-                </div>
-                <div className="bg-surface">
-                  {recentlyUsed.map((item, index) => {
-                    // Find the icon from categories
-                    const category = categories.find(c => c.name === item.categoryName);
-                    const subcategory = category?.subcategories.find(sc => sc.name === item.subcategoryName);
-                    const node = subcategory?.nodes.find(n => n.name === item.nodeName);
-                    const NodeIcon = node?.icon || Settings; // Fallback to Settings icon
-                    
-                    return (
-                      <button
-                        key={`${item.nodeName}-${index}`}
-                        onClick={() => handleNodeClick(item.categoryName, item.subcategoryName, item.nodeName)}
-                        className="w-full pl-4 pr-4 py-2.5 flex items-start gap-3 hover:bg-accent/30 transition-colors text-left group"
-                      >
-                        <NodeIcon className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                            {item.nodeName}
+                  <ChevronDown
+                    className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                      isRecentlyUsedOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {isRecentlyUsedOpen && (
+                  <div className="bg-surface">
+                    {recentlyUsed.map((item, index) => {
+                      // Find the icon from categories
+                      const category = categories.find(c => c.name === item.categoryName);
+                      const subcategory = category?.subcategories.find(sc => sc.name === item.subcategoryName);
+                      const node = subcategory?.nodes.find(n => n.name === item.nodeName);
+                      const NodeIcon = node?.icon || Settings; // Fallback to Settings icon
+                      
+                      return (
+                        <button
+                          key={`${item.nodeName}-${index}`}
+                          onClick={() => handleNodeClick(item.categoryName, item.subcategoryName, item.nodeName)}
+                          className="w-full pl-4 pr-4 py-2.5 flex items-start gap-3 hover:bg-accent/30 transition-colors text-left group"
+                        >
+                          <NodeIcon className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                              {item.nodeName}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                              {item.nodeDescription}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                            {item.nodeDescription}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
