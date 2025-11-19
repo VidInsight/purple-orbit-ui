@@ -61,6 +61,7 @@ export default function ZapierWorkflowEditor() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  const [shouldScrollToNew, setShouldScrollToNew] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Load workflow from localStorage if editing existing workflow
@@ -94,6 +95,22 @@ export default function ZapierWorkflowEditor() {
       ],
     },
   ]);
+
+  // Auto-scroll to newly added node
+  useEffect(() => {
+    if (shouldScrollToNew && nodes.length > 0) {
+      setTimeout(() => {
+        // Calculate approximate position of the last node
+        const nodeHeight = 180; // Approximate height of each node with spacing
+        const lastNodeIndex = nodes.length - 1;
+        const targetY = -(lastNodeIndex * nodeHeight - 200); // Center the node
+        
+        // Animate scroll to the new node
+        setPanY(Math.min(Math.max(targetY, -1000), 1000));
+        setShouldScrollToNew(false);
+      }, 100);
+    }
+  }, [shouldScrollToNew, nodes.length]);
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
@@ -155,6 +172,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      setShouldScrollToNew(true);
       return;
     }
 
@@ -198,6 +216,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      setShouldScrollToNew(true);
       return;
     }
 
@@ -283,6 +302,7 @@ export default function ZapierWorkflowEditor() {
     const newNodes = [...nodes];
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
+    setShouldScrollToNew(true);
   };
 
   const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
@@ -487,25 +507,6 @@ export default function ZapierWorkflowEditor() {
     setPanY(0);
   };
 
-  const handleScrollToNode = (nodeIndex: number) => {
-    // Menu specifications from AddNodeButton component:
-    // - Menu width: 640px
-    // - Menu max-height: 384px (96 * 4)
-    // - Menu header: ~120px
-    // - Menu offset from button: 48px (top-12)
-    // Total menu approximate height: ~500px, center at ~250px from top of menu
-    
-    const nodeHeight = 180; // Height of each node with spacing
-    const viewportCenter = (window.innerHeight - 80) / 2; // Canvas height center (minus toolbar)
-    const menuCenterOffset = 180 + 48 + 250; // node height + button spacing + half of menu height
-    
-    // Calculate target Y to center the menu in viewport
-    const targetY = -(nodeIndex * nodeHeight + menuCenterOffset - viewportCenter);
-    
-    // Apply with limits
-    setPanY(Math.min(Math.max(targetY, -1000), 1000));
-  };
-
   return (
     <PathProvider>
       <div className="min-h-screen bg-background">
@@ -675,10 +676,7 @@ export default function ZapierWorkflowEditor() {
                 {/* Connection line and Add button */}
                 <div className="flex flex-col items-center my-3">
                   <div className="w-0.5 h-4 bg-border" />
-                  <AddNodeButton 
-                    onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)}
-                    onMenuOpen={() => handleScrollToNode(index)}
-                  />
+                  <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
                   <div className="w-0.5 h-4 bg-border" />
                 </div>
               </div>
