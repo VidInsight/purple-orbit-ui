@@ -119,9 +119,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
+                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -153,9 +153,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
+                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -187,9 +187,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
+                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -221,9 +221,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
+                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
@@ -255,9 +255,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:translate-x-1',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName="bg-primary/15 text-foreground border-l-2 border-primary font-semibold shadow-sm"
+                    activeClassName="bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-4 border-primary font-semibold shadow-md shadow-primary/20 [&>svg]:text-primary [&>svg]:scale-110"
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {!isCollapsed && (
                       <span className="text-sm truncate">{item.name}</span>
                     )}
