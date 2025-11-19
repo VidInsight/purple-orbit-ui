@@ -17,13 +17,9 @@ import {
   HelpCircle, 
   Ticket, 
   BookOpen,
-  Users,
-  Workflow,
-  Code,
-  Database,
-  Key,
-  Activity,
-  Zap
+  Video,
+  MessageCircle,
+  Mail
 } from 'lucide-react';
 
 const WorkspaceSettings = () => {
@@ -106,62 +102,24 @@ const WorkspaceSettings = () => {
     window.open('https://docs.example.com', '_blank');
   };
 
+  const handleWatchVideos = () => {
+    window.open('https://www.youtube.com/example', '_blank');
+  };
+
+  const handleLiveChat = () => {
+    toast({
+      title: 'Live Chat',
+      description: 'Connecting to support chat...',
+    });
+  };
+
+  const handleEmailSupport = () => {
+    window.location.href = 'mailto:support@example.com';
+  };
+
   if (!currentWorkspace) {
     return null;
   }
-
-  const quotaItems = [
-    { 
-      icon: Users, 
-      label: 'Team Members', 
-      current: currentWorkspace?.current_member_count || 0, 
-      limit: currentWorkspace?.member_limit || 0,
-      color: 'text-primary'
-    },
-    { 
-      icon: Workflow, 
-      label: 'Workflows', 
-      current: currentWorkspace?.current_workflow_count || 0, 
-      limit: currentWorkspace?.workflow_limit || 0,
-      color: 'text-primary'
-    },
-    { 
-      icon: Code, 
-      label: 'Custom Scripts', 
-      current: currentWorkspace?.current_custom_script_count || 0, 
-      limit: currentWorkspace?.custom_script_limit || 0,
-      color: 'text-primary'
-    },
-    { 
-      icon: Database, 
-      label: 'Storage', 
-      current: ((currentWorkspace?.current_storage_mb || 0) / 1024).toFixed(1), 
-      limit: ((currentWorkspace?.storage_limit_mb || 0) / 1024).toFixed(0),
-      unit: 'GB',
-      color: 'text-primary'
-    },
-    { 
-      icon: Key, 
-      label: 'API Keys', 
-      current: currentWorkspace?.current_api_key_count || 0, 
-      limit: currentWorkspace?.api_key_limit || 0,
-      color: 'text-primary'
-    },
-    { 
-      icon: Activity, 
-      label: 'Monthly Executions', 
-      current: (currentWorkspace?.current_month_executions || 0).toLocaleString(), 
-      limit: (currentWorkspace?.monthly_execution_limit || 0).toLocaleString(),
-      color: 'text-primary'
-    },
-    { 
-      icon: Zap, 
-      label: 'Concurrent Executions', 
-      current: currentWorkspace?.current_month_concurrent_executions || 0, 
-      limit: currentWorkspace?.monthly_concurrent_executions || 0,
-      color: 'text-primary'
-    },
-  ];
 
   return (
     <PageLayout>
@@ -241,7 +199,7 @@ const WorkspaceSettings = () => {
                     onClick={handleSave}
                     loading={isSaving}
                     disabled={isSaving}
-                    size="lg"
+                    className="h-12"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
@@ -250,16 +208,16 @@ const WorkspaceSettings = () => {
               </div>
             </Card>
 
-            {/* Current Plan & Quotas */}
+            {/* Current Plan & Actions */}
             <Card className="p-8">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-foreground mb-1">
-                      Current Plan
+                      Subscription Plan
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      View your plan limits and current usage
+                      Manage your plan and billing
                     </p>
                   </div>
                   <Badge variant="default" className="text-sm px-4 py-1.5">
@@ -269,49 +227,20 @@ const WorkspaceSettings = () => {
 
                 <Separator />
 
-                {/* Quotas Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {quotaItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className="p-5 rounded-lg border border-border bg-surface/50 hover:bg-surface transition-colors duration-200"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`p-2 rounded-lg bg-primary/10 ${item.color}`}>
-                          <item.icon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">
-                            {item.label}
-                          </p>
-                          <p className="text-2xl font-semibold text-foreground">
-                            {item.current} <span className="text-lg text-muted-foreground">/ {item.limit}</span>
-                            {item.unit && <span className="text-sm text-muted-foreground ml-1">{item.unit}</span>}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Separator />
-
                 {/* Plan Actions */}
-                <div className="flex gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     variant="primary"
-                    className="flex-1"
                     onClick={handleUpgrade}
-                    size="lg"
+                    className="h-12"
                   >
                     <ArrowUp className="h-4 w-4 mr-2" />
                     Upgrade Plan
                   </Button>
                   <Button
                     variant="secondary"
-                    className="flex-1"
                     onClick={handleDowngrade}
-                    size="lg"
+                    className="h-12"
                   >
                     <ArrowDown className="h-4 w-4 mr-2" />
                     Downgrade Plan
@@ -339,7 +268,7 @@ const WorkspaceSettings = () => {
                 <div className="space-y-3">
                   <Button
                     variant="secondary"
-                    className="w-full justify-start h-12 text-base"
+                    className="w-full justify-start h-12"
                     onClick={handleGetHelp}
                   >
                     <HelpCircle className="h-5 w-5 mr-3" />
@@ -348,7 +277,7 @@ const WorkspaceSettings = () => {
 
                   <Button
                     variant="secondary"
-                    className="w-full justify-start h-12 text-base"
+                    className="w-full justify-start h-12"
                     onClick={handleCreateTicket}
                   >
                     <Ticket className="h-5 w-5 mr-3" />
@@ -357,11 +286,38 @@ const WorkspaceSettings = () => {
 
                   <Button
                     variant="secondary"
-                    className="w-full justify-start h-12 text-base"
+                    className="w-full justify-start h-12"
                     onClick={handleViewDocs}
                   >
                     <BookOpen className="h-5 w-5 mr-3" />
                     Documentation
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-start h-12"
+                    onClick={handleWatchVideos}
+                  >
+                    <Video className="h-5 w-5 mr-3" />
+                    Watch Video Tutorials
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-start h-12"
+                    onClick={handleLiveChat}
+                  >
+                    <MessageCircle className="h-5 w-5 mr-3" />
+                    Live Chat Support
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-start h-12"
+                    onClick={handleEmailSupport}
+                  >
+                    <Mail className="h-5 w-5 mr-3" />
+                    Email Support
                   </Button>
                 </div>
 
