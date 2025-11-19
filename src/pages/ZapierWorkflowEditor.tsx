@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -61,6 +61,10 @@ export default function ZapierWorkflowEditor() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  
+  // Ref for auto-scroll
+  const lastNodeRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScroll = useRef(false);
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -92,6 +96,19 @@ export default function ZapierWorkflowEditor() {
       ],
     },
   ]);
+
+  // Auto-scroll when node is added to the end
+  useEffect(() => {
+    if (shouldAutoScroll.current && lastNodeRef.current) {
+      setTimeout(() => {
+        lastNodeRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        shouldAutoScroll.current = false;
+      }, 100);
+    }
+  }, [nodes]);
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
@@ -281,6 +298,11 @@ export default function ZapierWorkflowEditor() {
     const newNodes = [...nodes];
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
+    
+    // Auto-scroll if added to the end
+    if (insertIndex === nodes.length) {
+      shouldAutoScroll.current = true;
+    }
   };
 
   const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
@@ -610,7 +632,11 @@ export default function ZapierWorkflowEditor() {
             <div className="max-w-3xl w-full px-6">
               <div className="space-y-0">
             {nodes.map((node, index) => (
-              <div key={node.id} className="relative">
+              <div 
+                key={node.id} 
+                className="relative"
+                ref={index === nodes.length - 1 ? lastNodeRef : null}
+              >
                 {/* Node */}
                 {node.type === 'trigger' ? (
                   <TriggerNode
