@@ -117,7 +117,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
 
                 {waitingForDrop === param.id && !param.isDynamic && (
                   <div className="px-3 py-2 bg-primary/10 border-2 border-dashed border-primary/40 rounded-lg text-sm text-primary animate-pulse">
-                    👈 Select value from Previous Outputs
+                    Select value from Previous Outputs
                   </div>
                 )}
 
