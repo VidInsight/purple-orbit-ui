@@ -222,6 +222,18 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
     }
   }, []);
 
+  // Scroll to bottom when menu opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
