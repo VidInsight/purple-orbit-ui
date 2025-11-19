@@ -131,6 +131,17 @@ export const NodeCanvas = ({
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
+        nodesDraggable={false}
+        nodesConnectable={true}
+        elementsSelectable={true}
+        panOnDrag={true}
+        panOnScroll={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        zoomOnDoubleClick={false}
+        minZoom={0.5}
+        maxZoom={1.5}
+        translateExtent={[[-1000, -1000], [2000, 2000]]}
         fitView
       >
         <Background />
