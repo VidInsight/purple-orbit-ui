@@ -488,11 +488,12 @@ export default function ZapierWorkflowEditor() {
   };
 
   const handleScrollToNode = (nodeIndex: number) => {
-    // Calculate approximate position of the node
+    // Calculate approximate position of the add button below the node
     const nodeHeight = 180; // Approximate height of each node with spacing
-    const targetY = -(nodeIndex * nodeHeight - 200); // Center the node
+    const addButtonOffset = 90; // Offset to scroll to the + button and menu position
+    const targetY = -(nodeIndex * nodeHeight + addButtonOffset - 200); // Center the add button
     
-    // Animate scroll to the node
+    // Animate scroll to the add button/menu
     setPanY(Math.min(Math.max(targetY, -1000), 1000));
   };
 
