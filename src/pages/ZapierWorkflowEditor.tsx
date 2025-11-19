@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -61,6 +61,8 @@ export default function ZapierWorkflowEditor() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  const [shouldScrollToNew, setShouldScrollToNew] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -79,6 +81,7 @@ export default function ZapierWorkflowEditor() {
       }
     }
   }, [id]);
+
   const [nodes, setNodes] = useState<WorkflowNode[]>([
     {
       id: 'trigger-1',
@@ -92,6 +95,22 @@ export default function ZapierWorkflowEditor() {
       ],
     },
   ]);
+
+  // Auto-scroll to newly added node
+  useEffect(() => {
+    if (shouldScrollToNew && nodes.length > 0) {
+      setTimeout(() => {
+        // Calculate approximate position of the last node
+        const nodeHeight = 180; // Approximate height of each node with spacing
+        const lastNodeIndex = nodes.length - 1;
+        const targetY = -(lastNodeIndex * nodeHeight - 200); // Center the node
+        
+        // Animate scroll to the new node
+        setPanY(Math.min(Math.max(targetY, -1000), 1000));
+        setShouldScrollToNew(false);
+      }, 100);
+    }
+  }, [shouldScrollToNew, nodes.length]);
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
@@ -153,6 +172,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      setShouldScrollToNew(true);
       return;
     }
 
@@ -196,6 +216,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      setShouldScrollToNew(true);
       return;
     }
 
@@ -281,6 +302,7 @@ export default function ZapierWorkflowEditor() {
     const newNodes = [...nodes];
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
+    setShouldScrollToNew(true);
   };
 
   const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
@@ -599,11 +621,12 @@ export default function ZapierWorkflowEditor() {
 
           {/* Canvas Content */}
           <div 
+            ref={canvasRef}
             className="absolute inset-0 flex items-start justify-center py-8"
             style={{
               transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
               transformOrigin: 'center top',
-              transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+              transition: isPanning ? 'none' : 'transform 0.3s ease-out',
               cursor: isPanning ? 'grabbing' : 'grab',
             }}
           >
