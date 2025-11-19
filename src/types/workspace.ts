@@ -1,6 +1,7 @@
 export interface Workspace {
   id: string;
   name: string;
+  slug: string;
   description?: string;
   icon?: string;
   memberCount: number;
@@ -29,5 +30,6 @@ export interface Workspace {
 
 export interface CreateWorkspaceData {
   name: string;
+  slug: string;
   description?: string;
 }
