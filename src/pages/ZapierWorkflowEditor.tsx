@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -61,7 +61,6 @@ export default function ZapierWorkflowEditor() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
-  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Load workflow from localStorage if editing existing workflow
   useEffect(() => {
@@ -80,7 +79,6 @@ export default function ZapierWorkflowEditor() {
       }
     }
   }, [id]);
-
   const [nodes, setNodes] = useState<WorkflowNode[]>([
     {
       id: 'trigger-1',
@@ -94,33 +92,6 @@ export default function ZapierWorkflowEditor() {
       ],
     },
   ]);
-
-  // Auto-scroll to menu when opened
-  const handleMenuOpen = (nodeIndex: number) => {
-    setTimeout(() => {
-      if (!canvasRef.current) return;
-      
-      // Calculate Y position where menu opens (after the node)
-      const nodeHeight = 180; // Approximate height of each node with spacing
-      const menuStartY = (nodeIndex + 1) * nodeHeight; // Menu starts after current node
-      
-      // Menu height estimate (header + search + content)
-      const menuHeight = 480;
-      const menuBottomY = menuStartY + menuHeight;
-      
-      // Get viewport height
-      const viewportHeight = canvasRef.current.clientHeight;
-      
-      // Position canvas so menu's bottom edge is at 85% of viewport height
-      // This ensures entire menu is visible with some padding at bottom
-      const targetViewportY = viewportHeight * 0.85;
-      const targetY = targetViewportY - menuBottomY;
-      
-      // Apply pan limits
-      const clampedY = Math.min(Math.max(targetY, -1000), 1000);
-      setPanY(clampedY);
-    }, 50);
-  };
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
@@ -628,12 +599,11 @@ export default function ZapierWorkflowEditor() {
 
           {/* Canvas Content */}
           <div 
-            ref={canvasRef}
             className="absolute inset-0 flex items-start justify-center py-8"
             style={{
               transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
               transformOrigin: 'center top',
-              transition: isPanning ? 'none' : 'transform 0.3s ease-out',
+              transition: isPanning ? 'none' : 'transform 0.1s ease-out',
               cursor: isPanning ? 'grabbing' : 'grab',
             }}
           >
@@ -683,10 +653,7 @@ export default function ZapierWorkflowEditor() {
                 {/* Connection line and Add button */}
                 <div className="flex flex-col items-center my-3">
                   <div className="w-0.5 h-4 bg-border" />
-                  <AddNodeButton 
-                    onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)}
-                    onMenuOpen={() => handleMenuOpen(index)}
-                  />
+                  <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
                   <div className="w-0.5 h-4 bg-border" />
                 </div>
               </div>

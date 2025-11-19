@@ -194,10 +194,9 @@ const categories: Category[] = [
 
 interface AddNodeButtonProps {
   onAddNode: (category: string, subcategory: string, node: string) => void;
-  onMenuOpen?: () => void;
 }
 
-export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => {
+export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [openSubcategory, setOpenSubcategory] = useState<string | null>(null);
@@ -311,12 +310,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => {
-          setIsOpen(!isOpen);
-          if (!isOpen && onMenuOpen) {
-            onMenuOpen();
-          }
-        }}
+        onClick={() => setIsOpen(!isOpen)}
         className="h-10 w-10 p-0 rounded-full bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20 transition-all duration-200"
       >
         <Plus className="h-5 w-5 text-primary" />
