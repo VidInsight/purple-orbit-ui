@@ -182,10 +182,10 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": {
-            boxShadow: "0 0 20px hsla(250, 90%, 68%, 0.4)",
+            boxShadow: "0 0 25px hsla(250, 90%, 68%, 0.5), 0 0 50px hsla(250, 90%, 68%, 0.3)",
           },
           "50%": {
-            boxShadow: "0 0 30px hsla(250, 90%, 68%, 0.6)",
+            boxShadow: "0 0 40px hsla(250, 90%, 68%, 0.7), 0 0 80px hsla(250, 90%, 68%, 0.4)",
           },
         },
         "shimmer": {
