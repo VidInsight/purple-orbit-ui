@@ -510,7 +510,16 @@ export default function ZapierWorkflowEditor() {
         <div className="max-w-3xl mx-auto px-6 py-8">
           <div className="space-y-0">
             {nodes.map((node, index) => (
-              <div key={node.id} className="relative">
+              <div 
+                key={node.id} 
+                className={`relative transition-all duration-300 ${
+                  selectedNode?.id === node.id 
+                    ? 'z-50 animate-pulse-glow' 
+                    : selectedNode 
+                    ? 'blur-sm opacity-40' 
+                    : ''
+                }`}
+              >
                 {/* Node */}
                 {node.type === 'trigger' ? (
                   <TriggerNode

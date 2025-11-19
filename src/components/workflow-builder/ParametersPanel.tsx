@@ -74,7 +74,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+        className="fixed inset-0 bg-background/50 backdrop-blur-md z-40"
         onClick={onClose}
       />
 
