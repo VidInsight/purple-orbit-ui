@@ -559,7 +559,7 @@ export default function ZapierWorkflowEditor() {
 
         {/* Workflow Canvas */}
         <div 
-          className="relative h-[calc(100vh-80px)] overflow-hidden bg-background"
+          className="relative h-[calc(100vh-80px)] overflow-auto bg-background"
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
