@@ -61,7 +61,6 @@ export default function ZapierWorkflowEditor() {
   const [panY, setPanY] = useState(0);
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
-  const [shouldScrollToNew, setShouldScrollToNew] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Load workflow from localStorage if editing existing workflow
@@ -96,21 +95,30 @@ export default function ZapierWorkflowEditor() {
     },
   ]);
 
-  // Auto-scroll to newly added node
-  useEffect(() => {
-    if (shouldScrollToNew && nodes.length > 0) {
-      setTimeout(() => {
-        // Calculate approximate position of the last node
-        const nodeHeight = 180; // Approximate height of each node with spacing
-        const lastNodeIndex = nodes.length - 1;
-        const targetY = -(lastNodeIndex * nodeHeight - 200); // Center the node
-        
-        // Animate scroll to the new node
-        setPanY(Math.min(Math.max(targetY, -1000), 1000));
-        setShouldScrollToNew(false);
-      }, 100);
-    }
-  }, [shouldScrollToNew, nodes.length]);
+  // Auto-scroll to menu when opened
+  const handleMenuOpen = (nodeIndex: number) => {
+    setTimeout(() => {
+      if (!canvasRef.current) return;
+      
+      // Calculate Y position of the node where menu is opened
+      const nodeHeight = 180; // Approximate height of each node with spacing
+      const nodeY = nodeIndex * nodeHeight;
+      
+      // Menu height estimate (including search, categories, etc.)
+      const menuHeight = 500;
+      const menuBottomY = nodeY + menuHeight;
+      
+      // Get viewport height
+      const viewportHeight = canvasRef.current.clientHeight;
+      
+      // Scroll so menu bottom is visible in lower portion of screen (70% down from top)
+      const targetY = -(menuBottomY - viewportHeight * 0.7);
+      
+      // Apply pan limits
+      const clampedY = Math.min(Math.max(targetY, -1000), 1000);
+      setPanY(clampedY);
+    }, 50);
+  };
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
@@ -172,7 +180,6 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
-      setShouldScrollToNew(true);
       return;
     }
 
@@ -216,7 +223,6 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
-      setShouldScrollToNew(true);
       return;
     }
 
@@ -302,7 +308,6 @@ export default function ZapierWorkflowEditor() {
     const newNodes = [...nodes];
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
-    setShouldScrollToNew(true);
   };
 
   const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
@@ -676,7 +681,10 @@ export default function ZapierWorkflowEditor() {
                 {/* Connection line and Add button */}
                 <div className="flex flex-col items-center my-3">
                   <div className="w-0.5 h-4 bg-border" />
-                  <AddNodeButton onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} />
+                  <AddNodeButton 
+                    onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)}
+                    onMenuOpen={() => handleMenuOpen(index)}
+                  />
                   <div className="w-0.5 h-4 bg-border" />
                 </div>
               </div>
