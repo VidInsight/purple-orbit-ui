@@ -488,12 +488,21 @@ export default function ZapierWorkflowEditor() {
   };
 
   const handleScrollToNode = (nodeIndex: number) => {
-    // Calculate approximate position of the add button below the node
-    const nodeHeight = 180; // Approximate height of each node with spacing
-    const addButtonOffset = 140; // Offset to scroll to the + button and menu position (increased for better centering)
-    const targetY = -(nodeIndex * nodeHeight + addButtonOffset - 250); // Center the add button lower on screen
+    // Menu specifications from AddNodeButton component:
+    // - Menu width: 640px
+    // - Menu max-height: 384px (96 * 4)
+    // - Menu header: ~120px
+    // - Menu offset from button: 48px (top-12)
+    // Total menu approximate height: ~500px, center at ~250px from top of menu
     
-    // Animate scroll to the add button/menu
+    const nodeHeight = 180; // Height of each node with spacing
+    const viewportCenter = (window.innerHeight - 80) / 2; // Canvas height center (minus toolbar)
+    const menuCenterOffset = 180 + 48 + 250; // node height + button spacing + half of menu height
+    
+    // Calculate target Y to center the menu in viewport
+    const targetY = -(nodeIndex * nodeHeight + menuCenterOffset - viewportCenter);
+    
+    // Apply with limits
     setPanY(Math.min(Math.max(targetY, -1000), 1000));
   };
 
