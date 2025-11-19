@@ -16,7 +16,7 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
       
       <main
         className={cn(
-          'min-h-screen transition-all duration-300 ease-in-out',
+          'min-h-screen transition-all duration-300 ease-in-out px-4 md:px-5 lg:px-6 py-6 md:py-7 lg:py-8',
           isCollapsed ? 'ml-16' : 'ml-64'
         )}
       >
