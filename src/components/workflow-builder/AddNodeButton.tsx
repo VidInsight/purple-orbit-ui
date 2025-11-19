@@ -238,6 +238,17 @@ export const AddNodeButton = ({ onAddNode }: AddNodeButtonProps) => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
+      
+      // Menü açıldığında scroll yap
+      setTimeout(() => {
+        if (menuRef.current) {
+          menuRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'end',
+            inline: 'nearest'
+          });
+        }
+      }, 100);
     }
 
     return () => {
