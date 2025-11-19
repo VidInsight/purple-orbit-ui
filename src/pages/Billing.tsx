@@ -114,7 +114,7 @@ const Billing = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+      <div className="container mx-auto max-w-[1400px]">
         <PageHeader
           title="Billing & Subscription"
           description="Manage your subscription, billing, and payment methods"
@@ -172,7 +172,7 @@ const Billing = () => {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-8">
               {PLANS.map((plan) => (
                 <PlanCard
                   key={plan.id}

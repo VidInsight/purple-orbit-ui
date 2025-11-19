@@ -10,7 +10,7 @@ export const PageHeader = ({ title, description, actions }: PageHeaderProps) => 
   return (
     <div className="flex items-start justify-between mb-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
+        <h1 className="text-3xl font-bold text-foreground">{title}</h1>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}

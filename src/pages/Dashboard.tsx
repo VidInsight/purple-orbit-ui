@@ -7,20 +7,20 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+      <div className="container mx-auto max-w-[1400px]">
         <PageHeader
           title="Dashboard"
           description="Overview of your automation workspace"
         />
 
-        <div className="flex gap-6">
+        <div className="flex gap-8">
           {/* Left Side - Empty for now */}
           <div className="flex-1">
             {/* Content removed */}
           </div>
 
           {/* Right Side - Quotas & Updates (Sticky) - Fixed width to match sidebar */}
-          <div className="w-64 space-y-6 sticky top-6 self-start flex-shrink-0">
+          <div className="w-64 space-y-8 sticky top-6 self-start flex-shrink-0">
             <QuotasWidget />
             <UpdatesFeed />
           </div>
