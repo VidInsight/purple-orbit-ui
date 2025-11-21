@@ -11,7 +11,7 @@ import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { TestResultCard } from '@/components/workflow-builder/TestResultCard';
+import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
 
 interface Variable {
   name: string;
@@ -907,44 +907,36 @@ export default function ZapierWorkflowEditor() {
                   </div>
                 </div>
 
-                {/* Test Çıktıları */}
-                <div>
-                  <div className="mb-6">
-                    <h2 className="text-lg font-bold mb-2">Test Results</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Detailed execution results for each workflow node
-                    </p>
-                  </div>
+                {/* Execution Timeline */}
+                <ExecutionTimeline
+                  nodes={nodes.map((node, index) => {
+                    const nodeResult = mockTestResults.node_results[node.id];
+                    const NodeIcon = node.icon || Settings;
+                    
+                    // Get input data from previous nodes (simplified)
+                    const inputData = node.type === 'trigger' ? undefined : {
+                      trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
+                    };
 
-                  <div className="space-y-6">
-                    {nodes.map((node) => {
-                      const nodeResult = mockTestResults.node_results[node.id];
-                      const NodeIcon = node.icon || Settings;
-                      
-                      // Get input data from previous nodes (simplified)
-                      const inputData = node.type === 'trigger' ? undefined : {
-                        trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
-                      };
-
-                      return (
-                        <TestResultCard
-                          key={node.id}
-                          nodeId={node.id}
-                          nodeName={node.title}
-                          nodeIcon={NodeIcon}
-                          status={nodeResult?.status || 'SUCCESS'}
-                          inputData={inputData}
-                          outputData={nodeResult?.result_data || {}}
-                          metadata={{
-                            duration_seconds: nodeResult?.duration_seconds || 0,
-                            completed_at: nodeResult?.completed_at || new Date().toISOString(),
-                          }}
-                          errorMessage={nodeResult?.error_message}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
+                    return {
+                      nodeId: node.id,
+                      nodeName: node.title,
+                      nodeIcon: NodeIcon,
+                      status: nodeResult.status,
+                      inputData,
+                      outputData: nodeResult.result_data,
+                      metadata: {
+                        duration_seconds: nodeResult.duration_seconds,
+                        completed_at: nodeResult.completed_at,
+                      },
+                      errorMessage: nodeResult.error_message,
+                      order: index + 1,
+                    };
+                  })}
+                  totalDuration={nodes.reduce((total, node) => {
+                    return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
+                  }, 0)}
+                />
               </div>
             </div>
           </TabsContent>
