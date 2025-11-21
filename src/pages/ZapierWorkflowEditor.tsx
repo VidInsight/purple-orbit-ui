@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -58,6 +58,10 @@ export default function ZapierWorkflowEditor() {
   const [activeTab, setActiveTab] = useState('editor');
   const [selectedTestNodeId, setSelectedTestNodeId] = useState<string | null>(null);
   
+  // Refs for DOM optimization
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  
   // Pan and Zoom state
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -66,22 +70,6 @@ export default function ZapierWorkflowEditor() {
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
   // Load workflow from localStorage if editing existing workflow
-  useEffect(() => {
-    if (id && id !== 'new') {
-      // Load workflow from storage
-      const savedWorkflows = localStorage.getItem('workflows');
-      if (savedWorkflows) {
-        const workflows = JSON.parse(savedWorkflows);
-        const workflow = workflows.find((w: any) => w.id === id);
-        if (workflow) {
-          setWorkflowName(workflow.name);
-          if (workflow.nodes) {
-            setNodes(workflow.nodes);
-          }
-        }
-      }
-    }
-  }, [id]);
   const [nodes, setNodes] = useState<WorkflowNode[]>([
     {
       id: 'trigger-1',
@@ -96,7 +84,50 @@ export default function ZapierWorkflowEditor() {
     },
   ]);
 
-  const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
+  useEffect(() => {
+    if (id && id !== 'new') {
+      const savedWorkflows = localStorage.getItem('workflows');
+      if (savedWorkflows) {
+        const workflows = JSON.parse(savedWorkflows);
+        const workflow = workflows.find((w: any) => w.id === id);
+        if (workflow) {
+          setWorkflowName(workflow.name);
+          if (workflow.nodes) {
+            setNodes(workflow.nodes);
+          }
+        }
+      }
+    }
+  }, [id]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  // Optimized scroll to node with ref
+  const scrollToNewNode = useCallback((nodeId: string) => {
+    setTimeout(() => {
+      if (!scrollContainerRef.current) {
+        scrollContainerRef.current = document.querySelector('.overflow-auto');
+      }
+      
+      const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
+      
+      if (scrollContainerRef.current && nodeElement) {
+        nodeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+    }, 100);
+  }, []);
+
+  const handleAddNode = useCallback((category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
     const nodeIcons: Record<string, LucideIcon> = {
       'GPT-4 Completion': MessageSquare,
@@ -114,20 +145,6 @@ export default function ZapierWorkflowEditor() {
     const insertIndex = afterNodeId 
       ? nodes.findIndex(n => n.id === afterNodeId) + 1
       : nodes.length;
-
-    const scrollToNewNode = (nodeId: string) => {
-      setTimeout(() => {
-        const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
-        const scrollContainer = document.querySelector('.overflow-auto');
-        
-        if (scrollContainer && nodeElement) {
-          nodeElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          });
-        }
-      }, 100);
-    };
 
     // Check if this is a conditional or loop node
     if (nodeType === 'If/Else') {
@@ -301,24 +318,21 @@ export default function ZapierWorkflowEditor() {
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
     scrollToNewNode(newNode.id);
-  };
+  }, [nodes, scrollToNewNode]);
 
-  const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
-    console.log('Adding branch:', { conditionalNodeId, branchType });
+  const handleAddBranch = useCallback((conditionalNodeId: string, branchType: 'true' | 'false') => {
     // In a real implementation, this would open a node selector
-    // For now, just log the action
-  };
+  }, []);
 
-  const handleNodeClick = (node: WorkflowNode) => {
-    console.log('Node selected:', node);
+  const handleNodeClick = useCallback((node: WorkflowNode) => {
     setSelectedNode(node);
-    setShowOutputsPanel(true); // Show outputs panel when a node is selected
-  };
+    setShowOutputsPanel(true);
+  }, []);
 
-  const handleParameterChange = (parameterId: string, value: any, isDynamic: boolean = false) => {
+  const handleParameterChange = useCallback((parameterId: string, value: any, isDynamic: boolean = false) => {
     if (!selectedNode) return;
 
-    setNodes(nodes.map(node => {
+    setNodes(prevNodes => prevNodes.map(node => {
       if (node.id === selectedNode.id) {
         const updatedParameters = node.parameters?.map(param =>
           param.id === parameterId 
@@ -336,10 +350,10 @@ export default function ZapierWorkflowEditor() {
       }
       return node;
     }));
-  };
+  }, [selectedNode]);
 
-  // Generate mock outputs for demonstration
-  const generateMockOutputs = () => {
+  // Generate mock outputs for demonstration (memoized)
+  const mockOutputs = useMemo(() => {
     return nodes.map(node => {
       if (node.type === 'trigger') {
         return {
@@ -415,7 +429,7 @@ export default function ZapierWorkflowEditor() {
         },
       };
     });
-  };
+  }, [nodes]);
 
   const handleDeleteNode = (nodeId: string) => {
     setNodes(nodes.filter(node => node.id !== nodeId));
@@ -443,7 +457,6 @@ export default function ZapierWorkflowEditor() {
     }
     
     localStorage.setItem('workflows', JSON.stringify(workflows));
-    console.log('Workflow saved:', workflow);
 
     // If new workflow, navigate to edit URL
     if (id === 'new') {
@@ -451,8 +464,8 @@ export default function ZapierWorkflowEditor() {
     }
   };
 
-  // Mock test results
-  const getMockTestResults = () => {
+  // Mock test results (memoized)
+  const mockTestResults = useMemo(() => {
     const nodeResults: Record<string, any> = {};
     
     nodes.forEach((node, index) => {
@@ -538,17 +551,15 @@ export default function ZapierWorkflowEditor() {
         completed_at: new Date().toISOString(),
       },
     };
-  };
+  }, [nodes]);
 
-  const handleTest = () => {
-    console.log('Testing workflow:', { name: workflowName, nodes });
+  const handleTest = useCallback(() => {
     // Implement test logic
-  };
+  }, [workflowName, nodes]);
 
-  const handlePublish = () => {
-    console.log('Publishing workflow:', { name: workflowName, nodes });
+  const handlePublish = useCallback(() => {
     // Implement publish logic
-  };
+  }, [workflowName, nodes]);
 
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
@@ -826,7 +837,7 @@ export default function ZapierWorkflowEditor() {
 
             {/* Outputs Panel */}
             <OutputsPanel
-              outputs={generateMockOutputs()}
+              outputs={mockOutputs}
               isOpen={showOutputsPanel}
               currentNodeId={selectedNode?.id}
             />
@@ -885,8 +896,7 @@ export default function ZapierWorkflowEditor() {
                   <div className="mb-6">
                     <div className="flex gap-3 overflow-x-auto pb-4">
                       {nodes.map((node) => {
-                        const testResults = getMockTestResults();
-                        const nodeResult = testResults.node_results[node.id];
+                        const nodeResult = mockTestResults.node_results[node.id];
                         const isSelected = selectedTestNodeId === node.id;
                         const NodeIcon = node.icon || Settings;
                         
@@ -939,7 +949,7 @@ export default function ZapierWorkflowEditor() {
                           </p>
                         </div>
                         <pre className="text-xs overflow-auto max-h-[400px] bg-surface/50 p-4 rounded-md">
-                          {JSON.stringify(getMockTestResults().node_results[selectedTestNodeId], null, 2)}
+                          {JSON.stringify(mockTestResults.node_results[selectedTestNodeId], null, 2)}
                         </pre>
                       </div>
                     ) : (
