@@ -729,16 +729,6 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-8">
-                {/* Test Çıktıları */}
-                <div className="bg-surface border border-border rounded-lg p-6">
-                  <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
-                  <div className="bg-background rounded-md p-4 min-h-[200px]">
-                    <p className="text-sm text-muted-foreground">
-                      Test çıktıları burada görüntülenecektir.
-                    </p>
-                  </div>
-                </div>
-
                 {/* Test Durumu ve Loglar - Yan Yana */}
                 <div className="grid grid-cols-2 gap-6">
                   {/* Test Durumu */}
@@ -777,6 +767,16 @@ export default function ZapierWorkflowEditor() {
                         <p className="text-muted-foreground">[INFO] {nodes.length} düğüm yüklendi</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Test Çıktıları */}
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
+                  <div className="bg-background rounded-md p-4 min-h-[200px]">
+                    <p className="text-sm text-muted-foreground">
+                      Test çıktıları burada görüntülenecektir.
+                    </p>
                   </div>
                 </div>
               </div>
