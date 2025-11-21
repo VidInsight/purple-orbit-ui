@@ -203,7 +203,7 @@ export const ExecutionTimeline = ({ nodes, totalDuration }: ExecutionTimelinePro
                   {/* Expanded details */}
                   {isExpanded && (
                     <div className="mt-3 border border-border rounded-lg bg-background overflow-hidden">
-                      <div className="grid grid-cols-2 gap-4 p-4">
+                      <div className="space-y-4 p-4">
                         {/* Input Data */}
                         {node.inputData && (
                           <div>
@@ -246,7 +246,7 @@ export const ExecutionTimeline = ({ nodes, totalDuration }: ExecutionTimelinePro
 
                         {/* Error Details */}
                         {node.status === 'FAILED' && node.errorMessage && (
-                          <div className="col-span-2">
+                          <div>
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="text-xs font-semibold text-destructive">Error Details</h4>
                             </div>
