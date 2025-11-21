@@ -13,6 +13,8 @@ import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
 import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface Variable {
   name: string;
@@ -559,10 +561,6 @@ export default function ZapierWorkflowEditor() {
     // Implement test logic
   }, [workflowName, nodes]);
 
-  const handlePublish = useCallback(() => {
-    setIsActive(!isActive);
-  }, [isActive]);
-
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -650,19 +648,16 @@ export default function ZapierWorkflowEditor() {
 
               {/* Right Side */}
               <div className="flex items-center gap-3">
-                <Button
-                  variant={isActive ? "primary" : "secondary"}
-                  size="md"
-                  onClick={handlePublish}
-                  className={`font-medium px-6 transition-all ${
-                    isActive 
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
-                      : 'bg-secondary hover:bg-secondary/80 text-foreground'
-                  }`}
-                >
-                  <Zap className="h-4 w-4 mr-2" />
-                  {isActive ? 'Deactivate' : 'Activate'}
-                </Button>
+                <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-lg">
+                  <Label htmlFor="workflow-active" className="text-sm font-medium cursor-pointer">
+                    {isActive ? 'Active' : 'Inactive'}
+                  </Label>
+                  <Switch 
+                    id="workflow-active"
+                    checked={isActive}
+                    onCheckedChange={setIsActive}
+                  />
+                </div>
               </div>
             </div>
           </div>
