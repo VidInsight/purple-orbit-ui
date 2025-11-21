@@ -12,9 +12,6 @@ import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TestResultCard } from '@/components/workflow-builder/TestResultCard';
-import { validateWorkflow, getValidationSummary } from '@/utils/workflowValidation';
-import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 
 interface Variable {
   name: string;
@@ -60,7 +57,6 @@ export default function ZapierWorkflowEditor() {
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
-  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -558,73 +554,12 @@ export default function ZapierWorkflowEditor() {
   }, [nodes]);
 
   const handleTest = useCallback(() => {
-    // Validate workflow first
-    const validationResult = validateWorkflow(nodes);
-    
-    if (!validationResult.isValid) {
-      const errorNodeIds = new Set(validationResult.errors.map(e => e.nodeId));
-      setValidationErrors(errorNodeIds);
-      
-      toast({
-        title: 'Validation Failed',
-        description: getValidationSummary(validationResult),
-        variant: 'destructive',
-      });
-      
-      // Switch to editor tab to show errors
-      setActiveTab('editor');
-      return;
-    }
-    
-    // Clear validation errors if validation passes
-    setValidationErrors(new Set());
-    
-    // Show warnings if any
-    if (validationResult.warnings.length > 0) {
-      toast({
-        title: 'Validation Warnings',
-        description: getValidationSummary(validationResult),
-      });
-    }
-    
-    toast({
-      title: 'Test Started',
-      description: 'Running workflow test execution...',
-    });
-    
-    // Switch to test tab
-    setActiveTab('test');
-  }, [nodes]);
+    // Implement test logic
+  }, [workflowName, nodes]);
 
   const handlePublish = useCallback(() => {
-    // Validate workflow before activation
-    const validationResult = validateWorkflow(nodes);
-    
-    if (!validationResult.isValid) {
-      const errorNodeIds = new Set(validationResult.errors.map(e => e.nodeId));
-      setValidationErrors(errorNodeIds);
-      
-      toast({
-        title: 'Cannot Activate Workflow',
-        description: getValidationSummary(validationResult),
-        variant: 'destructive',
-      });
-      
-      // Switch to editor tab to show errors
-      setActiveTab('editor');
-      return;
-    }
-    
-    // Clear validation errors if validation passes
-    setValidationErrors(new Set());
-    
-    toast({
-      title: 'Workflow Activated',
-      description: 'Your workflow is now active and will run on triggers',
-    });
-    
-    handleSave();
-  }, [nodes, handleSave]);
+    // Implement publish logic
+  }, [workflowName, nodes]);
 
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
@@ -811,15 +746,6 @@ export default function ZapierWorkflowEditor() {
                   <div className="space-y-0">
                 {nodes.map((node, index) => (
                   <div key={node.id} className="relative" data-node-id={node.id}>
-                    {/* Validation Error Indicator */}
-                    {validationErrors.has(node.id) && (
-                      <div className="absolute -top-2 -right-2 z-10">
-                        <div className="bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg">
-                          <XCircle className="h-4 w-4" />
-                        </div>
-                      </div>
-                    )}
-                    
                     {/* Node */}
                     {node.type === 'trigger' ? (
                       <TriggerNode
