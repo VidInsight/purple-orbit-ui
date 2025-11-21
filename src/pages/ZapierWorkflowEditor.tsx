@@ -56,6 +56,7 @@ export default function ZapierWorkflowEditor() {
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
+  const [selectedTestNodeId, setSelectedTestNodeId] = useState<string | null>(null);
   
   // Pan and Zoom state
   const [zoom, setZoom] = useState(1);
@@ -433,6 +434,95 @@ export default function ZapierWorkflowEditor() {
     }
   };
 
+  // Mock test results
+  const getMockTestResults = () => {
+    const nodeResults: Record<string, any> = {};
+    
+    nodes.forEach((node, index) => {
+      if (node.type === 'trigger') {
+        nodeResults[node.id] = {
+          node_id: node.id,
+          node_name: node.title,
+          status: 'SUCCESS',
+          result_data: {
+            user_id: '12345',
+            email: 'user@example.com',
+            timestamp: '2025-01-15T10:30:00Z',
+            data: {
+              name: 'John Doe',
+              age: 30,
+            },
+          },
+          duration_seconds: 0.5,
+          completed_at: new Date().toISOString(),
+        };
+      } else if (node.title === 'GPT-4 Completion') {
+        nodeResults[node.id] = {
+          node_id: node.id,
+          node_name: node.title,
+          status: 'SUCCESS',
+          result_data: {
+            id: 'resp_abc123',
+            object: 'response',
+            created_at: 1741476542,
+            output: [
+              {
+                type: 'message',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'This is a generated AI response based on the provided prompt...',
+                  },
+                ],
+              },
+            ],
+            usage: {
+              input_tokens: 36,
+              output_tokens: 87,
+            },
+          },
+          duration_seconds: 2.3,
+          completed_at: new Date().toISOString(),
+        };
+      } else {
+        nodeResults[node.id] = {
+          node_id: node.id,
+          node_name: node.title,
+          status: index % 5 === 4 ? 'FAILED' : 'SUCCESS',
+          result_data: {
+            status: 'processed',
+            data: {
+              result: `Output from ${node.title}`,
+              timestamp: new Date().toISOString(),
+            },
+          },
+          duration_seconds: Math.random() * 3,
+          completed_at: new Date().toISOString(),
+          ...(index % 5 === 4 && {
+            error_message: 'Connection timeout - unable to reach external service',
+          }),
+        };
+      }
+    });
+
+    return {
+      summary: {
+        total_nodes: nodes.length,
+        completed_nodes: nodes.length,
+        successful_nodes: nodes.filter((_, i) => i % 5 !== 4).length,
+        failed_nodes: nodes.filter((_, i) => i % 5 === 4).length,
+        skipped_nodes: 0,
+      },
+      node_results: nodeResults,
+      final_output: Object.values(nodeResults)[Object.values(nodeResults).length - 1]?.result_data,
+      metadata: {
+        workflow_version: '1.0.0',
+        execution_mode: 'normal',
+        completed_at: new Date().toISOString(),
+      },
+    };
+  };
+
   const handleTest = () => {
     console.log('Testing workflow:', { name: workflowName, nodes });
     // Implement test logic
@@ -773,10 +863,72 @@ export default function ZapierWorkflowEditor() {
                 {/* Test Çıktıları */}
                 <div className="bg-surface border border-border rounded-lg p-6">
                   <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
+                  
+                  {/* Node Flow Representation */}
+                  <div className="mb-6">
+                    <div className="flex gap-3 overflow-x-auto pb-4">
+                      {nodes.map((node) => {
+                        const testResults = getMockTestResults();
+                        const nodeResult = testResults.node_results[node.id];
+                        const isSelected = selectedTestNodeId === node.id;
+                        
+                        return (
+                          <button
+                            key={node.id}
+                            onClick={() => setSelectedTestNodeId(isSelected ? null : node.id)}
+                            className={`
+                              flex-shrink-0 w-40 p-4 border-2 rounded-lg transition-all duration-200
+                              ${isSelected 
+                                ? 'border-primary bg-primary/10' 
+                                : 'border-border bg-surface hover:border-primary/50 hover:bg-accent/30'
+                              }
+                            `}
+                          >
+                            <div className="text-left space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-lg">{node.icon}</span>
+                                <span className={`
+                                  text-xs px-2 py-0.5 rounded-full font-medium
+                                  ${nodeResult?.status === 'SUCCESS' 
+                                    ? 'bg-success/20 text-success' 
+                                    : 'bg-destructive/20 text-destructive'
+                                  }
+                                `}>
+                                  {nodeResult?.status}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold truncate">{node.title}</p>
+                                <p className="text-xs text-muted-foreground truncate">{node.id}</p>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Selected Node Output */}
                   <div className="bg-background rounded-md p-4 min-h-[200px]">
-                    <p className="text-sm text-muted-foreground">
-                      Test çıktıları burada görüntülenecektir.
-                    </p>
+                    {selectedTestNodeId ? (
+                      <div>
+                        <div className="mb-4 pb-3 border-b border-border">
+                          <h3 className="text-sm font-bold mb-2">
+                            {nodes.find(n => n.id === selectedTestNodeId)?.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            Node ID: {selectedTestNodeId}
+                          </p>
+                        </div>
+                        <pre className="text-xs overflow-auto max-h-[400px] bg-surface/50 p-4 rounded-md">
+                          {JSON.stringify(getMockTestResults().node_results[selectedTestNodeId], null, 2)}
+                        </pre>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center">
+                        Bir düğüme tıklayarak çıktısını görüntüleyin
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
