@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Trash2, Edit2, CheckCircle2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Trash2, Edit2, CheckCircle2, Eye, ChevronDown, ChevronUp, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -7,7 +7,7 @@ interface ActionNodeProps {
   node: {
     id: string;
     title: string;
-    icon?: string;
+    icon?: LucideIcon;
     category?: string;
     nodeType?: string;
     configured?: boolean;
