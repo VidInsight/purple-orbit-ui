@@ -847,7 +847,7 @@ export default function ZapierWorkflowEditor() {
           {/* Test Tab Content */}
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
-              <div className="container mx-auto px-6 py-8 space-y-8">
+              <div className="container mx-auto px-6 py-8 space-y-6">
                 {/* Test Summary Card */}
                 <TestSummaryCard
                   totalNodes={mockTestResults.summary.total_nodes}
@@ -864,66 +864,6 @@ export default function ZapierWorkflowEditor() {
                       : 0
                   }
                 />
-
-                {/* Test Durumu ve Loglar - Yan Yana */}
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Test Durumu */}
-                  <div className="bg-surface border border-border rounded-lg p-6">
-                    <h2 className="text-lg font-bold mb-4">Test Status</h2>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Status</span>
-                        <span className="text-sm font-medium text-success">Ready</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Last Test</span>
-                        <span className="text-sm font-medium">Not tested yet</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Total Nodes</span>
-                        <span className="text-sm font-medium">{nodes.length}</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Success Rate</span>
-                        <span className="text-sm font-medium text-success">
-                          {Math.round((mockTestResults.summary.successful_nodes / mockTestResults.summary.total_nodes) * 100)}%
-                        </span>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={handleTest}
-                      className="mt-4 w-full"
-                    >
-                      Run Test
-                    </Button>
-                  </div>
-
-                  {/* Loglar */}
-                  <div className="bg-surface border border-border rounded-lg p-6">
-                    <h2 className="text-lg font-bold mb-4">Logs</h2>
-                    <div className="bg-background rounded-md p-4 font-mono text-xs h-[300px] overflow-auto">
-                      <div className="space-y-1">
-                        <p className="text-success">[INFO] Workflow ready</p>
-                        <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
-                        <p className="text-success">[INFO] Test execution started</p>
-                        {nodes.map((node) => {
-                          const result = mockTestResults.node_results[node.id];
-                          return (
-                            <p 
-                              key={node.id}
-                              className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
-                            >
-                              [{result?.status}] {node.title} completed in {result?.duration_seconds.toFixed(2)}s
-                            </p>
-                          );
-                        })}
-                        <p className="text-success">[INFO] Test execution completed</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Execution Timeline */}
                 <ExecutionTimeline
@@ -955,6 +895,52 @@ export default function ZapierWorkflowEditor() {
                     return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
                   }, 0)}
                 />
+
+                {/* Logs Section - Collapsible */}
+                <div className="bg-surface border border-border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setActiveTab('test')} // Toggle state could be added
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-background/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                        <MessageSquare className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-sm font-semibold">Execution Logs</h3>
+                        <p className="text-xs text-muted-foreground">View detailed execution logs and debug information</p>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <div className="px-6 pb-6">
+                    <div className="bg-background rounded-md p-4 font-mono text-xs h-[200px] overflow-auto border border-border">
+                      <div className="space-y-1">
+                        <p className="text-success">[INFO] Workflow test started</p>
+                        <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
+                        <p className="text-success">[INFO] Executing workflow...</p>
+                        {nodes.map((node) => {
+                          const result = mockTestResults.node_results[node.id];
+                          return (
+                            <p 
+                              key={node.id}
+                              className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
+                            >
+                              [{result?.status}] {node.title} - completed in {result?.duration_seconds.toFixed(2)}s
+                              {result?.error_message && (
+                                <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
+                              )}
+                            </p>
+                          );
+                        })}
+                        <p className="text-success">[INFO] Test execution completed</p>
+                        <p className="text-muted-foreground">
+                          [SUMMARY] Success: {mockTestResults.summary.successful_nodes}, Failed: {mockTestResults.summary.failed_nodes}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </TabsContent>
