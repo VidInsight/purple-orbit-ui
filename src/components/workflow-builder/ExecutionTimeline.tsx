@@ -213,8 +213,8 @@ export const ExecutionTimeline = ({ nodes, totalDuration }: ExecutionTimelinePro
   };
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-surface border border-border rounded-lg h-full flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
         <div>
           <h2 className="text-lg font-bold mb-1">Execution Timeline</h2>
           <p className="text-sm text-muted-foreground">
@@ -231,9 +231,10 @@ export const ExecutionTimeline = ({ nodes, totalDuration }: ExecutionTimelinePro
         )}
       </div>
 
-      <div className="relative">
-        {/* Timeline vertical line */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+      <div className="p-6 flex-1 overflow-auto">
+        <div className="relative">
+          {/* Timeline vertical line */}
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
 
         {/* Timeline nodes */}
         <div className="space-y-0">
@@ -411,6 +412,7 @@ export const ExecutionTimeline = ({ nodes, totalDuration }: ExecutionTimelinePro
             <span className="font-medium">Execution Completed</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
