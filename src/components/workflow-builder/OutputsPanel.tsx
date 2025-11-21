@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { usePathContext } from './PathContext';
 
 interface OutputData {
   nodeId: string;
   nodeName: string;
-  icon: string;
+  icon: LucideIcon;
   output: any;
 }
 
@@ -227,10 +227,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10">
-                      {output.icon === '⚡' && <Zap className="h-4 w-4 text-primary" />}
-                      {output.icon === '💬' && <MessageSquare className="h-4 w-4 text-accent" />}
-                      {output.icon === '📋' && <FileText className="h-4 w-4 text-muted-foreground" />}
-                      {output.icon === '⚙️' && <Settings className="h-4 w-4 text-accent" />}
+                      <output.icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm font-medium text-foreground">
                       {output.nodeName}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GitBranch, Edit2, CheckCircle2, Plus, Eye, Trash2 } from 'lucide-react';
+import { GitBranch, Edit2, CheckCircle2, Plus, Eye, Trash2, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -7,7 +7,7 @@ interface ConditionalNodeProps {
   node: {
     id: string;
     title: string;
-    icon?: string;
+    icon?: LucideIcon;
     nodeType?: string;
     configured?: boolean;
     parameters?: any[];

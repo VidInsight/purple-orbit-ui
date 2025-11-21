@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, CheckCircle2, Plus, X } from 'lucide-react';
+import { Zap, CheckCircle2, Plus, X, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -13,7 +13,7 @@ interface TriggerNodeProps {
   node: {
     id: string;
     title: string;
-    icon?: string;
+    icon?: LucideIcon;
     variables?: Variable[];
   };
   onUpdate: (updates: any) => void;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Link } from 'lucide-react';
+import { X, Link, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PathChip } from './PathChip';
@@ -22,7 +22,7 @@ interface ParametersPanelProps {
   node: {
     id: string;
     title: string;
-    icon?: string;
+    icon?: LucideIcon;
     parameters?: Parameter[];
   };
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -22,7 +22,7 @@ interface WorkflowNode {
   id: string;
   type: 'trigger' | 'action' | 'conditional' | 'loop';
   title: string;
-  icon?: string;
+  icon?: LucideIcon;
   category?: string;
   nodeType?: string;
   configured?: boolean;
@@ -87,7 +87,7 @@ export default function ZapierWorkflowEditor() {
       id: 'trigger-1',
       type: 'trigger',
       title: 'API Trigger',
-      icon: '⚡',
+      icon: Zap,
       variables: [
         { name: 'user_id', type: 'string', defaultValue: '' },
         { name: 'event_type', type: 'string', defaultValue: 'create' },
@@ -98,16 +98,16 @@ export default function ZapierWorkflowEditor() {
 
   const handleAddNode = (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
     // Map node types to icons and configured status
-    const nodeIcons: Record<string, string> = {
-      'GPT-4 Completion': '💬',
-      'DALL-E Image': '🎨',
-      'Embeddings': '🔢',
-      'Claude': '💭',
-      'JSON Parse': '📋',
-      'Text Replace': '✏️',
-      'Date Format': '📅',
-      'If/Else': '⚖️',
-      'For Each': '➰',
+    const nodeIcons: Record<string, LucideIcon> = {
+      'GPT-4 Completion': MessageSquare,
+      'DALL-E Image': Image,
+      'Embeddings': Hash,
+      'Claude': MessageSquare,
+      'JSON Parse': FileJson,
+      'Text Replace': Type,
+      'Date Format': Calendar,
+      'If/Else': GitBranch,
+      'For Each': Repeat,
     };
 
     // Find the index where the new node should be inserted
@@ -328,7 +328,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: '⚡',
+          icon: Zap,
           output: {
             user_id: '12345',
             email: 'user@example.com',
@@ -345,7 +345,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: '💬',
+          icon: MessageSquare,
           output: {
             id: 'resp_abc123',
             object: 'response',
@@ -373,7 +373,7 @@ export default function ZapierWorkflowEditor() {
         return {
           nodeId: node.id,
           nodeName: node.title,
-          icon: '📋',
+          icon: FileJson,
           output: {
             parsed_data: {
               field1: 'value1',
@@ -389,7 +389,7 @@ export default function ZapierWorkflowEditor() {
       return {
         nodeId: node.id,
         nodeName: node.title,
-        icon: '⚙️',
+        icon: Settings,
         output: {
           status: 'success',
           data: {
@@ -871,6 +871,7 @@ export default function ZapierWorkflowEditor() {
                         const testResults = getMockTestResults();
                         const nodeResult = testResults.node_results[node.id];
                         const isSelected = selectedTestNodeId === node.id;
+                        const NodeIcon = node.icon || Settings;
                         
                         return (
                           <button
@@ -886,7 +887,7 @@ export default function ZapierWorkflowEditor() {
                           >
                             <div className="text-left space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-lg">{node.icon}</span>
+                                <NodeIcon className="h-5 w-5 text-primary" />
                                 <span className={`
                                   text-xs px-2 py-0.5 rounded-full font-medium
                                   ${nodeResult?.status === 'SUCCESS' 
