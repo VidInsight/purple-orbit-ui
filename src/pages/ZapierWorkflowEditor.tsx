@@ -868,7 +868,7 @@ export default function ZapierWorkflowEditor() {
                 {/* Timeline and Logs - Side by Side */}
                 <div className="grid grid-cols-2 gap-6">
                   {/* Execution Timeline */}
-                  <div className="overflow-hidden">
+                  <div className="min-h-[600px] flex flex-col">
                     <ExecutionTimeline
                       nodes={nodes.map((node, index) => {
                         const nodeResult = mockTestResults.node_results[node.id];
@@ -901,8 +901,8 @@ export default function ZapierWorkflowEditor() {
                   </div>
 
                   {/* Execution Logs */}
-                  <div className="bg-surface border border-border rounded-lg overflow-hidden">
-                    <div className="px-6 py-4 border-b border-border">
+                  <div className="bg-surface border border-border rounded-lg min-h-[600px] flex flex-col">
+                    <div className="px-6 py-4 border-b border-border flex-shrink-0">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
                           <MessageSquare className="h-4 w-4 text-primary" />
@@ -914,8 +914,8 @@ export default function ZapierWorkflowEditor() {
                       </div>
                     </div>
                     
-                    <div className="p-6">
-                      <div className="bg-background rounded-md p-4 font-mono text-xs h-[600px] overflow-auto border border-border">
+                    <div className="p-6 flex-1 overflow-hidden">
+                      <div className="bg-background rounded-md p-4 font-mono text-xs h-full overflow-auto border border-border">
                         <div className="space-y-1">
                           <p className="text-success">[INFO] Workflow test started</p>
                           <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
