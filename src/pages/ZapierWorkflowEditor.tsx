@@ -11,6 +11,7 @@ import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { TestResultCard } from '@/components/workflow-builder/TestResultCard';
 
 interface Variable {
   name: string;
@@ -56,7 +57,6 @@ export default function ZapierWorkflowEditor() {
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
-  const [selectedTestNodeId, setSelectedTestNodeId] = useState<string | null>(null);
   
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -851,19 +851,25 @@ export default function ZapierWorkflowEditor() {
                 <div className="grid grid-cols-2 gap-6">
                   {/* Test Durumu */}
                   <div className="bg-surface border border-border rounded-lg p-6">
-                    <h2 className="text-lg font-bold mb-4">Test Durumu</h2>
+                    <h2 className="text-lg font-bold mb-4">Test Status</h2>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Durum</span>
-                        <span className="text-sm font-medium text-success">Hazır</span>
+                        <span className="text-sm text-muted-foreground">Status</span>
+                        <span className="text-sm font-medium text-success">Ready</span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Son Test</span>
-                        <span className="text-sm font-medium">Henüz test edilmedi</span>
+                        <span className="text-sm text-muted-foreground">Last Test</span>
+                        <span className="text-sm font-medium">Not tested yet</span>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                        <span className="text-sm text-muted-foreground">Toplam Düğüm</span>
+                        <span className="text-sm text-muted-foreground">Total Nodes</span>
                         <span className="text-sm font-medium">{nodes.length}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                        <span className="text-sm text-muted-foreground">Success Rate</span>
+                        <span className="text-sm font-medium text-success">
+                          {Math.round((mockTestResults.summary.successful_nodes / mockTestResults.summary.total_nodes) * 100)}%
+                        </span>
                       </div>
                     </div>
                     <Button 
@@ -872,91 +878,71 @@ export default function ZapierWorkflowEditor() {
                       onClick={handleTest}
                       className="mt-4 w-full"
                     >
-                      Test Çalıştır
+                      Run Test
                     </Button>
                   </div>
 
                   {/* Loglar */}
                   <div className="bg-surface border border-border rounded-lg p-6">
-                    <h2 className="text-lg font-bold mb-4">Loglar</h2>
+                    <h2 className="text-lg font-bold mb-4">Logs</h2>
                     <div className="bg-background rounded-md p-4 font-mono text-xs h-[300px] overflow-auto">
                       <div className="space-y-1">
-                        <p className="text-muted-foreground">[INFO] Workflow hazır</p>
-                        <p className="text-muted-foreground">[INFO] {nodes.length} düğüm yüklendi</p>
+                        <p className="text-success">[INFO] Workflow ready</p>
+                        <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
+                        <p className="text-success">[INFO] Test execution started</p>
+                        {nodes.map((node) => {
+                          const result = mockTestResults.node_results[node.id];
+                          return (
+                            <p 
+                              key={node.id}
+                              className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
+                            >
+                              [{result?.status}] {node.title} completed in {result?.duration_seconds.toFixed(2)}s
+                            </p>
+                          );
+                        })}
+                        <p className="text-success">[INFO] Test execution completed</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Test Çıktıları */}
-                <div className="bg-surface border border-border rounded-lg p-6">
-                  <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
-                  
-                  {/* Node Flow Representation */}
+                <div>
                   <div className="mb-6">
-                    <div className="flex gap-3 overflow-x-auto pb-4">
-                      {nodes.map((node) => {
-                        const nodeResult = mockTestResults.node_results[node.id];
-                        const isSelected = selectedTestNodeId === node.id;
-                        const NodeIcon = node.icon || Settings;
-                        
-                        return (
-                          <button
-                            key={node.id}
-                            onClick={() => setSelectedTestNodeId(isSelected ? null : node.id)}
-                            className={`
-                              flex-shrink-0 w-40 p-4 border-2 rounded-lg transition-all duration-200
-                              ${isSelected 
-                                ? 'border-primary bg-primary/10' 
-                                : 'border-border bg-surface hover:border-primary/50 hover:bg-accent/30'
-                              }
-                            `}
-                          >
-                            <div className="text-left space-y-2">
-                              <div className="flex items-center justify-between">
-                                <NodeIcon className="h-5 w-5 text-primary" />
-                                <span className={`
-                                  text-xs px-2 py-0.5 rounded-full font-medium
-                                  ${nodeResult?.status === 'SUCCESS' 
-                                    ? 'bg-success/20 text-success' 
-                                    : 'bg-destructive/20 text-destructive'
-                                  }
-                                `}>
-                                  {nodeResult?.status}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold truncate">{node.title}</p>
-                                <p className="text-xs text-muted-foreground truncate">{node.id}</p>
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <h2 className="text-lg font-bold mb-2">Test Results</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Detailed execution results for each workflow node
+                    </p>
                   </div>
 
-                  {/* Selected Node Output */}
-                  <div className="bg-background rounded-md p-4 min-h-[200px]">
-                    {selectedTestNodeId ? (
-                      <div>
-                        <div className="mb-4 pb-3 border-b border-border">
-                          <h3 className="text-sm font-bold mb-2">
-                            {nodes.find(n => n.id === selectedTestNodeId)?.title}
-                          </h3>
-                          <p className="text-xs text-muted-foreground">
-                            Node ID: {selectedTestNodeId}
-                          </p>
-                        </div>
-                        <pre className="text-xs overflow-auto max-h-[400px] bg-surface/50 p-4 rounded-md">
-                          {JSON.stringify(mockTestResults.node_results[selectedTestNodeId], null, 2)}
-                        </pre>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-center">
-                        Bir düğüme tıklayarak çıktısını görüntüleyin
-                      </p>
-                    )}
+                  <div className="space-y-6">
+                    {nodes.map((node) => {
+                      const nodeResult = mockTestResults.node_results[node.id];
+                      const NodeIcon = node.icon || Settings;
+                      
+                      // Get input data from previous nodes (simplified)
+                      const inputData = node.type === 'trigger' ? undefined : {
+                        trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
+                      };
+
+                      return (
+                        <TestResultCard
+                          key={node.id}
+                          nodeId={node.id}
+                          nodeName={node.title}
+                          nodeIcon={NodeIcon}
+                          status={nodeResult?.status || 'SUCCESS'}
+                          inputData={inputData}
+                          outputData={nodeResult?.result_data || {}}
+                          metadata={{
+                            duration_seconds: nodeResult?.duration_seconds || 0,
+                            completed_at: nodeResult?.completed_at || new Date().toISOString(),
+                          }}
+                          errorMessage={nodeResult?.error_message}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               </div>
