@@ -729,33 +729,6 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-8">
-                {/* Test Durumu */}
-                <div className="bg-surface border border-border rounded-lg p-6">
-                  <h2 className="text-lg font-bold mb-4">Test Durumu</h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                      <span className="text-sm text-muted-foreground">Durum</span>
-                      <span className="text-sm font-medium text-success">Hazır</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                      <span className="text-sm text-muted-foreground">Son Test</span>
-                      <span className="text-sm font-medium">Henüz test edilmedi</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
-                      <span className="text-sm text-muted-foreground">Toplam Düğüm</span>
-                      <span className="text-sm font-medium">{nodes.length}</span>
-                    </div>
-                  </div>
-                  <Button 
-                    variant="primary" 
-                    size="sm"
-                    onClick={handleTest}
-                    className="mt-4 w-full"
-                  >
-                    Test Çalıştır
-                  </Button>
-                </div>
-
                 {/* Test Çıktıları */}
                 <div className="bg-surface border border-border rounded-lg p-6">
                   <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
@@ -766,12 +739,44 @@ export default function ZapierWorkflowEditor() {
                   </div>
                 </div>
 
-                {/* Loglar */}
-                <div className="bg-surface border border-border rounded-lg p-6">
-                  <h2 className="text-lg font-bold mb-4">Loglar</h2>
-                  <div className="bg-background rounded-md p-4 font-mono text-xs space-y-1 min-h-[300px]">
-                    <p className="text-muted-foreground">[INFO] Workflow hazır</p>
-                    <p className="text-muted-foreground">[INFO] {nodes.length} düğüm yüklendi</p>
+                {/* Test Durumu ve Loglar - Yan Yana */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Test Durumu */}
+                  <div className="bg-surface border border-border rounded-lg p-6">
+                    <h2 className="text-lg font-bold mb-4">Test Durumu</h2>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                        <span className="text-sm text-muted-foreground">Durum</span>
+                        <span className="text-sm font-medium text-success">Hazır</span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                        <span className="text-sm text-muted-foreground">Son Test</span>
+                        <span className="text-sm font-medium">Henüz test edilmedi</span>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                        <span className="text-sm text-muted-foreground">Toplam Düğüm</span>
+                        <span className="text-sm font-medium">{nodes.length}</span>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      onClick={handleTest}
+                      className="mt-4 w-full"
+                    >
+                      Test Çalıştır
+                    </Button>
+                  </div>
+
+                  {/* Loglar */}
+                  <div className="bg-surface border border-border rounded-lg p-6">
+                    <h2 className="text-lg font-bold mb-4">Loglar</h2>
+                    <div className="bg-background rounded-md p-4 font-mono text-xs h-[300px] overflow-auto">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground">[INFO] Workflow hazır</p>
+                        <p className="text-muted-foreground">[INFO] {nodes.length} düğüm yüklendi</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
