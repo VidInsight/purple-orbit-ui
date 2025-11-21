@@ -58,6 +58,7 @@ export default function ZapierWorkflowEditor() {
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
+  const [isActive, setIsActive] = useState(false);
   
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -559,8 +560,8 @@ export default function ZapierWorkflowEditor() {
   }, [workflowName, nodes]);
 
   const handlePublish = useCallback(() => {
-    // Implement publish logic
-  }, [workflowName, nodes]);
+    setIsActive(!isActive);
+  }, [isActive]);
 
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
@@ -650,13 +651,17 @@ export default function ZapierWorkflowEditor() {
               {/* Right Side */}
               <div className="flex items-center gap-3">
                 <Button
-                  variant="primary"
+                  variant={isActive ? "primary" : "secondary"}
                   size="md"
                   onClick={handlePublish}
-                  className="bg-success hover:bg-success/90 text-white font-medium px-6"
+                  className={`font-medium px-6 transition-all ${
+                    isActive 
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-secondary hover:bg-secondary/80 text-foreground'
+                  }`}
                 >
                   <Zap className="h-4 w-4 mr-2" />
-                  Activate Workflow
+                  {isActive ? 'Deactivate' : 'Activate'}
                 </Button>
               </div>
             </div>
