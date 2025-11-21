@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { ArrowLeft, Save, Play } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -10,6 +10,7 @@ import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
 import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 interface Variable {
   name: string;
@@ -54,6 +55,7 @@ export default function ZapierWorkflowEditor() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
+  const [activeTab, setActiveTab] = useState('editor');
   
   // Pan and Zoom state
   const [zoom, setZoom] = useState(1);
@@ -529,14 +531,6 @@ export default function ZapierWorkflowEditor() {
               {/* Right Side */}
               <div className="flex items-center gap-3">
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleTest}
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  Test Result
-                </Button>
-                <Button
                   variant="primary"
                   size="sm"
                   onClick={handleSave}
@@ -557,155 +551,233 @@ export default function ZapierWorkflowEditor() {
           </div>
         </div>
 
-        {/* Workflow Canvas */}
-        <div 
-          className="relative h-[calc(100vh-80px)] overflow-auto bg-background"
-          onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {/* Zoom Controls */}
-          <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2 bg-surface border border-border rounded-lg shadow-lg p-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleZoomIn}
-              className="h-8 w-8 p-0"
-              title="Zoom In"
-            >
-              +
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleResetView}
-              className="h-8 w-8 p-0 text-xs"
-              title="Reset View"
-            >
-              {Math.round(zoom * 100)}%
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleZoomOut}
-              className="h-8 w-8 p-0"
-              title="Zoom Out"
-            >
-              −
-            </Button>
-          </div>
-
-          {/* Canvas Content */}
-          <div 
-            className="absolute inset-0 flex items-start justify-center py-8"
-            style={{
-              transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
-              transformOrigin: 'center top',
-              transition: isPanning ? 'none' : 'transform 0.1s ease-out',
-              cursor: isPanning ? 'grabbing' : 'grab',
-            }}
-          >
-            <div className="max-w-3xl w-full px-6">
-              <div className="space-y-0">
-            {nodes.map((node, index) => (
-              <div key={node.id} className="relative">
-                {/* Node */}
-                {node.type === 'trigger' ? (
-                  <TriggerNode
-                    node={node}
-                    onUpdate={(updates) => {
-                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                    }}
-                    onClick={() => handleNodeClick(node)}
-                  />
-                ) : node.type === 'conditional' ? (
-                  <ConditionalNode
-                    node={node}
-                    onUpdate={(updates) => {
-                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                    }}
-                    onDelete={() => handleDeleteNode(node.id)}
-                    onClick={() => handleNodeClick(node)}
-                    onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
-                  />
-                ) : node.type === 'loop' ? (
-                  <LoopNode
-                    node={node}
-                    onUpdate={(updates) => {
-                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                    }}
-                    onDelete={() => handleDeleteNode(node.id)}
-                    onClick={() => handleNodeClick(node)}
-                  />
-                ) : (
-                  <ActionNode
-                    node={node}
-                    onUpdate={(updates) => {
-                      setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                    }}
-                    onDelete={() => handleDeleteNode(node.id)}
-                    onClick={() => handleNodeClick(node)}
-                  />
-                )}
-
-                {/* Connection line and Add button */}
-                <div className="flex flex-col items-center my-3" id={`add-node-${index}`}>
-                  <div className="w-0.5 h-4 bg-border" />
-                  <AddNodeButton 
-                    onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} 
-                    onMenuOpen={() => {
-                      // Scroll to align the menu at the bottom of the viewport
-                      const addNodeElement = document.getElementById(`add-node-${index}`);
-                      if (addNodeElement) {
-                        const menuHeight = 384 + 48; // max-h-96 (384px) + top offset (48px)
-                        const viewportHeight = window.innerHeight - 80; // minus toolbar height
-                        const elementRect = addNodeElement.getBoundingClientRect();
-                        const scrollContainer = document.querySelector('.overflow-auto');
-                        
-                        if (scrollContainer) {
-                          // Calculate the scroll position to align menu bottom with viewport bottom
-                          const currentScroll = scrollContainer.scrollTop;
-                          const elementTop = elementRect.top + currentScroll - 80; // minus toolbar
-                          const targetScroll = elementTop + menuHeight - viewportHeight * 0.95;
-                          
-                          scrollContainer.scrollTo({
-                            top: Math.max(0, targetScroll),
-                            behavior: 'smooth'
-                          });
-                        }
-                      }
-                    }}
-                  />
-                  <div className="w-0.5 h-4 bg-border" />
-                </div>
-              </div>
-            ))}
-              </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+          <div className="border-b border-border bg-surface/30">
+            <div className="container mx-auto px-6">
+              <TabsList className="bg-transparent border-0 p-0 h-12">
+                <TabsTrigger 
+                  value="editor" 
+                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-6"
+                >
+                  Editor
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="test" 
+                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-6"
+                >
+                  Test
+                </TabsTrigger>
+              </TabsList>
             </div>
           </div>
-        </div>
 
-        {/* Parameters Panel */}
-        {selectedNode && (
-          <ParametersPanel
-            node={selectedNode}
-            isOpen={!!selectedNode}
-            onClose={() => {
-              setSelectedNode(null);
-              setShowOutputsPanel(false);
-            }}
-            onParameterChange={handleParameterChange}
-          />
-        )}
+          {/* Editor Tab Content */}
+          <TabsContent value="editor" className="mt-0">
+            {/* Workflow Canvas */}
+            <div 
+              className="relative h-[calc(100vh-144px)] overflow-auto bg-background"
+              onWheel={handleWheel}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              {/* Zoom Controls */}
+              <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2 bg-surface border border-border rounded-lg shadow-lg p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomIn}
+                  className="h-8 w-8 p-0"
+                  title="Zoom In"
+                >
+                  +
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetView}
+                  className="h-8 w-8 p-0 text-xs"
+                  title="Reset View"
+                >
+                  {Math.round(zoom * 100)}%
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomOut}
+                  className="h-8 w-8 p-0"
+                  title="Zoom Out"
+                >
+                  −
+                </Button>
+              </div>
 
-        {/* Outputs Panel */}
-        <OutputsPanel
-          outputs={generateMockOutputs()}
-          isOpen={showOutputsPanel}
-          currentNodeId={selectedNode?.id}
-        />
+              {/* Canvas Content */}
+              <div 
+                className="absolute inset-0 flex items-start justify-center py-8"
+                style={{
+                  transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+                  transformOrigin: 'center top',
+                  transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+                  cursor: isPanning ? 'grabbing' : 'grab',
+                }}
+              >
+                <div className="max-w-3xl w-full px-6">
+                  <div className="space-y-0">
+                {nodes.map((node, index) => (
+                  <div key={node.id} className="relative">
+                    {/* Node */}
+                    {node.type === 'trigger' ? (
+                      <TriggerNode
+                        node={node}
+                        onUpdate={(updates) => {
+                          setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                        }}
+                        onClick={() => handleNodeClick(node)}
+                      />
+                    ) : node.type === 'conditional' ? (
+                      <ConditionalNode
+                        node={node}
+                        onUpdate={(updates) => {
+                          setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                        }}
+                        onDelete={() => handleDeleteNode(node.id)}
+                        onClick={() => handleNodeClick(node)}
+                        onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
+                      />
+                    ) : node.type === 'loop' ? (
+                      <LoopNode
+                        node={node}
+                        onUpdate={(updates) => {
+                          setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                        }}
+                        onDelete={() => handleDeleteNode(node.id)}
+                        onClick={() => handleNodeClick(node)}
+                      />
+                    ) : (
+                      <ActionNode
+                        node={node}
+                        onUpdate={(updates) => {
+                          setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                        }}
+                        onDelete={() => handleDeleteNode(node.id)}
+                        onClick={() => handleNodeClick(node)}
+                      />
+                    )}
+
+                    {/* Connection line and Add button */}
+                    <div className="flex flex-col items-center my-3" id={`add-node-${index}`}>
+                      <div className="w-0.5 h-4 bg-border" />
+                      <AddNodeButton 
+                        onAddNode={(cat, sub, type) => handleAddNode(cat, sub, type, node.id)} 
+                        onMenuOpen={() => {
+                          // Scroll to align the menu at the bottom of the viewport
+                          const addNodeElement = document.getElementById(`add-node-${index}`);
+                          if (addNodeElement) {
+                            const menuHeight = 384 + 48; // max-h-96 (384px) + top offset (48px)
+                            const viewportHeight = window.innerHeight - 144; // minus toolbar + tabs height
+                            const elementRect = addNodeElement.getBoundingClientRect();
+                            const scrollContainer = document.querySelector('.overflow-auto');
+                            
+                            if (scrollContainer) {
+                              // Calculate the scroll position to align menu bottom with viewport bottom
+                              const currentScroll = scrollContainer.scrollTop;
+                              const elementTop = elementRect.top + currentScroll - 144; // minus toolbar + tabs
+                              const targetScroll = elementTop + menuHeight - viewportHeight * 0.95;
+                              
+                              scrollContainer.scrollTo({
+                                top: Math.max(0, targetScroll),
+                                behavior: 'smooth'
+                              });
+                            }
+                          }
+                        }}
+                      />
+                      <div className="w-0.5 h-4 bg-border" />
+                    </div>
+                  </div>
+                ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Parameters Panel */}
+            {selectedNode && (
+              <ParametersPanel
+                node={selectedNode}
+                isOpen={!!selectedNode}
+                onClose={() => {
+                  setSelectedNode(null);
+                  setShowOutputsPanel(false);
+                }}
+                onParameterChange={handleParameterChange}
+              />
+            )}
+
+            {/* Outputs Panel */}
+            <OutputsPanel
+              outputs={generateMockOutputs()}
+              isOpen={showOutputsPanel}
+              currentNodeId={selectedNode?.id}
+            />
+          </TabsContent>
+
+          {/* Test Tab Content */}
+          <TabsContent value="test" className="mt-0">
+            <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
+              <div className="container mx-auto px-6 py-8 space-y-8">
+                {/* Test Durumu */}
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h2 className="text-lg font-bold mb-4">Test Durumu</h2>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                      <span className="text-sm text-muted-foreground">Durum</span>
+                      <span className="text-sm font-medium text-success">Hazır</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                      <span className="text-sm text-muted-foreground">Son Test</span>
+                      <span className="text-sm font-medium">Henüz test edilmedi</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-md">
+                      <span className="text-sm text-muted-foreground">Toplam Düğüm</span>
+                      <span className="text-sm font-medium">{nodes.length}</span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    onClick={handleTest}
+                    className="mt-4 w-full"
+                  >
+                    Test Çalıştır
+                  </Button>
+                </div>
+
+                {/* Test Çıktıları */}
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h2 className="text-lg font-bold mb-4">Test Çıktıları</h2>
+                  <div className="bg-background rounded-md p-4 min-h-[200px]">
+                    <p className="text-sm text-muted-foreground">
+                      Test çıktıları burada görüntülenecektir.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Loglar */}
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h2 className="text-lg font-bold mb-4">Loglar</h2>
+                  <div className="bg-background rounded-md p-4 font-mono text-xs space-y-1 min-h-[300px]">
+                    <p className="text-muted-foreground">[INFO] Workflow hazır</p>
+                    <p className="text-muted-foreground">[INFO] {nodes.length} düğüm yüklendi</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </PathProvider>
   );
