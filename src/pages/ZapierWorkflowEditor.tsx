@@ -554,7 +554,7 @@ export default function ZapierWorkflowEditor() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
           <div className="border-b border-border bg-surface/30">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto px-6 flex justify-center">
               <TabsList className="bg-transparent border-0 p-0 h-12">
                 <TabsTrigger 
                   value="editor" 
