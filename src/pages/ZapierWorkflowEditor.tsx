@@ -12,6 +12,7 @@ import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
+import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
 
 interface Variable {
   name: string;
@@ -847,6 +848,23 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-8">
+                {/* Test Summary Card */}
+                <TestSummaryCard
+                  totalNodes={mockTestResults.summary.total_nodes}
+                  successfulNodes={mockTestResults.summary.successful_nodes}
+                  failedNodes={mockTestResults.summary.failed_nodes}
+                  totalDuration={nodes.reduce((total, node) => {
+                    return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
+                  }, 0)}
+                  averageNodeTime={
+                    nodes.length > 0
+                      ? nodes.reduce((total, node) => {
+                          return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
+                        }, 0) / nodes.length
+                      : 0
+                  }
+                />
+
                 {/* Test Durumu ve Loglar - Yan Yana */}
                 <div className="grid grid-cols-2 gap-6">
                   {/* Test Durumu */}
