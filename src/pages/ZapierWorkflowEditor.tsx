@@ -115,6 +115,20 @@ export default function ZapierWorkflowEditor() {
       ? nodes.findIndex(n => n.id === afterNodeId) + 1
       : nodes.length;
 
+    const scrollToNewNode = (nodeId: string) => {
+      setTimeout(() => {
+        const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
+        const scrollContainer = document.querySelector('.overflow-auto');
+        
+        if (scrollContainer && nodeElement) {
+          nodeElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }
+      }, 100);
+    };
+
     // Check if this is a conditional or loop node
     if (nodeType === 'If/Else') {
       const newNode: WorkflowNode = {
@@ -156,6 +170,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      scrollToNewNode(newNode.id);
       return;
     }
 
@@ -199,6 +214,7 @@ export default function ZapierWorkflowEditor() {
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
+      scrollToNewNode(newNode.id);
       return;
     }
 
@@ -284,6 +300,7 @@ export default function ZapierWorkflowEditor() {
     const newNodes = [...nodes];
     newNodes.splice(insertIndex, 0, newNode);
     setNodes(newNodes);
+    scrollToNewNode(newNode.id);
   };
 
   const handleAddBranch = (conditionalNodeId: string, branchType: 'true' | 'false') => {
@@ -717,7 +734,7 @@ export default function ZapierWorkflowEditor() {
                 <div className="max-w-3xl w-full px-6">
                   <div className="space-y-0">
                 {nodes.map((node, index) => (
-                  <div key={node.id} className="relative">
+                  <div key={node.id} className="relative" data-node-id={node.id}>
                     {/* Node */}
                     {node.type === 'trigger' ? (
                       <TriggerNode
