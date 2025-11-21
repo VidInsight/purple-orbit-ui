@@ -651,19 +651,12 @@ export default function ZapierWorkflowEditor() {
               <div className="flex items-center gap-3">
                 <Button
                   variant="primary"
-                  size="sm"
-                  onClick={handleSave}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
+                  size="md"
                   onClick={handlePublish}
-                  className="bg-success hover:bg-success/90"
+                  className="bg-success hover:bg-success/90 text-white font-medium px-6"
                 >
-                  Activate
+                  <Zap className="h-4 w-4 mr-2" />
+                  Activate Workflow
                 </Button>
               </div>
             </div>
