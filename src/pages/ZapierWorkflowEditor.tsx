@@ -865,78 +865,80 @@ export default function ZapierWorkflowEditor() {
                   }
                 />
 
-                {/* Execution Timeline */}
-                <ExecutionTimeline
-                  nodes={nodes.map((node, index) => {
-                    const nodeResult = mockTestResults.node_results[node.id];
-                    const NodeIcon = node.icon || Settings;
-                    
-                    // Get input data from previous nodes (simplified)
-                    const inputData = node.type === 'trigger' ? undefined : {
-                      trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
-                    };
+                {/* Timeline and Logs - Side by Side */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Execution Timeline */}
+                  <div className="overflow-hidden">
+                    <ExecutionTimeline
+                      nodes={nodes.map((node, index) => {
+                        const nodeResult = mockTestResults.node_results[node.id];
+                        const NodeIcon = node.icon || Settings;
+                        
+                        // Get input data from previous nodes (simplified)
+                        const inputData = node.type === 'trigger' ? undefined : {
+                          trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
+                        };
 
-                    return {
-                      nodeId: node.id,
-                      nodeName: node.title,
-                      nodeIcon: NodeIcon,
-                      status: nodeResult.status,
-                      inputData,
-                      outputData: nodeResult.result_data,
-                      metadata: {
-                        duration_seconds: nodeResult.duration_seconds,
-                        completed_at: nodeResult.completed_at,
-                      },
-                      errorMessage: nodeResult.error_message,
-                      order: index + 1,
-                    };
-                  })}
-                  totalDuration={nodes.reduce((total, node) => {
-                    return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                  }, 0)}
-                />
+                        return {
+                          nodeId: node.id,
+                          nodeName: node.title,
+                          nodeIcon: NodeIcon,
+                          status: nodeResult.status,
+                          inputData,
+                          outputData: nodeResult.result_data,
+                          metadata: {
+                            duration_seconds: nodeResult.duration_seconds,
+                            completed_at: nodeResult.completed_at,
+                          },
+                          errorMessage: nodeResult.error_message,
+                          order: index + 1,
+                        };
+                      })}
+                      totalDuration={nodes.reduce((total, node) => {
+                        return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
+                      }, 0)}
+                    />
+                  </div>
 
-                {/* Logs Section - Collapsible */}
-                <div className="bg-surface border border-border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setActiveTab('test')} // Toggle state could be added
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-background/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                        <MessageSquare className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-sm font-semibold">Execution Logs</h3>
-                        <p className="text-xs text-muted-foreground">View detailed execution logs and debug information</p>
+                  {/* Execution Logs */}
+                  <div className="bg-surface border border-border rounded-lg overflow-hidden">
+                    <div className="px-6 py-4 border-b border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold">Execution Logs</h3>
+                          <p className="text-xs text-muted-foreground">Detailed execution logs and debug information</p>
+                        </div>
                       </div>
                     </div>
-                  </button>
-                  
-                  <div className="px-6 pb-6">
-                    <div className="bg-background rounded-md p-4 font-mono text-xs h-[200px] overflow-auto border border-border">
-                      <div className="space-y-1">
-                        <p className="text-success">[INFO] Workflow test started</p>
-                        <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
-                        <p className="text-success">[INFO] Executing workflow...</p>
-                        {nodes.map((node) => {
-                          const result = mockTestResults.node_results[node.id];
-                          return (
-                            <p 
-                              key={node.id}
-                              className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
-                            >
-                              [{result?.status}] {node.title} - completed in {result?.duration_seconds.toFixed(2)}s
-                              {result?.error_message && (
-                                <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
-                              )}
-                            </p>
-                          );
-                        })}
-                        <p className="text-success">[INFO] Test execution completed</p>
-                        <p className="text-muted-foreground">
-                          [SUMMARY] Success: {mockTestResults.summary.successful_nodes}, Failed: {mockTestResults.summary.failed_nodes}
-                        </p>
+                    
+                    <div className="p-6">
+                      <div className="bg-background rounded-md p-4 font-mono text-xs h-[600px] overflow-auto border border-border">
+                        <div className="space-y-1">
+                          <p className="text-success">[INFO] Workflow test started</p>
+                          <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
+                          <p className="text-success">[INFO] Executing workflow...</p>
+                          {nodes.map((node) => {
+                            const result = mockTestResults.node_results[node.id];
+                            return (
+                              <p 
+                                key={node.id}
+                                className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
+                              >
+                                [{result?.status}] {node.title} - completed in {result?.duration_seconds.toFixed(2)}s
+                                {result?.error_message && (
+                                  <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
+                                )}
+                              </p>
+                            );
+                          })}
+                          <p className="text-success">[INFO] Test execution completed</p>
+                          <p className="text-muted-foreground">
+                            [SUMMARY] Success: {mockTestResults.summary.successful_nodes}, Failed: {mockTestResults.summary.failed_nodes}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
