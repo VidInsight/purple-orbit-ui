@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Plus, 
   ChevronDown, 
@@ -41,6 +41,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface NodeType {
   name: string;
@@ -209,7 +216,6 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     nodeName: string;
     nodeDescription: string;
   }>>([]);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   // Load recently used nodes from localStorage
   useEffect(() => {
@@ -223,29 +229,6 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        handleClose();
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -308,15 +291,13 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     : categories;
 
   return (
-    <div className="relative" ref={menuRef}>
+    <>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => {
-          const newIsOpen = !isOpen;
-          setIsOpen(newIsOpen);
-          if (newIsOpen && onMenuOpen) {
-            // Use setTimeout to ensure the menu is rendered before calling onMenuOpen
+          setIsOpen(true);
+          if (onMenuOpen) {
             setTimeout(() => onMenuOpen(), 0);
           }
         }}
@@ -325,15 +306,18 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
         <Plus className="h-5 w-5 text-primary" />
       </Button>
 
-      {isOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-12 w-[640px] bg-surface border border-border rounded-lg shadow-xl z-[100] overflow-hidden">
-          {/* Header */}
-          <div className="px-4 py-3 bg-accent/10 border-b border-border">
-            <h3 className="text-sm font-semibold text-foreground">Add Node</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Select a node to add to your workflow</p>
+      <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] p-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 bg-accent/10 border-b border-border">
+            <DialogTitle className="text-lg font-semibold">Add Node</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-1">
+              Select a node to add to your workflow
+            </DialogDescription>
             
             {/* Search Input */}
-            <div className="mt-3 relative">
+            <div className="mt-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -343,10 +327,10 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                 className="pl-9 h-9 text-sm bg-background border-border"
               />
             </div>
-          </div>
+          </DialogHeader>
 
           {/* Content - Accordion Style */}
-          <div className="max-h-96 overflow-y-auto bg-surface">
+          <div className="max-h-[calc(85vh-180px)] overflow-y-auto bg-surface">
             {/* Recently Used Section */}
             {!searchTerm && recentlyUsed.length > 0 && (
               <div className="border-b border-border">
@@ -480,8 +464,8 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
               })
             )}
           </div>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
