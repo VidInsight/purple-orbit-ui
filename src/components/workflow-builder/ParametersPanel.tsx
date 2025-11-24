@@ -106,18 +106,18 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                   {!param.isDynamic && (
                     <button
                       onClick={() => handleToggleMode(param.id, false)}
-                      className="h-7 px-2.5 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-all text-xs font-medium"
-                      title="Switch to dynamic mode"
+                      className="h-7 px-3 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-all text-xs font-medium"
+                      title="Add a dynamic value from workspace resources"
                     >
                       <Link className="h-3.5 w-3.5" />
-                      Dynamic
+                      Add a Dynamic Value
                     </button>
                   )}
                 </label>
 
                 {waitingForDrop === param.id && !param.isDynamic && (
-                  <div className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary">
-                    Select value from Previous Outputs
+                  <div className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary animate-pulse">
+                    ← Select a value from the left panel
                   </div>
                 )}
 
