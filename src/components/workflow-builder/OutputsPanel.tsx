@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon, Variable, Key, Database as DatabaseIcon, File } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { usePathContext } from './PathContext';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface OutputData {
   nodeId: string;
@@ -21,6 +27,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
+  const [selectedTab, setSelectedTab] = useState<string>('outputs');
   const { setActivePath } = usePathContext();
 
   const handleToggleNode = (nodeId: string) => {
@@ -242,184 +249,214 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   ];
 
   return (
-    <div className="fixed left-0 top-0 h-full w-[350px] bg-surface border-r border-border shadow-2xl z-40 animate-slide-in-left flex flex-col">
+    <div className="fixed left-0 top-0 h-full w-[480px] bg-surface border-r border-border shadow-2xl z-40 animate-slide-in-left flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">Workspace Resources</h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Access outputs, variables, credentials, and more
-        </p>
+      <div className="px-8 py-5 border-b border-border">
+        <h2 className="text-lg font-semibold text-foreground mb-3">Workspace Resources</h2>
+        
+        {/* Dropdown Selector */}
+        <Select value={selectedTab} onValueChange={setSelectedTab}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select resource type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="outputs">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                <span>Previous Outputs</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="variables">
+              <div className="flex items-center gap-2">
+                <Variable className="h-4 w-4" />
+                <span>Environment Variables</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="credentials">
+              <div className="flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                <span>Credentials</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="databases">
+              <div className="flex items-center gap-2">
+                <DatabaseIcon className="h-4 w-4" />
+                <span>Databases</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="files">
+              <div className="flex items-center gap-2">
+                <File className="h-4 w-4" />
+                <span>Files</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="outputs" className="flex-1 flex flex-col overflow-hidden">
-        <TabsList className="mx-6 mt-4 grid grid-cols-5 gap-1">
-          <TabsTrigger value="outputs" className="text-xs px-2">Outputs</TabsTrigger>
-          <TabsTrigger value="variables" className="text-xs px-2">Variables</TabsTrigger>
-          <TabsTrigger value="credentials" className="text-xs px-2">Credentials</TabsTrigger>
-          <TabsTrigger value="databases" className="text-xs px-2">Databases</TabsTrigger>
-          <TabsTrigger value="files" className="text-xs px-2">Files</TabsTrigger>
-        </TabsList>
-
-        {/* Previous Outputs Tab */}
-        <TabsContent value="outputs" className="flex-1 overflow-y-auto mt-4">
-          {availableOutputs.length === 0 ? (
-            <div className="px-6 py-8 text-center text-muted-foreground text-sm">
-              {currentNodeId 
-                ? "Öncesinde düğüm olmadığı için değer yok"
-                : "No node selected"
-              }
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {availableOutputs.map((output) => (
-                <div key={output.nodeId} className="border-b border-border last:border-b-0">
-                  {/* Accordion Header */}
-                  <button
-                    onClick={() => handleToggleNode(output.nodeId)}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10">
-                        <output.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium text-foreground">
-                        {output.nodeName}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
-                        expandedNode === output.nodeId ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {/* Accordion Content */}
-                  {expandedNode === output.nodeId && (
-                    <div className="px-6 py-3 bg-background/50">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-medium text-muted-foreground">JSON Output</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopyOutput(output.output)}
-                          className="h-7 px-2"
-                        >
-                          <Copy className="h-3 w-3 mr-1" />
-                          <span className="text-xs">Copy</span>
-                        </Button>
-                      </div>
-
-                      <div className="bg-background rounded-lg p-3 border border-border overflow-x-auto">
-                        <pre className="text-[11px] font-mono leading-tight">
-                          {renderValue(output.output, output.nodeId)}
-                        </pre>
-                      </div>
-
-                      {copiedPath && (
-                        <div className="mt-2 px-3 py-2 bg-success/10 border border-success/30 rounded text-xs text-success animate-fade-in">
-                          ✓ Path copied: <code className="font-mono font-semibold">{copiedPath}</code>
-                          <div className="text-xs mt-1 opacity-80">
-                            Click on an input field in the right panel to paste
-                          </div>
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Previous Outputs */}
+        {selectedTab === 'outputs' && (
+          <div className="p-6">
+            {availableOutputs.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground text-sm">
+                {currentNodeId 
+                  ? "Öncesinde düğüm olmadığı için değer yok"
+                  : "No node selected"
+                }
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {availableOutputs.map((output) => (
+                  <div key={output.nodeId} className="border border-border rounded-lg bg-background overflow-hidden">
+                    {/* Accordion Header */}
+                    <button
+                      onClick={() => handleToggleNode(output.nodeId)}
+                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-accent/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-primary/10">
+                          <output.icon className="h-5 w-5 text-primary" />
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
+                        <span className="text-sm font-medium text-foreground">
+                          {output.nodeName}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
+                          expandedNode === output.nodeId ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
 
-        {/* Environment Variables Tab */}
-        <TabsContent value="variables" className="flex-1 overflow-y-auto mt-4">
-          <div className="px-6 space-y-2">
+                    {/* Accordion Content */}
+                    {expandedNode === output.nodeId && (
+                      <div className="px-5 py-4 bg-background/50 border-t border-border">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-xs font-medium text-muted-foreground">JSON Output</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyOutput(output.output)}
+                            className="h-8 px-3"
+                          >
+                            <Copy className="h-3.5 w-3.5 mr-1.5" />
+                            <span className="text-xs">Copy</span>
+                          </Button>
+                        </div>
+
+                        <div className="bg-background rounded-lg p-4 border border-border overflow-x-auto">
+                          <pre className="text-xs font-mono leading-relaxed">
+                            {renderValue(output.output, output.nodeId)}
+                          </pre>
+                        </div>
+
+                        {copiedPath && (
+                          <div className="mt-3 px-4 py-3 bg-success/10 border border-success/30 rounded-lg text-xs text-success animate-fade-in">
+                            ✓ Path copied: <code className="font-mono font-semibold">{copiedPath}</code>
+                            <div className="text-xs mt-1 opacity-80">
+                              Click on an input field in the right panel to paste
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Environment Variables */}
+        {selectedTab === 'variables' && (
+          <div className="p-6 space-y-3">
             {dummyVariables.map((variable) => (
               <div 
                 key={variable.key}
-                className="p-3 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
+                className="p-4 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
                 onClick={() => handleDragClick(`variables.${variable.key}`)}
               >
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10 flex-shrink-0">
-                    <Variable className="h-4 w-4 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-primary/10 flex-shrink-0">
+                    <Variable className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium text-foreground">{variable.key}</span>
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                      <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
                         {variable.type}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                    <p className="text-sm text-muted-foreground mb-2 truncate">
                       {variable.value}
                     </p>
-                    <code className="text-[10px] text-primary font-mono mt-1 block">
+                    <code className="text-xs text-primary font-mono block">
                       variables.{variable.key}
                     </code>
                   </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  <GripVertical className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-        </TabsContent>
+        )}
 
-        {/* Credentials Tab */}
-        <TabsContent value="credentials" className="flex-1 overflow-y-auto mt-4">
-          <div className="px-6 space-y-2">
+        {/* Credentials */}
+        {selectedTab === 'credentials' && (
+          <div className="p-6 space-y-3">
             {dummyCredentials.map((credential) => (
               <div 
                 key={credential.id}
-                className="p-3 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
+                className="p-4 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
                 onClick={() => handleDragClick(credential.data)}
               >
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10 flex-shrink-0">
-                    <Key className="h-4 w-4 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-primary/10 flex-shrink-0">
+                    <Key className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium text-foreground">{credential.name}</span>
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                      <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
                         {credential.type}
                       </span>
                     </div>
-                    <code className="text-[10px] text-primary font-mono mt-1 block">
+                    <code className="text-xs text-primary font-mono block">
                       {credential.data}
                     </code>
                   </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  <GripVertical className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-        </TabsContent>
+        )}
 
-        {/* Databases Tab */}
-        <TabsContent value="databases" className="flex-1 overflow-y-auto mt-4">
-          <div className="px-6 space-y-3">
+        {/* Databases */}
+        {selectedTab === 'databases' && (
+          <div className="p-6 space-y-4">
             {dummyDatabases.map((database) => (
               <div 
                 key={database.id}
-                className="p-3 bg-background border border-border rounded-lg"
+                className="p-4 bg-background border border-border rounded-lg"
               >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10 flex-shrink-0">
-                    <DatabaseIcon className="h-4 w-4 text-primary" />
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-primary/10 flex-shrink-0">
+                    <DatabaseIcon className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{database.name}</span>
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                      <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
                         {database.type}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="space-y-2 ml-11">
+                <div className="space-y-2">
                   {[
                     { label: 'Host', value: database.host, path: `databases.${database.id}.host` },
                     { label: 'Port', value: database.port, path: `databases.${database.id}.port` },
@@ -429,53 +466,53 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                   ].map((field) => (
                     <div 
                       key={field.label}
-                      className="flex items-center justify-between p-2 bg-surface border border-border/50 rounded hover:bg-accent/30 transition-colors cursor-pointer group"
+                      className="flex items-center justify-between p-3 bg-surface border border-border/50 rounded-lg hover:bg-accent/30 transition-colors cursor-pointer group"
                       onClick={() => handleDragClick(field.path)}
                     >
                       <div className="flex-1">
-                        <div className="text-xs font-medium text-foreground">{field.label}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">{field.value}</div>
+                        <div className="text-xs font-medium text-foreground mb-1">{field.label}</div>
+                        <div className="text-xs text-muted-foreground truncate">{field.value}</div>
                       </div>
-                      <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-        </TabsContent>
+        )}
 
-        {/* Files Tab */}
-        <TabsContent value="files" className="flex-1 overflow-y-auto mt-4">
-          <div className="px-6 space-y-2">
+        {/* Files */}
+        {selectedTab === 'files' && (
+          <div className="p-6 space-y-3">
             {dummyFiles.map((file) => (
               <div 
                 key={file.id}
-                className="p-3 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
+                className="p-4 bg-background border border-border rounded-lg hover:bg-accent/30 transition-colors group cursor-pointer"
                 onClick={() => handleDragClick(file.path)}
               >
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10 flex-shrink-0">
-                    <File className="h-4 w-4 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-primary/10 flex-shrink-0">
+                    <File className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium text-foreground truncate">{file.name}</span>
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded flex-shrink-0">
+                      <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded flex-shrink-0">
                         {file.size}
                       </span>
                     </div>
-                    <code className="text-[10px] text-primary font-mono mt-1 block truncate">
+                    <code className="text-xs text-primary font-mono block truncate">
                       {file.path}
                     </code>
                   </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  <GripVertical className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </div>
               </div>
             ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 };
