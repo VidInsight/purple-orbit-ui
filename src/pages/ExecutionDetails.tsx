@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ExecutionOverview } from '@/components/executions/ExecutionOverview';
 import { ExecutionTimeline } from '@/components/executions/ExecutionTimeline';
 import { ExecutionLogs } from '@/components/executions/ExecutionLogs';
 import { ExecutionDetails as ExecutionDetailsType } from '@/types/execution';
-import { generateMockExecutionDetails } from '@/utils/mockExecutionData';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useAuth } from '@/context/AuthContext';
+import { Execution } from '@/types/api';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, RefreshCw, Download, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -15,48 +20,86 @@ import { cn } from '@/lib/utils';
 const ExecutionDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [execution, setExecution] = useState<ExecutionDetailsType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { currentWorkspace } = useWorkspace();
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch execution details
+  const { data: executionData, isLoading, refetch } = useQuery({
+    queryKey: ['execution', currentWorkspace?.id, id],
+    queryFn: () => apiClient.get<Execution>(
+      API_ENDPOINTS.execution.get(currentWorkspace!.id, id!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!id && !!getToken(),
+    refetchInterval: (query) => {
+      // Poll every 2 seconds if execution is still running
+      const execution = query.state.data?.data;
+      if (execution && ['PENDING', 'RUNNING'].includes(execution.status)) {
+        return 2000;
+      }
+      return false;
+    },
+  });
+
+  const executionApi = executionData?.data;
+
+  // Map API Execution to ExecutionDetails format
+  const execution: ExecutionDetailsType | null = executionApi ? {
+    id: executionApi.id,
+    workflowId: executionApi.workflow_id,
+    workflowName: `Workflow ${executionApi.workflow_id.slice(-8)}`, // TODO: Fetch workflow name
+    status: executionApi.status === 'COMPLETED' ? 'success' : 
+            executionApi.status === 'FAILED' ? 'failed' : 
+            executionApi.status === 'CANCELLED' ? 'cancelled' : 'running',
+    startedAt: executionApi.started_at,
+    completedAt: executionApi.ended_at,
+    duration: executionApi.duration_seconds,
+    triggeredBy: executionApi.triggered_by,
+    steps: executionApi.results ? Object.entries(executionApi.results).map(([nodeId, result]) => ({
+      id: nodeId,
+      name: `Node ${nodeId.slice(-8)}`,
+      type: 'action' as const,
+      status: result.status === 'SUCCESS' ? 'success' : 'failed',
+      duration: result.duration_seconds,
+      output: result.result_data,
+      error: result.status === 'FAILED' ? { message: 'Execution failed' } : undefined,
+    })) : [],
+    logs: [], // TODO: Fetch logs if available
+    metadata: {
+      trigger_id: executionApi.trigger_id,
+      trigger_data: executionApi.trigger_data,
+    },
+  } : null;
 
   useEffect(() => {
-    const loadExecution = () => {
-      setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        if (!id) {
-          navigate('/executions');
-          return;
-        }
-
-        // Generate mock data based on ID pattern
-        let status: 'success' | 'failed' | 'running' = 'success';
-        if (id.includes('fail')) status = 'failed';
-        if (id.includes('run')) status = 'running';
-
-        const executionData = generateMockExecutionDetails(id, status);
-        setExecution(executionData);
-        setIsLoading(false);
-      }, 800);
-    };
-
-    loadExecution();
-
-    // Simulate real-time updates for running executions
-    if (execution?.status === 'running') {
-      const interval = setInterval(() => {
-        // In a real app, this would fetch latest status from API
-        console.log('Checking for execution updates...');
-      }, 5000);
-
-      return () => clearInterval(interval);
+    if (!id) {
+      navigate('/executions');
     }
   }, [id, navigate]);
 
-  const handleRerun = () => {
-    toast({
-      title: 'Execution Started',
-      description: 'Re-running workflow execution...',
-    });
+  const handleRerun = async () => {
+    if (!execution || !currentWorkspace) return;
+    
+    try {
+      await apiClient.post(
+        API_ENDPOINTS.execution.create(currentWorkspace.id, execution.workflowId),
+        { input_data: execution.metadata?.trigger_data || {} },
+        { token: getToken() }
+      );
+      
+      queryClient.invalidateQueries({ queryKey: ['executions'] });
+      toast({
+        title: 'Execution Started',
+        description: 'Re-running workflow execution...',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to start execution',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDownload = () => {

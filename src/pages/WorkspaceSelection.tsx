@@ -1,66 +1,61 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceCard } from '@/components/workspace/WorkspaceCard';
 import { UserCard } from '@/components/workspace/UserCard';
 import { CreateWorkspaceModal } from '@/components/workspace/CreateWorkspaceModal';
-import { Workspace, CreateWorkspaceData } from '@/types/workspace';
-import { getWorkspaces, createWorkspace as createWorkspaceUtil, setCurrentWorkspace } from '@/utils/workspaceStorage';
+import { CreateWorkspaceData } from '@/types/workspace';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Plus, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const WorkspaceSelection = () => {
   const navigate = useNavigate();
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const { workspaces, setWorkspace, createWorkspace, isLoading } = useWorkspace();
+  const { user, logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Mock user data - in real app this would come from auth
-  const currentUser = {
-    name: 'Sarah Johnson',
-    email: 'sarah@company.com',
-    role: 'Admin',
-  };
+  // User data from auth
+  const currentUser = user
+    ? {
+        name: `${user.name || ''} ${user.surname || ''}`.trim() || user.username || 'User',
+        email: user.email || '',
+        role: 'User',
+      }
+    : null;
 
   // Separate workspaces into owned and joined
   const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
   const joinedWorkspaces = workspaces.filter(ws => ws.role !== 'owner');
 
-  useEffect(() => {
-    loadWorkspaces();
-  }, []);
-
-  const loadWorkspaces = () => {
-    const loadedWorkspaces = getWorkspaces();
-    // Sort by last accessed
-    loadedWorkspaces.sort((a, b) => 
-      new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
-    );
-    setWorkspaces(loadedWorkspaces);
-  };
-
-  const handleWorkspaceSelect = (workspace: Workspace) => {
-    setCurrentWorkspace(workspace.id);
-    toast({
-      title: 'Workspace Selected',
-      description: `Entering ${workspace.name}...`,
-    });
-    // Navigate to dashboard page
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 500);
+  const handleWorkspaceSelect = async (workspace: { id: string; name: string }) => {
+    try {
+      await setWorkspace(workspace.id);
+      toast({
+        title: 'Workspace Selected',
+        description: `Entering ${workspace.name}...`,
+      });
+      // Navigate to dashboard page
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (error) {
+      console.error('Error selecting workspace:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to select workspace',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCreateWorkspace = async (data: CreateWorkspaceData) => {
     setIsCreating(true);
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
     try {
-      const newWorkspace = createWorkspaceUtil(data.name, data.slug, data.description);
-      loadWorkspaces();
+      const newWorkspace = await createWorkspace(data.name, data.slug, data.description);
       setIsModalOpen(false);
       
       toast({
@@ -73,6 +68,7 @@ const WorkspaceSelection = () => {
         handleWorkspaceSelect(newWorkspace);
       }, 500);
     } catch (error) {
+      console.error('Error creating workspace:', error);
       toast({
         title: 'Error',
         description: 'Failed to create workspace. Please try again.',
@@ -84,18 +80,25 @@ const WorkspaceSelection = () => {
   };
 
   const handleSettings = () => {
-    toast({
-      title: 'Settings',
-      description: 'Opening user settings...',
-    });
+    navigate('/settings');
   };
 
-  const handleLogout = () => {
-    toast({
-      title: 'Logged Out',
-      description: 'You have been logged out successfully.',
-    });
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">

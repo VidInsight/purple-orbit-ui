@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { UserProvider } from "@/context/UserContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
@@ -26,6 +27,9 @@ import GlobalNodes from "@/pages/GlobalNodes";
 import CustomNodes from "@/pages/CustomNodes";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
+import UserProfile from "@/pages/UserProfile";
+import UserSettings from "@/pages/UserSettings";
+import PendingInvitations from "@/pages/PendingInvitations";
 import Billing from "@/pages/Billing";
 import NotFound from "@/pages/NotFound";
 import { Login } from "@/pages/Login";
@@ -65,6 +69,9 @@ const AppRoutes = () => {
       <Route path="/custom-nodes" element={<ProtectedRoute><CustomNodes /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
+      <Route path="/invitations" element={<ProtectedRoute><PendingInvitations /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       
       <Route path="*" element={<NotFound />} />
@@ -81,17 +88,19 @@ const App = () => {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark">
-          <WorkspaceProvider>
-            <UserProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </UserProvider>
-          </WorkspaceProvider>
+          <AuthProvider>
+            <WorkspaceProvider>
+              <UserProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </UserProvider>
+            </WorkspaceProvider>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

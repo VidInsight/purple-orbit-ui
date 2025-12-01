@@ -1,46 +1,92 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
-import { DatabaseItem } from '@/types/common';
-import { generateMockDatabases } from '@/utils/mockData';
 import { toast } from '@/hooks/use-toast';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useAuth } from '@/context/AuthContext';
+import { Database, PaginationResponse } from '@/types/api';
 
 const Databases = () => {
-  const [databases] = useState<DatabaseItem[]>(generateMockDatabases());
+  const { currentWorkspace } = useWorkspace();
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch databases
+  const { data: databasesData, isLoading } = useQuery({
+    queryKey: ['databases', currentWorkspace?.id],
+    queryFn: () => apiClient.get<PaginationResponse<Database[]>>(
+      API_ENDPOINTS.database.list(currentWorkspace!.id),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!getToken(),
+  });
+
+  const databases = databasesData?.data.items || [];
+
+  // Delete database mutation
+  const deleteDatabaseMutation = useMutation({
+    mutationFn: (databaseId: string) =>
+      apiClient.delete(
+        API_ENDPOINTS.database.delete(currentWorkspace!.id, databaseId),
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['databases'] });
+      toast({
+        title: 'Database Deleted',
+        description: 'Database connection has been deleted successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete database',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleCreate = () => {
     toast({
       title: 'Add Database',
-      description: 'Opening database connection form...',
+      description: 'Database connection form will be implemented here.',
     });
   };
 
-  const handleView = (item: DatabaseItem) => {
+  const handleView = (item: Database) => {
     toast({
       title: 'View Database',
       description: `Viewing: ${item.name}`,
     });
   };
 
-  const handleEdit = (item: DatabaseItem) => {
+  const handleEdit = (item: Database) => {
     toast({
       title: 'Edit Database',
       description: `Editing: ${item.name}`,
     });
   };
 
-  const handleDelete = async (item: DatabaseItem) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast({
-      title: 'Database Deleted',
-      description: `${item.name} has been deleted.`,
-    });
+  const handleDelete = async (item: Database) => {
+    if (!currentWorkspace) return;
+    deleteDatabaseMutation.mutate(item.id);
   };
+
+  // Map Database to ListPageTemplate format
+  const mappedDatabases = databases.map((database) => ({
+    id: database.id,
+    name: database.name,
+    description: database.description || `${database.database_type} - ${database.host}:${database.port}`,
+  }));
 
   return (
     <ListPageTemplate
       pageTitle="Databases"
       pageDescription="Connect and manage database connections"
-      items={databases}
+      items={mappedDatabases}
+      isLoading={isLoading}
       searchPlaceholder="Search databases..."
       createButtonText="Add Database"
       itemTypeName="database"

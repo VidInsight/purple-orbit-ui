@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { LogIn } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 
@@ -13,6 +14,7 @@ export const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
@@ -33,9 +35,8 @@ export const Login = () => {
       loginSchema.parse(formData);
       setLoading(true);
 
-      // TODO: Implement actual login logic with backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      await login(formData.usernameOrEmail, formData.password);
+      
       toast({
         title: t('common:messages.success'),
         description: 'Logged in successfully',
@@ -54,7 +55,7 @@ export const Login = () => {
       } else {
         toast({
           title: t('common:messages.error'),
-          description: t('auth:login.errors.invalidCredentials'),
+          description: (error as Error)?.message || t('auth:login.errors.invalidCredentials'),
           variant: 'destructive',
         });
       }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -13,54 +14,34 @@ import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
 import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
+import { TriggerInputForm } from '@/components/workflow-builder/TriggerInputForm';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { mapApiNodeToWorkflowNode, type WorkflowNode } from '@/utils/workflowMapper';
+import type { Workflow, CreateWorkflowRequest, Node, Edge, Trigger, Execution, Script, ScriptContent, PaginationResponse } from '@/types/api';
 
-interface Variable {
-  name: string;
-  type: string;
-  defaultValue: string;
-}
-
-interface WorkflowNode {
-  id: string;
-  type: 'trigger' | 'action' | 'conditional' | 'loop';
-  title: string;
-  icon?: LucideIcon;
-  category?: string;
-  nodeType?: string;
-  configured?: boolean;
-  variables?: Variable[];
-  config?: Record<string, any>;
-  branches?: {
-    true: string[];
-    false: string[];
-  };
-  loopBody?: string[];
-  parentBranch?: { nodeId: string; branchType: 'true' | 'false' } | null;
-  parameters?: Array<{
-    id: string;
-    label: string;
-    type: 'text' | 'dropdown' | 'number' | 'toggle' | 'textarea' | 'credential';
-    placeholder?: string;
-    options?: string[];
-    min?: number;
-    max?: number;
-    value?: any;
-    isDynamic?: boolean;
-    dynamicPath?: string;
-  }>;
-}
+// WorkflowNode type is now imported from workflowMapper
 
 export default function ZapierWorkflowEditor() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { currentWorkspace } = useWorkspace();
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  
   const [workflowName, setWorkflowName] = useState('Untitled Workflow');
   const [isEditingName, setIsEditingName] = useState(false);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
   const [isActive, setIsActive] = useState(false);
+  const [workflowId, setWorkflowId] = useState<string | null>(id === 'new' ? null : id || null);
   
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -73,36 +54,312 @@ export default function ZapierWorkflowEditor() {
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
-  // Load workflow from localStorage if editing existing workflow
-  const [nodes, setNodes] = useState<WorkflowNode[]>([
-    {
-      id: 'trigger-1',
-      type: 'trigger',
-      title: 'API Trigger',
-      icon: Zap,
-      variables: [
-        { name: 'user_id', type: 'string', defaultValue: '' },
-        { name: 'event_type', type: 'string', defaultValue: 'create' },
-        { name: 'timestamp', type: 'number', defaultValue: '' },
-      ],
-    },
-  ]);
+  // Load workflow from API
+  const [nodes, setNodes] = useState<WorkflowNode[]>([]);
 
+  // Fetch workflow
+  const { data: workflowData, isLoading: isLoadingWorkflow } = useQuery({
+    queryKey: ['workflow', currentWorkspace?.id, workflowId],
+    queryFn: () => apiClient.get<Workflow>(
+      API_ENDPOINTS.workflow.get(currentWorkspace!.id, workflowId!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!workflowId && !!getToken() && workflowId !== 'new',
+  });
+
+  // Fetch nodes
+  const { data: nodesData, isLoading: isLoadingNodes } = useQuery({
+    queryKey: ['workflowNodes', currentWorkspace?.id, workflowId],
+    queryFn: () => apiClient.get<PaginationResponse<Node[]>>(
+      API_ENDPOINTS.node.list(currentWorkspace!.id, workflowId!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!workflowId && !!getToken() && workflowId !== 'new',
+  });
+
+  // Fetch edges
+  const { data: edgesData, isLoading: isLoadingEdges } = useQuery({
+    queryKey: ['workflowEdges', currentWorkspace?.id, workflowId],
+    queryFn: () => apiClient.get<PaginationResponse<Edge[]>>(
+      API_ENDPOINTS.edge.list(currentWorkspace!.id, workflowId!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!workflowId && !!getToken() && workflowId !== 'new',
+  });
+
+  // Create edge mutation
+  const createEdgeMutation = useMutation({
+    mutationFn: ({ workflowId, data }: { workflowId: string; data: { from_node_id: string; to_node_id: string } }) =>
+      apiClient.post<Edge>(
+        API_ENDPOINTS.edge.create(currentWorkspace!.id, workflowId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowEdges'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create edge',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete edge mutation
+  const deleteEdgeMutation = useMutation({
+    mutationFn: (edgeId: string) =>
+      apiClient.delete(
+        API_ENDPOINTS.edge.delete(currentWorkspace!.id, workflowId!, edgeId),
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowEdges'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete edge',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Load workflow data when fetched
   useEffect(() => {
-    if (id && id !== 'new') {
-      const savedWorkflows = localStorage.getItem('workflows');
-      if (savedWorkflows) {
-        const workflows = JSON.parse(savedWorkflows);
-        const workflow = workflows.find((w: any) => w.id === id);
-        if (workflow) {
-          setWorkflowName(workflow.name);
-          if (workflow.nodes) {
-            setNodes(workflow.nodes);
-          }
-        }
-      }
+    if (workflowData?.data) {
+      const workflow = workflowData.data;
+      setWorkflowName(workflow.name);
+      setIsActive(workflow.status === 'ACTIVE');
     }
-  }, [id]);
+  }, [workflowData]);
+
+  // Fetch global scripts
+  const { data: globalScriptsData } = useQuery({
+    queryKey: ['globalScripts'],
+    queryFn: () => apiClient.get<PaginationResponse<Script[]>>(
+      API_ENDPOINTS.globalScript.list,
+      { skipAuth: true } // Global scripts public
+    ),
+  });
+
+  // Fetch custom scripts
+  const { data: customScriptsData } = useQuery({
+    queryKey: ['customScripts', currentWorkspace?.id],
+    queryFn: () => apiClient.get<PaginationResponse<Script[]>>(
+      API_ENDPOINTS.customScript.list(currentWorkspace!.id),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!getToken(),
+  });
+
+  // Fetch variables
+  const { data: variablesData } = useQuery({
+    queryKey: ['variables', currentWorkspace?.id],
+    queryFn: () => apiClient.get<PaginationResponse<any[]>>(
+      API_ENDPOINTS.variable.list(currentWorkspace!.id),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!getToken(),
+  });
+
+  // Fetch triggers
+  const { data: triggersData } = useQuery({
+    queryKey: ['workflowTriggers', currentWorkspace?.id, workflowId],
+    queryFn: () => {
+      return apiClient.get<PaginationResponse<Trigger[]>>(
+        API_ENDPOINTS.trigger.list(currentWorkspace!.id),
+        { 
+          token: getToken(),
+          params: {
+            workflow_id: workflowId!,
+          },
+        }
+      );
+    },
+    enabled: !!currentWorkspace?.id && !!workflowId && !!getToken() && workflowId !== 'new',
+  });
+
+  // Create trigger mutation
+  const createTriggerMutation = useMutation({
+    mutationFn: ({ workflowId, data }: { workflowId: string; data: any }) =>
+      apiClient.post<Trigger>(
+        API_ENDPOINTS.trigger.create(currentWorkspace!.id, workflowId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowTriggers'] });
+      toast({
+        title: 'Trigger Created',
+        description: 'Trigger has been created successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create trigger',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update trigger mutation
+  const updateTriggerMutation = useMutation({
+    mutationFn: ({ triggerId, data }: { triggerId: string; data: any }) =>
+      apiClient.put<Trigger>(
+        API_ENDPOINTS.trigger.update(currentWorkspace!.id, triggerId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowTriggers'] });
+      toast({
+        title: 'Trigger Updated',
+        description: 'Trigger has been updated successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update trigger',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Load and map nodes when fetched
+  useEffect(() => {
+    const loadNodes = async () => {
+      if (!nodesData?.data.items || !currentWorkspace?.id || !workflowId) {
+        // Yeni workflow için default trigger node ekle
+        if (workflowId === null && id === 'new') {
+          setNodes([{
+            id: 'trigger-1',
+            type: 'trigger',
+            title: 'API Trigger',
+            icon: Zap,
+            variables: [
+              { name: 'user_id', type: 'string', defaultValue: '' },
+              { name: 'event_type', type: 'string', defaultValue: 'create' },
+              { name: 'timestamp', type: 'number', defaultValue: '' },
+            ],
+          }]);
+        }
+        return;
+      }
+
+      const apiNodes = nodesData.data.items;
+      
+      // Her node için script content çek ve map et
+      const mappedNodes = await Promise.all(
+        apiNodes.map(async (apiNode) => {
+          let scriptContent: ScriptContent | undefined;
+          
+          // Script content çek
+          if (apiNode.script_id) {
+            try {
+              const contentResponse = await apiClient.get<ScriptContent>(
+                API_ENDPOINTS.globalScript.getContent(apiNode.script_id),
+                { skipAuth: true } // Global scripts public
+              );
+              scriptContent = contentResponse.data;
+            } catch (error) {
+              console.error(`Failed to load script content for ${apiNode.script_id}:`, error);
+            }
+          } else if (apiNode.custom_script_id) {
+            try {
+              const contentResponse = await apiClient.get<ScriptContent>(
+                API_ENDPOINTS.customScript.getContent(currentWorkspace.id, apiNode.custom_script_id),
+                { token: getToken() }
+              );
+              scriptContent = contentResponse.data;
+            } catch (error) {
+              console.error(`Failed to load custom script content for ${apiNode.custom_script_id}:`, error);
+            }
+          }
+
+          const mapped = mapApiNodeToWorkflowNode(apiNode, scriptContent);
+          // API node metadata'sını sakla
+          mapped.apiNodeId = apiNode.id;
+          mapped.scriptId = apiNode.script_id;
+          mapped.customScriptId = apiNode.custom_script_id;
+          return mapped;
+        })
+      );
+
+      // Trigger node'u ekle (eğer yoksa)
+      if (mappedNodes.length === 0 || mappedNodes[0].type !== 'trigger') {
+        mappedNodes.unshift({
+          id: 'trigger-1',
+          type: 'trigger',
+          title: 'API Trigger',
+          icon: Zap,
+          variables: [
+            { name: 'user_id', type: 'string', defaultValue: '' },
+            { name: 'event_type', type: 'string', defaultValue: 'create' },
+            { name: 'timestamp', type: 'number', defaultValue: '' },
+          ],
+        });
+      }
+
+      setNodes(mappedNodes);
+    };
+
+    loadNodes();
+  }, [nodesData, currentWorkspace?.id, workflowId, id, getToken]);
+
+  // Create workflow mutation (for new workflows)
+  const createWorkflowMutation = useMutation({
+    mutationFn: (data: CreateWorkflowRequest) =>
+      apiClient.post<Workflow>(
+        API_ENDPOINTS.workflow.create(currentWorkspace!.id),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: (response) => {
+      const newWorkflowId = response.data.id;
+      setWorkflowId(newWorkflowId);
+      queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      navigate(`/workflows/${newWorkflowId}/edit`, { replace: true });
+      toast({
+        title: 'Workflow Created',
+        description: 'Workflow has been created successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create workflow',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update workflow mutation
+  const updateWorkflowMutation = useMutation({
+    mutationFn: ({ workflowId, data }: { workflowId: string; data: Partial<CreateWorkflowRequest> }) =>
+      apiClient.put<Workflow>(
+        API_ENDPOINTS.workflow.update(currentWorkspace!.id, workflowId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflow'] });
+      toast({
+        title: 'Workflow Saved',
+        description: 'Workflow has been saved successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save workflow',
+        variant: 'destructive',
+      });
+    },
+  });
 
   // Cleanup on unmount
   useEffect(() => {
@@ -131,7 +388,37 @@ export default function ZapierWorkflowEditor() {
     }, 100);
   }, []);
 
-  const handleAddNode = useCallback((category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
+  // Create node mutation
+  const createNodeMutation = useMutation({
+    mutationFn: ({ workflowId, data }: { workflowId: string; data: any }) =>
+      apiClient.post<Node>(
+        API_ENDPOINTS.node.create(currentWorkspace!.id, workflowId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowNodes'] });
+      queryClient.invalidateQueries({ queryKey: ['workflowEdges'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create node',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleAddNode = useCallback(async (category: string, subcategory: string, nodeType: string, afterNodeId?: string) => {
+    if (!currentWorkspace?.id || !workflowId) {
+      toast({
+        title: 'Error',
+        description: 'Please save the workflow first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Map node types to icons and configured status
     const nodeIcons: Record<string, LucideIcon> = {
       'GPT-4 Completion': MessageSquare,
@@ -306,36 +593,217 @@ export default function ZapierWorkflowEditor() {
       return [];
     };
 
-    const newNode: WorkflowNode = {
-      id: `node-${Date.now()}`,
-      type: 'action',
-      title: nodeType,
-      icon: nodeIcons[nodeType],
-      category: `${category} > ${subcategory}`,
-      nodeType: category,
-      configured: false,
-      config: {},
-      parameters: getNodeParameters(nodeType),
-    };
+    // Script seçimi için - şimdilik script listesinden ilk uygun script'i bul
+    // TODO: Script seçim modal'ı ekle
+    const allScripts = [
+      ...(globalScriptsData?.data.items || []),
+      ...(customScriptsData?.data.items || []),
+    ];
+    
+    // Node type'a göre script bul (basit eşleştirme)
+    const matchedScript = allScripts.find(s => 
+      s.name.toLowerCase().includes(nodeType.toLowerCase().split(' ')[0]) ||
+      s.description?.toLowerCase().includes(nodeType.toLowerCase())
+    );
 
-    const newNodes = [...nodes];
-    newNodes.splice(insertIndex, 0, newNode);
-    setNodes(newNodes);
-    scrollToNewNode(newNode.id);
-  }, [nodes, scrollToNewNode]);
+    if (!matchedScript) {
+      toast({
+        title: 'Script Not Found',
+        description: `Please select a script for "${nodeType}" node`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Script content çek
+    let scriptContent: ScriptContent | undefined;
+    try {
+      const contentResponse = await apiClient.get<ScriptContent>(
+        matchedScript.id.startsWith('SCR-') 
+          ? API_ENDPOINTS.globalScript.getContent(matchedScript.id)
+          : API_ENDPOINTS.customScript.getContent(currentWorkspace.id, matchedScript.id),
+        matchedScript.id.startsWith('SCR-') 
+          ? { skipAuth: true }
+          : { token: getToken() }
+      );
+      scriptContent = contentResponse.data;
+    } catch (error) {
+      console.error('Failed to load script content:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load script content',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Input params'ı script schema'ya göre oluştur
+    const input_params: Record<string, any> = {};
+    if (scriptContent?.input_schema) {
+      Object.entries(scriptContent.input_schema).forEach(([key, schema]: [string, any]) => {
+        input_params[key] = {
+          type: schema.type || 'string',
+          value: schema.default || '',
+          required: schema.required || false,
+        };
+      });
+    }
+
+    // API'ye node oluştur
+    try {
+      const nodeData = {
+        name: nodeType,
+        description: `${category} > ${subcategory}`,
+        script_id: matchedScript.id.startsWith('SCR-') ? matchedScript.id : undefined,
+        custom_script_id: matchedScript.id.startsWith('SCR-') ? undefined : matchedScript.id,
+        input_params,
+        max_retries: 3,
+        timeout_seconds: 300,
+      };
+
+      const response = await createNodeMutation.mutateAsync({
+        workflowId,
+        data: nodeData,
+      });
+
+      // Node oluşturuldu, şimdi frontend'e ekle
+      const newNode: WorkflowNode = {
+        id: response.data.id,
+        type: 'action',
+        title: nodeType,
+        icon: nodeIcons[nodeType],
+        category: `${category} > ${subcategory}`,
+        nodeType: category,
+        configured: true,
+        config: {},
+        parameters: getNodeParameters(nodeType),
+        apiNodeId: response.data.id,
+        scriptId: response.data.script_id,
+        customScriptId: response.data.custom_script_id,
+      };
+
+      const newNodes = [...nodes];
+      newNodes.splice(insertIndex, 0, newNode);
+      setNodes(newNodes);
+      scrollToNewNode(newNode.id);
+
+      // Edge oluştur - yeni node'u önceki node'a bağla
+      if (afterNodeId) {
+        const previousNode = nodes.find(n => n.id === afterNodeId);
+        if (previousNode?.apiNodeId) {
+          try {
+            await createEdgeMutation.mutateAsync({
+              workflowId,
+              data: {
+                from_node_id: previousNode.apiNodeId,
+                to_node_id: response.data.id,
+              },
+            });
+          } catch (error) {
+            console.error('Error creating edge:', error);
+            // Edge oluşturma hatası kritik değil, sadece log'la
+          }
+        }
+      }
+
+      toast({
+        title: 'Node Added',
+        description: `${nodeType} node has been added successfully.`,
+      });
+    } catch (error: any) {
+      console.error('Error creating node:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create node',
+        variant: 'destructive',
+      });
+    }
+  }, [nodes, scrollToNewNode, currentWorkspace, workflowId, getToken, globalScriptsData, customScriptsData, createNodeMutation, createEdgeMutation]);
 
   const handleAddBranch = useCallback((conditionalNodeId: string, branchType: 'true' | 'false') => {
     // In a real implementation, this would open a node selector
   }, []);
 
+  // Fetch node form schema
+  const { data: nodeFormSchemaData, refetch: refetchNodeFormSchema } = useQuery({
+    queryKey: ['nodeFormSchema', currentWorkspace?.id, workflowId, selectedNode?.apiNodeId],
+    queryFn: () => apiClient.get<{ schema: any; current_values: any }>(
+      API_ENDPOINTS.node.getFormSchema(currentWorkspace!.id, workflowId!, selectedNode!.apiNodeId!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!workflowId && !!selectedNode?.apiNodeId && !!getToken(),
+  });
+
+  // Update node parameters when form schema is fetched
+  useEffect(() => {
+    if (nodeFormSchemaData?.data && selectedNode) {
+      const { schema, current_values } = nodeFormSchemaData.data;
+      
+      // Schema'dan parameters oluştur
+      const updatedParameters = Object.entries(schema).map(([key, paramSchema]: [string, any]) => {
+        const existingParam = selectedNode.parameters?.find(p => p.id === key);
+        return {
+          id: key,
+          label: paramSchema.description || key,
+          type: mapSchemaTypeToFrontendType(paramSchema.type),
+          placeholder: paramSchema.front?.placeholder || '',
+          options: paramSchema.front?.values || existingParam?.options,
+          value: current_values[key] || existingParam?.value || paramSchema.default_value || '',
+          isDynamic: typeof current_values[key] === 'string' && current_values[key].startsWith('${'),
+          dynamicPath: typeof current_values[key] === 'string' && current_values[key].startsWith('${')
+            ? current_values[key]
+            : undefined,
+        };
+      });
+
+      // Node'u güncelle
+      setNodes(prevNodes => prevNodes.map(n => 
+        n.id === selectedNode.id 
+          ? { ...n, parameters: updatedParameters }
+          : n
+      ));
+      setSelectedNode(prev => prev ? { ...prev, parameters: updatedParameters } : null);
+    }
+  }, [nodeFormSchemaData, selectedNode]);
+
+  const mapSchemaTypeToFrontendType = (schemaType: string): 'text' | 'dropdown' | 'number' | 'toggle' | 'textarea' | 'credential' => {
+    switch (schemaType?.toLowerCase()) {
+      case 'string':
+      case 'str':
+        return 'text';
+      case 'integer':
+      case 'int':
+      case 'number':
+      case 'float':
+        return 'number';
+      case 'boolean':
+      case 'bool':
+        return 'toggle';
+      case 'array':
+      case 'list':
+        return 'textarea';
+      case 'object':
+      case 'dict':
+        return 'textarea';
+      default:
+        return 'text';
+    }
+  };
+
   const handleNodeClick = useCallback((node: WorkflowNode) => {
     setSelectedNode(node);
     setShowOutputsPanel(true);
-  }, []);
+    
+    // API node ise form schema'yı çek
+    if (node.apiNodeId && currentWorkspace?.id && workflowId) {
+      refetchNodeFormSchema();
+    }
+  }, [currentWorkspace, workflowId, refetchNodeFormSchema]);
 
-  const handleParameterChange = useCallback((parameterId: string, value: any, isDynamic: boolean = false) => {
-    if (!selectedNode) return;
+  const handleParameterChange = useCallback(async (parameterId: string, value: any, isDynamic: boolean = false) => {
+    if (!selectedNode || !currentWorkspace?.id || !workflowId) return;
 
+    // Frontend state'i güncelle
     setNodes(prevNodes => prevNodes.map(node => {
       if (node.id === selectedNode.id) {
         const updatedParameters = node.parameters?.map(param =>
@@ -354,7 +822,45 @@ export default function ZapierWorkflowEditor() {
       }
       return node;
     }));
-  }, [selectedNode]);
+
+    // Eğer API node ise, input params'ı API'ye kaydet
+    if (selectedNode.apiNodeId) {
+      try {
+        // Tüm input params'ı topla
+        const updatedNode = nodes.find(n => n.id === selectedNode.id);
+        if (!updatedNode) return;
+
+        const input_params: Record<string, any> = {};
+        updatedNode.parameters?.forEach(param => {
+          if (param.isDynamic && param.dynamicPath) {
+            input_params[param.id] = {
+              type: 'string', // TODO: Schema'dan al
+              value: param.dynamicPath,
+              required: true,
+            };
+          } else {
+            input_params[param.id] = {
+              type: 'string', // TODO: Schema'dan al
+              value: param.value,
+              required: true,
+            };
+          }
+        });
+
+        // Debounce için setTimeout kullan
+        const timeoutId = setTimeout(() => {
+          updateNodeInputParamsMutation.mutate({
+            nodeId: selectedNode.apiNodeId!,
+            inputParams: input_params,
+          });
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+      } catch (error) {
+        console.error('Error updating node parameters:', error);
+      }
+    }
+  }, [selectedNode, nodes, currentWorkspace, workflowId, updateNodeInputParamsMutation]);
 
   // Generate mock outputs for demonstration (memoized)
   const mockOutputs = useMemo(() => {
@@ -435,41 +941,165 @@ export default function ZapierWorkflowEditor() {
     });
   }, [nodes]);
 
-  const handleDeleteNode = (nodeId: string) => {
-    setNodes(nodes.filter(node => node.id !== nodeId));
+  // Delete node mutation
+  const deleteNodeMutation = useMutation({
+    mutationFn: (nodeId: string) =>
+      apiClient.delete(
+        API_ENDPOINTS.node.delete(currentWorkspace!.id, workflowId!, nodeId),
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowNodes'] });
+      queryClient.invalidateQueries({ queryKey: ['workflowEdges'] });
+      toast({
+        title: 'Node Deleted',
+        description: 'Node has been deleted successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete node',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update node mutation
+  const updateNodeMutation = useMutation({
+    mutationFn: ({ nodeId, data }: { nodeId: string; data: any }) =>
+      apiClient.put<Node>(
+        API_ENDPOINTS.node.update(currentWorkspace!.id, workflowId!, nodeId),
+        data,
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowNodes'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update node',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update node input params mutation
+  const updateNodeInputParamsMutation = useMutation({
+    mutationFn: ({ nodeId, inputParams }: { nodeId: string; inputParams: Record<string, any> }) =>
+      apiClient.patch(
+        API_ENDPOINTS.node.updateInputParams(currentWorkspace!.id, workflowId!, nodeId),
+        { input_params: inputParams },
+        { token: getToken() }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workflowNodes'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update node parameters',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleDeleteNode = async (nodeId: string) => {
+    if (!currentWorkspace?.id || !workflowId) return;
+
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Eğer API node ise API'den sil
+    if (node.apiNodeId) {
+      try {
+        await deleteNodeMutation.mutateAsync(node.apiNodeId);
+      } catch (error) {
+        return; // Error toast mutation içinde gösteriliyor
+      }
+    }
+
+    // Frontend'den de sil
+    setNodes(nodes.filter(n => n.id !== nodeId));
+    if (selectedNode?.id === nodeId) {
+      setSelectedNode(null);
+    }
   };
 
-  const handleSave = () => {
-    const workflowId = id === 'new' ? `workflow-${Date.now()}` : id;
-    const workflow: any = {
-      id: workflowId,
-      name: workflowName,
-      nodes,
-      updatedAt: new Date().toISOString(),
-    };
-
-    // Save to localStorage
-    const savedWorkflows = localStorage.getItem('workflows');
-    const workflows = savedWorkflows ? JSON.parse(savedWorkflows) : [];
-    const existingIndex = workflows.findIndex((w: any) => w.id === workflowId);
-    
-    if (existingIndex >= 0) {
-      workflows[existingIndex] = workflow;
-    } else {
-      workflow.createdAt = new Date().toISOString();
-      workflows.push(workflow);
+  const handleSave = async () => {
+    if (!currentWorkspace) {
+      toast({
+        title: 'Error',
+        description: 'No workspace selected',
+        variant: 'destructive',
+      });
+      return;
     }
-    
-    localStorage.setItem('workflows', JSON.stringify(workflows));
 
-    // If new workflow, navigate to edit URL
-    if (id === 'new') {
-      navigate(`/workflows/${workflowId}/edit`, { replace: true });
+    try {
+      if (!workflowId || workflowId === 'new') {
+        // Create new workflow
+        createWorkflowMutation.mutate({
+          name: workflowName,
+          description: '',
+          status: isActive ? 'ACTIVE' : 'DRAFT',
+          priority: 1,
+        });
+      } else {
+        // Update existing workflow
+        updateWorkflowMutation.mutate({
+          workflowId,
+          data: {
+            name: workflowName,
+            status: isActive ? 'ACTIVE' : 'DRAFT',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error saving workflow:', error);
     }
   };
 
-  // Mock test results (memoized)
-  const mockTestResults = useMemo(() => {
+  // Test results - API'den gelen veya mock
+  const testResults = useMemo(() => {
+    // Eğer API'den sonuç varsa onu kullan
+    if (testExecutionResults && testExecutionResults.results) {
+      const nodeResults: Record<string, any> = {};
+      
+      Object.entries(testExecutionResults.results).forEach(([nodeId, result]: [string, any]) => {
+        nodeResults[nodeId] = {
+          node_id: nodeId,
+          node_name: nodes.find(n => n.apiNodeId === nodeId)?.title || `Node ${nodeId.slice(-8)}`,
+          status: result.status,
+          result_data: result.result_data,
+          duration_seconds: result.duration_seconds,
+          memory_mb: result.memory_mb,
+          cpu_percent: result.cpu_percent,
+          completed_at: testExecutionResults.ended_at,
+          error_message: result.error_message,
+        };
+      });
+
+      return {
+        summary: {
+          total_nodes: Object.keys(testExecutionResults.results).length,
+          completed_nodes: Object.keys(testExecutionResults.results).length,
+          successful_nodes: Object.values(testExecutionResults.results).filter((r: any) => r.status === 'SUCCESS').length,
+          failed_nodes: Object.values(testExecutionResults.results).filter((r: any) => r.status === 'FAILED').length,
+          skipped_nodes: 0,
+        },
+        node_results: nodeResults,
+        final_output: Object.values(nodeResults)[Object.values(nodeResults).length - 1]?.result_data,
+        metadata: {
+          workflow_version: '1.0.0',
+          execution_mode: 'test',
+          completed_at: testExecutionResults.ended_at,
+        },
+      };
+    }
+
+    // Mock test results (fallback)
     const nodeResults: Record<string, any> = {};
     
     nodes.forEach((node, index) => {
@@ -539,7 +1169,7 @@ export default function ZapierWorkflowEditor() {
       }
     });
 
-    return {
+    const mockTestResults = {
       summary: {
         total_nodes: nodes.length,
         completed_nodes: nodes.length,
@@ -555,11 +1185,143 @@ export default function ZapierWorkflowEditor() {
         completed_at: new Date().toISOString(),
       },
     };
+    return mockTestResults;
   }, [nodes]);
 
-  const handleTest = useCallback(() => {
-    // Implement test logic
-  }, [workflowName, nodes]);
+  // Test execution state
+  const [testExecutionId, setTestExecutionId] = useState<string | null>(null);
+  const [testExecutionStatus, setTestExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
+  const [testExecutionResults, setTestExecutionResults] = useState<any>(null);
+  const [showTestInputDialog, setShowTestInputDialog] = useState(false);
+  const [selectedTrigger, setSelectedTrigger] = useState<Trigger | null>(null);
+
+  // Fetch test execution
+  const { data: testExecutionData, refetch: refetchTestExecution } = useQuery({
+    queryKey: ['testExecution', currentWorkspace?.id, testExecutionId],
+    queryFn: () => apiClient.get<Execution>(
+      API_ENDPOINTS.execution.get(currentWorkspace!.id, testExecutionId!),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!testExecutionId && !!getToken() && testExecutionStatus === 'running',
+    refetchInterval: (data) => {
+      const status = data?.data.status;
+      if (status === 'PENDING' || status === 'RUNNING') {
+        return 1000; // Poll every 1 second
+      }
+      return false; // Stop polling when completed
+    },
+  });
+
+  // Update test execution status when data changes
+  useEffect(() => {
+    if (testExecutionData?.data) {
+      const execution = testExecutionData.data;
+      setTestExecutionResults(execution);
+
+      if (execution.status === 'COMPLETED' || execution.status === 'SUCCESS') {
+        setTestExecutionStatus('completed');
+      } else if (execution.status === 'FAILED' || execution.status === 'CANCELLED') {
+        setTestExecutionStatus('failed');
+      } else if (execution.status === 'RUNNING' || execution.status === 'PENDING') {
+        setTestExecutionStatus('running');
+      }
+    }
+  }, [testExecutionData]);
+
+  // Create execution mutation
+  const createExecutionMutation = useMutation({
+    mutationFn: ({ workflowId, inputData }: { workflowId: string; inputData: Record<string, any> }) =>
+      apiClient.post<Execution>(
+        API_ENDPOINTS.execution.create(currentWorkspace!.id, workflowId),
+        { input_data: inputData },
+        { token: getToken() }
+      ),
+    onSuccess: (response) => {
+      const executionId = response.data.id;
+      setTestExecutionId(executionId);
+      setTestExecutionStatus('running');
+      toast({
+        title: 'Test Started',
+        description: 'Workflow test execution has been started.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to start test execution',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Get default trigger (first trigger or DEFAULT)
+  const defaultTrigger = useMemo(() => {
+    if (!triggersData?.data.items || triggersData.data.items.length === 0) {
+      return null;
+    }
+    // DEFAULT trigger'ı bul veya ilk trigger'ı al
+    const trigger = triggersData.data.items.find(t => t.name === 'DEFAULT') || triggersData.data.items[0];
+    return trigger;
+  }, [triggersData]);
+
+  // Fetch single trigger with full details (including input_mapping)
+  const { data: triggerDetailData } = useQuery({
+    queryKey: ['triggerDetail', currentWorkspace?.id, defaultTrigger?.id],
+    queryFn: () => apiClient.get<Trigger>(
+      API_ENDPOINTS.trigger.get(currentWorkspace!.id, defaultTrigger!.id),
+      { token: getToken() }
+    ),
+    enabled: !!currentWorkspace?.id && !!defaultTrigger?.id && !!getToken(),
+  });
+
+  // Use detailed trigger data if available
+  const triggerForTest = triggerDetailData?.data || defaultTrigger;
+
+  const handleTest = useCallback(async () => {
+    if (!currentWorkspace?.id || !workflowId) {
+      toast({
+        title: 'Error',
+        description: 'Please save the workflow first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Trigger'ı al (detailed trigger data kullan)
+    const trigger = triggerForTest;
+    
+    // Eğer trigger'ın input_mapping'i varsa form göster
+    if (trigger && trigger.input_mapping && Object.keys(trigger.input_mapping).length > 0) {
+      setSelectedTrigger(trigger);
+      setShowTestInputDialog(true);
+      return;
+    }
+
+    // Input schema yoksa direkt execution başlat
+    try {
+      await createExecutionMutation.mutateAsync({
+        workflowId,
+        inputData: {},
+      });
+    } catch (error) {
+      console.error('Error starting test execution:', error);
+    }
+  }, [currentWorkspace, workflowId, defaultTrigger, createExecutionMutation]);
+
+  const handleTestInputSubmit = useCallback(async (inputData: Record<string, any>) => {
+    if (!currentWorkspace?.id || !workflowId) return;
+
+    setShowTestInputDialog(false);
+
+    try {
+      await createExecutionMutation.mutateAsync({
+        workflowId,
+        inputData,
+      });
+    } catch (error) {
+      console.error('Error starting test execution:', error);
+    }
+  }, [currentWorkspace, workflowId, createExecutionMutation]);
 
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
@@ -841,56 +1603,105 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-6">
+                {/* Test Controls */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Test Workflow</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Run a test execution to verify your workflow
+                    </p>
+                    {triggerForTest && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Using trigger: {triggerForTest.name} ({triggerForTest.trigger_type})
+                        {triggerForTest.input_mapping && Object.keys(triggerForTest.input_mapping).length > 0 && (
+                          <span className="ml-2">
+                            ({Object.keys(triggerForTest.input_mapping).length} input fields)
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    onClick={handleTest}
+                    disabled={testExecutionStatus === 'running' || !workflowId}
+                    variant="primary"
+                  >
+                    {testExecutionStatus === 'running' ? 'Running...' : 'Run Test'}
+                  </Button>
+                </div>
+
+                {/* Test Input Dialog */}
+                <Dialog open={showTestInputDialog} onOpenChange={setShowTestInputDialog}>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Test Execution Input</DialogTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Enter test data according to the trigger's input schema
+                      </p>
+                    </DialogHeader>
+                    <TriggerInputForm
+                      trigger={selectedTrigger}
+                      onSubmit={handleTestInputSubmit}
+                      onCancel={() => setShowTestInputDialog(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+
                 {/* Test Summary Card */}
-                <TestSummaryCard
-                  totalNodes={mockTestResults.summary.total_nodes}
-                  successfulNodes={mockTestResults.summary.successful_nodes}
-                  failedNodes={mockTestResults.summary.failed_nodes}
-                  totalDuration={nodes.reduce((total, node) => {
-                    return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                  }, 0)}
-                  averageNodeTime={
-                    nodes.length > 0
-                      ? nodes.reduce((total, node) => {
-                          return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                        }, 0) / nodes.length
-                      : 0
-                  }
-                />
+                {testResults && (
+                  <TestSummaryCard
+                    totalNodes={testResults.summary.total_nodes}
+                    successfulNodes={testResults.summary.successful_nodes}
+                    failedNodes={testResults.summary.failed_nodes}
+                    totalDuration={nodes.reduce((total, node) => {
+                      return total + (testResults.node_results[node.id]?.duration_seconds || 0);
+                    }, 0)}
+                    averageNodeTime={
+                      nodes.length > 0
+                        ? nodes.reduce((total, node) => {
+                            return total + (testResults.node_results[node.id]?.duration_seconds || 0);
+                          }, 0) / nodes.length
+                        : 0
+                    }
+                  />
+                )}
 
                 {/* Timeline and Logs - Side by Side */}
                 <div className="grid grid-cols-2 gap-6">
                   {/* Execution Timeline */}
                   <div className="min-h-[600px] flex flex-col">
-                    <ExecutionTimeline
-                      nodes={nodes.map((node, index) => {
-                        const nodeResult = mockTestResults.node_results[node.id];
-                        const NodeIcon = node.icon || Settings;
-                        
-                        // Get input data from previous nodes (simplified)
-                        const inputData = node.type === 'trigger' ? undefined : {
-                          trigger_data: mockTestResults.node_results['trigger-1']?.result_data,
-                        };
+                    {testResults && (
+                      <ExecutionTimeline
+                        nodes={nodes.map((node, index) => {
+                          const nodeResult = testResults.node_results[node.id] || testResults.node_results[node.apiNodeId || ''];
+                          const NodeIcon = node.icon || Settings;
+                          
+                          // Get input data from previous nodes (simplified)
+                          const inputData = node.type === 'trigger' ? undefined : {
+                            trigger_data: testExecutionResults?.trigger_data,
+                          };
 
-                        return {
-                          nodeId: node.id,
-                          nodeName: node.title,
-                          nodeIcon: NodeIcon,
-                          status: nodeResult.status,
-                          inputData,
-                          outputData: nodeResult.result_data,
-                          metadata: {
-                            duration_seconds: nodeResult.duration_seconds,
-                            completed_at: nodeResult.completed_at,
-                          },
-                          errorMessage: nodeResult.error_message,
-                          order: index + 1,
-                        };
-                      })}
-                      totalDuration={nodes.reduce((total, node) => {
-                        return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                      }, 0)}
-                    />
+                          return {
+                            nodeId: node.id,
+                            nodeName: node.title,
+                            nodeIcon: NodeIcon,
+                            status: nodeResult?.status || 'PENDING',
+                            inputData,
+                            outputData: nodeResult?.result_data,
+                            metadata: {
+                              duration_seconds: nodeResult?.duration_seconds || 0,
+                              completed_at: nodeResult?.completed_at,
+                            },
+                            errorMessage: nodeResult?.error_message,
+                            order: index + 1,
+                          };
+                        })}
+                        totalDuration={nodes.reduce((total, node) => {
+                          const nodeResult = testResults.node_results[node.id] || testResults.node_results[node.apiNodeId || ''];
+                          return total + (nodeResult?.duration_seconds || 0);
+                        }, 0)}
+                      />
+                    )}
                   </div>
 
                   {/* Execution Logs */}
@@ -913,24 +1724,35 @@ export default function ZapierWorkflowEditor() {
                           <p className="text-success">[INFO] Workflow test started</p>
                           <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
                           <p className="text-success">[INFO] Executing workflow...</p>
-                          {nodes.map((node) => {
-                            const result = mockTestResults.node_results[node.id];
+                          {testResults && nodes.map((node) => {
+                            const result = testResults.node_results[node.id] || testResults.node_results[node.apiNodeId || ''];
+                            if (!result) return null;
                             return (
                               <p 
                                 key={node.id}
-                                className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
+                                className={result?.status === 'SUCCESS' ? 'text-success' : result?.status === 'FAILED' ? 'text-destructive' : 'text-muted-foreground'}
                               >
-                                [{result?.status}] {node.title} - completed in {result?.duration_seconds.toFixed(2)}s
+                                [{result?.status || 'PENDING'}] {node.title} - {result?.duration_seconds ? `completed in ${result.duration_seconds.toFixed(2)}s` : 'pending...'}
                                 {result?.error_message && (
                                   <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
                                 )}
                               </p>
                             );
                           })}
-                          <p className="text-success">[INFO] Test execution completed</p>
-                          <p className="text-muted-foreground">
-                            [SUMMARY] Success: {mockTestResults.summary.successful_nodes}, Failed: {mockTestResults.summary.failed_nodes}
-                          </p>
+                          {testExecutionStatus === 'completed' && (
+                            <>
+                              <p className="text-success">[INFO] Test execution completed</p>
+                              <p className="text-muted-foreground">
+                                [SUMMARY] Success: {testResults?.summary.successful_nodes || 0}, Failed: {testResults?.summary.failed_nodes || 0}
+                              </p>
+                            </>
+                          )}
+                          {testExecutionStatus === 'running' && (
+                            <p className="text-muted-foreground">[INFO] Test execution in progress...</p>
+                          )}
+                          {testExecutionStatus === 'idle' && (
+                            <p className="text-muted-foreground">[INFO] Click "Run Test" to start execution</p>
+                          )}
                         </div>
                       </div>
                     </div>

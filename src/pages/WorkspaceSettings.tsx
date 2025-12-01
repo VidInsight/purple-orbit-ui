@@ -4,9 +4,10 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -19,13 +20,16 @@ import {
   BookOpen,
   Video,
   MessageCircle,
-  Mail
+  Mail,
+  Trash2,
+  Loader2
 } from 'lucide-react';
 
 const WorkspaceSettings = () => {
   const navigate = useNavigate();
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, updateWorkspace, deleteWorkspace, refreshWorkspaces } = useWorkspace();
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -62,15 +66,57 @@ const WorkspaceSettings = () => {
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast({
-      title: 'Settings Saved',
-      description: 'Workspace settings have been updated successfully.',
-    });
-    
-    setIsSaving(false);
+    if (!currentWorkspace) return;
+
+    try {
+      setIsSaving(true);
+      await updateWorkspace(currentWorkspace.id, {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+      });
+      
+      toast({
+        title: 'Settings Saved',
+        description: 'Workspace settings have been updated successfully.',
+      });
+      
+      await refreshWorkspaces();
+    } catch (error) {
+      console.error('Error updating workspace:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update workspace settings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!currentWorkspace) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteWorkspace(currentWorkspace.id);
+      
+      toast({
+        title: 'Workspace Deleted',
+        description: 'The workspace has been deleted successfully.',
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete workspace',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleUpgrade = () => {
@@ -208,6 +254,111 @@ const WorkspaceSettings = () => {
               </div>
             </Card>
 
+            {/* Workspace Limits & Quota */}
+            {currentWorkspace && (
+              <Card className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground mb-1">
+                      Workspace Limits & Usage
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Current usage and limits for this workspace
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Members</span>
+                        <span className="font-medium">
+                          {currentWorkspace.current_member_count} / {currentWorkspace.member_limit}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((currentWorkspace.current_member_count / currentWorkspace.member_limit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Workflows</span>
+                        <span className="font-medium">
+                          {currentWorkspace.current_workflow_count} / {currentWorkspace.workflow_limit}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((currentWorkspace.current_workflow_count / currentWorkspace.workflow_limit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Storage</span>
+                        <span className="font-medium">
+                          {(currentWorkspace.current_storage_mb / 1024).toFixed(2)} GB / {(currentWorkspace.storage_limit_mb / 1024).toFixed(2)} GB
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((currentWorkspace.current_storage_mb / currentWorkspace.storage_limit_mb) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">API Keys</span>
+                        <span className="font-medium">
+                          {currentWorkspace.current_api_key_count} / {currentWorkspace.api_key_limit}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((currentWorkspace.current_api_key_count / currentWorkspace.api_key_limit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Monthly Executions</span>
+                        <span className="font-medium">
+                          {currentWorkspace.current_month_executions} / {currentWorkspace.monthly_execution_limit}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{
+                            width: `${Math.min((currentWorkspace.current_month_executions / currentWorkspace.monthly_execution_limit) * 100, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Current Plan & Actions */}
             <Card className="p-8">
               <div className="space-y-6">
@@ -221,7 +372,7 @@ const WorkspaceSettings = () => {
                     </p>
                   </div>
                   <Badge variant="default" className="text-sm px-4 py-1.5">
-                    Pro Plan
+                    {currentWorkspace?.plan_name || 'Freemium'}
                   </Badge>
                 </div>
 
@@ -248,6 +399,59 @@ const WorkspaceSettings = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Danger Zone */}
+            {currentWorkspace?.role === 'owner' && (
+              <Card className="p-8 border-destructive">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-destructive mb-1">
+                      Danger Zone
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Irreversible and destructive actions
+                    </p>
+                  </div>
+
+                  <Separator />
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="h-12">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Workspace
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the workspace and all its data. This action cannot be undone.
+                          All workflows, executions, files, and other workspace data will be permanently deleted.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          {isDeleting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Deleting...
+                            </>
+                          ) : (
+                            'Yes, delete workspace'
+                          )}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </Card>
+            )}
           </div>
 
           {/* Right Column - Support & Help */}

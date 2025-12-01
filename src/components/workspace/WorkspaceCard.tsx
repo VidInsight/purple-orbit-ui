@@ -9,13 +9,17 @@ interface WorkspaceCardProps {
 }
 
 export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | undefined) => {
+    if (!name || typeof name !== 'string') {
+      return 'WS';
+    }
     return name
       .split(' ')
+      .filter((word) => word.length > 0)
       .map((word) => word[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2) || 'WS';
   };
 
   return (

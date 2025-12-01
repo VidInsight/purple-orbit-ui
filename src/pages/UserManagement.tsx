@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -7,161 +7,304 @@ import { ActiveUsersTab } from '@/components/user-management/ActiveUsersTab';
 import { PendingInvitationsTab } from '@/components/user-management/PendingInvitationsTab';
 import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useAuth } from '@/context/AuthContext';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
+import type { WorkspaceMember, Invitation, CreateInvitationRequest } from '@/types/api';
 
-// Mock current user ID
-const CURRENT_USER_ID = 'user-1';
+// Role mapping: Frontend role -> Backend role_id (bu mapping backend'den alınabilir)
+const ROLE_ID_MAP: Record<UserRole, string> = {
+  admin: 'ROL-ADMIN', // Bu değerler backend'den alınmalı
+  editor: 'ROL-EDITOR',
+  viewer: 'ROL-VIEWER',
+};
 
-// Mock data
-const generateMockUsers = (): User[] => [
-  {
-    id: 'user-1',
-    name: 'Sarah Johnson',
-    email: 'sarah@company.com',
-    avatar: undefined,
-    role: 'admin',
-    lastActive: new Date(Date.now() - 5 * 60000).toISOString(), // 5 mins ago
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-2',
-    name: 'Michael Chen',
-    email: 'michael@company.com',
-    avatar: undefined,
-    role: 'editor',
-    lastActive: new Date(Date.now() - 2 * 60 * 60000).toISOString(), // 2 hours ago
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-3',
-    name: 'Emily Rodriguez',
-    email: 'emily@company.com',
-    avatar: undefined,
-    role: 'editor',
-    lastActive: new Date(Date.now() - 24 * 60 * 60000).toISOString(), // 1 day ago
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-4',
-    name: 'David Kim',
-    email: 'david@company.com',
-    avatar: undefined,
-    role: 'viewer',
-    lastActive: new Date(Date.now() - 3 * 24 * 60 * 60000).toISOString(), // 3 days ago
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60000).toISOString(),
-  },
-];
-
-const generateMockInvitations = (): PendingInvitation[] => [
-  {
-    id: 'inv-1',
-    email: 'john@newcompany.com',
-    role: 'editor',
-    invitedBy: 'Sarah Johnson',
-    sentAt: new Date(Date.now() - 2 * 24 * 60 * 60000).toISOString(), // 2 days ago
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60000).toISOString(), // 5 days from now
-  },
-  {
-    id: 'inv-2',
-    email: 'alice@partner.com',
-    role: 'viewer',
-    invitedBy: 'Sarah Johnson',
-    sentAt: new Date(Date.now() - 5 * 24 * 60 * 60000).toISOString(), // 5 days ago
-    expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60000).toISOString(), // 2 days from now
-  },
-];
+const ROLE_NAME_MAP: Record<string, UserRole> = {
+  'OWNER': 'admin',
+  'MEMBER': 'editor',
+  'EDITOR': 'editor',
+  'VIEWER': 'viewer',
+};
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>(generateMockUsers());
-  const [invitations, setInvitations] = useState<PendingInvitation[]>(
-    generateMockInvitations()
-  );
+  const { currentWorkspace, refreshWorkspaces } = useWorkspace();
+  const { user: currentAuthUser, getToken } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
-  const isAdmin = currentUser?.role === 'admin';
+  const currentUser = users.find((u) => u.id === currentAuthUser?.id);
+  const isAdmin = currentUser?.role === 'admin' || currentWorkspace?.role === 'owner';
 
-  const handleRoleChange = (userId: string, newRole: UserRole) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user))
-    );
+  useEffect(() => {
+    if (currentWorkspace) {
+      loadMembers();
+      loadInvitations();
+    }
+  }, [currentWorkspace]);
 
-    toast({
-      title: 'Role Updated',
-      description: 'User role has been changed successfully.',
-    });
+  const loadMembers = async () => {
+    if (!currentWorkspace) return;
+
+    try {
+      setIsLoading(true);
+      const token = getToken();
+      if (!token) return;
+
+      const response = await apiClient.get<{ members: WorkspaceMember[]; total: number }>(
+        API_ENDPOINTS.workspaceMember.list(currentWorkspace.id),
+        { token }
+      );
+
+      // API member'ları app User type'ına dönüştür
+      const mappedUsers: User[] = response.data.members.map((member) => ({
+        id: member.user_id,
+        name: member.user.username, // API'den name gelmiyorsa username kullan
+        email: member.user.email,
+        avatar: undefined,
+        role: ROLE_NAME_MAP[member.role_name] || 'viewer',
+        lastActive: new Date().toISOString(), // API'den gelmiyorsa şimdilik
+        createdAt: new Date().toISOString(),
+      }));
+
+      setUsers(mappedUsers);
+    } catch (error) {
+      console.error('Error loading members:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load workspace members',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadInvitations = async () => {
+    if (!currentWorkspace) return;
+
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const response = await apiClient.get<{ items: Invitation[] }>(
+        API_ENDPOINTS.workspaceInvitation.list(currentWorkspace.id),
+        { token }
+      );
+
+      // Sadece pending invitation'ları göster
+      const pendingInvitations = response.data.items
+        .filter((inv) => inv.status === 'PENDING')
+        .map((inv) => ({
+          id: inv.id,
+          email: inv.user_id || 'Unknown', // API'den email gelmiyorsa user_id kullan
+          role: 'editor' as UserRole, // role_id'den map edilmeli
+          invitedBy: currentAuthUser?.name || 'Unknown',
+          sentAt: inv.created_at,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days default
+        }));
+
+      setInvitations(pendingInvitations);
+    } catch (error) {
+      console.error('Error loading invitations:', error);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    if (!currentWorkspace) return;
+
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      // Member'ı bul
+      const member = users.find((u) => u.id === userId);
+      if (!member) return;
+
+      // Member ID'yi bulmak için members listesini tekrar yükle veya state'te tut
+      const membersResponse = await apiClient.get<{ members: WorkspaceMember[] }>(
+        API_ENDPOINTS.workspaceMember.list(currentWorkspace.id),
+        { token }
+      );
+
+      const workspaceMember = membersResponse.data.members.find((m) => m.user_id === userId);
+      if (!workspaceMember) return;
+
+      // Role ID'yi al (backend'den role mapping alınmalı, şimdilik hardcode)
+      const roleId = ROLE_ID_MAP[newRole];
+
+      await apiClient.put(
+        API_ENDPOINTS.workspaceMember.updateRole(currentWorkspace.id, workspaceMember.id),
+        { role_id: roleId },
+        { token }
+      );
+
+      // Local state'i güncelle
+      setUsers((prev) =>
+        prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user))
+      );
+
+      toast({
+        title: 'Role Updated',
+        description: 'User role has been changed successfully.',
+      });
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update user role',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleRemoveUser = async (userId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const user = users.find((u) => u.id === userId);
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    if (!currentWorkspace) return;
 
-    toast({
-      title: 'User Removed',
-      description: `${user?.name} has been removed from the workspace.`,
-    });
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const user = users.find((u) => u.id === userId);
+      
+      await apiClient.delete(
+        API_ENDPOINTS.workspaceMember.remove(currentWorkspace.id, userId),
+        { token }
+      );
+
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      await refreshWorkspaces(); // Workspace limits'i güncelle
+
+      toast({
+        title: 'User Removed',
+        description: `${user?.name} has been removed from the workspace.`,
+      });
+    } catch (error) {
+      console.error('Error removing user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to remove user',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleInviteSubmit = (data: InviteUserData) => {
-    const newInvitations: PendingInvitation[] = data.emails.map((email) => ({
-      id: `inv-${Date.now()}-${Math.random()}`,
-      email,
-      role: data.role,
-      invitedBy: currentUser?.name || 'Unknown',
-      sentAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60000).toISOString(), // 7 days
-    }));
+  const handleInviteSubmit = async (data: InviteUserData) => {
+    if (!currentWorkspace) return;
 
-    setInvitations((prev) => [...newInvitations, ...prev]);
-    setActiveTab('invitations');
+    try {
+      const token = getToken();
+      if (!token) return;
 
-    toast({
-      title: 'Invitation Sent',
-      description: `Sent ${data.emails.length} invitation${
-        data.emails.length > 1 ? 's' : ''
-      } successfully.`,
-    });
+      // Not: API user_id gerektiriyor
+      // Backend'de email ile user bulunup invitation oluşturulmalı
+      // Şimdilik email'i user_id olarak gönderiyoruz
+      // Backend'de email ile user arama yapılıp user_id bulunmalı
+      
+      const roleId = ROLE_ID_MAP[data.role];
+      
+      // Her email için invitation oluştur
+      // TODO: Backend'de email ile user bulma endpoint'i eklenmeli
+      // veya invitation endpoint'i email'i de kabul etmeli
+      const invitationPromises = data.emails.map(async (email) => {
+        // Backend'de email ile user bulunup invitation oluşturulmalı
+        // Şimdilik email'i user_id olarak gönderiyoruz (backend'de handle edilmeli)
+        const request: CreateInvitationRequest = {
+          user_id: email, // Backend'de email ile user bulunmalı veya email field'ı eklenmeli
+          role_id: roleId,
+          message: data.message,
+        };
+
+        return apiClient.post<Invitation>(
+          API_ENDPOINTS.workspaceInvitation.create(currentWorkspace.id),
+          request,
+          { token }
+        );
+      });
+
+      await Promise.all(invitationPromises);
+
+      // Invitations'ı yenile
+      await loadInvitations();
+      setActiveTab('invitations');
+
+      toast({
+        title: 'Invitation Sent',
+        description: `Sent ${data.emails.length} invitation${
+          data.emails.length > 1 ? 's' : ''
+        } successfully.`,
+      });
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send invitation',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleResendInvitation = (invitationId: string) => {
-    setInvitations((prev) =>
-      prev.map((inv) =>
-        inv.id === invitationId
-          ? {
-              ...inv,
-              sentAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60000).toISOString(),
-            }
-          : inv
-      )
-    );
-
+  const handleResendInvitation = async (invitationId: string) => {
+    // Resend endpoint'i yok, yeni invitation oluşturulmalı veya backend'de resend endpoint'i eklenmeli
     toast({
-      title: 'Invitation Resent',
-      description: 'The invitation has been sent again.',
+      title: 'Info',
+      description: 'Resend functionality will be available soon.',
     });
   };
 
   const handleCancelInvitation = async (invitationId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const invitation = invitations.find((inv) => inv.id === invitationId);
-    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+    try {
+      const token = getToken();
+      if (!token) return;
 
-    toast({
-      title: 'Invitation Cancelled',
-      description: `Invitation to ${invitation?.email} has been cancelled.`,
-    });
+      const invitation = invitations.find((inv) => inv.id === invitationId);
+
+      await apiClient.delete(
+        API_ENDPOINTS.workspaceInvitation.cancel(invitationId),
+        { token }
+      );
+
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+
+      toast({
+        title: 'Invitation Cancelled',
+        description: `Invitation to ${invitation?.email} has been cancelled.`,
+      });
+    } catch (error) {
+      console.error('Error cancelling invitation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel invitation',
+        variant: 'destructive',
+      });
+    }
   };
 
   const existingEmails = [
     ...users.map((u) => u.email),
     ...invitations.map((inv) => inv.email),
   ];
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto max-w-[1400px] px-6 py-8">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!currentWorkspace) {
+    return null;
+  }
 
   return (
     <PageLayout>
@@ -193,7 +336,7 @@ const UserManagement = () => {
             <div className="rounded-lg border border-border overflow-hidden bg-card">
               <ActiveUsersTab
                 users={users}
-                currentUserId={CURRENT_USER_ID}
+                currentUserId={currentAuthUser?.id || ''}
                 onRoleChange={handleRoleChange}
                 onRemoveUser={handleRemoveUser}
               />

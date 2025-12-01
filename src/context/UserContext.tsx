@@ -1,42 +1,55 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/types/user';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { useAuth } from './AuthContext';
+import type { User as ApiUser } from '@/types/api';
+
+// User type'ını API'den gelen type'a uyarla
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role?: 'admin' | 'editor' | 'viewer';
+  lastActive?: string;
+  createdAt?: string;
+}
 
 interface UserContextType {
   currentUser: User | null;
-  setCurrentUser: (user: User) => void;
   isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock current user - in real app this would come from auth
-const mockCurrentUser: User = {
-  id: 'user-1',
-  name: 'Sarah Johnson',
-  email: 'sarah@company.com',
-  role: 'admin',
-  lastActive: new Date().toISOString(),
-  createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-};
-
+/**
+ * UserProvider - AuthContext'ten user bilgisini alır
+ * AuthContext zaten user bilgisini yönetiyor, bu context sadece compatibility için
+ */
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading user from auth
-    setTimeout(() => {
-      setCurrentUser(mockCurrentUser);
-      setIsLoading(false);
-    }, 300);
-  }, []);
+    // API User type'ını app User type'ına dönüştür
+    if (authUser) {
+      setCurrentUser({
+        id: authUser.id,
+        name: `${authUser.name || ''} ${authUser.surname || ''}`.trim() || authUser.username,
+        email: authUser.email,
+        avatar: authUser.avatar_url,
+        role: 'admin', // API'den role gelmiyorsa default
+        lastActive: new Date().toISOString(),
+        createdAt: authUser.created_at,
+      });
+    } else {
+      setCurrentUser(null);
+    }
+  }, [authUser]);
 
   return (
     <UserContext.Provider
       value={{
         currentUser,
-        setCurrentUser,
-        isLoading,
+        isLoading: authLoading,
       }}
     >
       {children}
