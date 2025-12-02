@@ -1023,6 +1023,13 @@ export default function ZapierWorkflowEditor() {
     }
   };
 
+  // Test execution state (must be declared before testResults useMemo)
+  const [testExecutionId, setTestExecutionId] = useState<string | null>(null);
+  const [testExecutionStatus, setTestExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
+  const [testExecutionResults, setTestExecutionResults] = useState<any>(null);
+  const [showTestInputDialog, setShowTestInputDialog] = useState(false);
+  const [selectedTrigger, setSelectedTrigger] = useState<Trigger | null>(null);
+
   // Test results - API'den gelen veya mock
   const testResults = useMemo(() => {
     // Eğer API'den sonuç varsa onu kullan
@@ -1148,14 +1155,7 @@ export default function ZapierWorkflowEditor() {
       },
     };
     return mockTestResults;
-  }, [nodes]);
-
-  // Test execution state
-  const [testExecutionId, setTestExecutionId] = useState<string | null>(null);
-  const [testExecutionStatus, setTestExecutionStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
-  const [testExecutionResults, setTestExecutionResults] = useState<any>(null);
-  const [showTestInputDialog, setShowTestInputDialog] = useState(false);
-  const [selectedTrigger, setSelectedTrigger] = useState<Trigger | null>(null);
+  }, [nodes, testExecutionResults]);
 
   // Fetch test execution
   const { data: testExecutionData, refetch: refetchTestExecution } = useQuery({
