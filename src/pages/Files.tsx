@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { File, PaginationResponse } from '@/types/api';
+import { File, PaginatedResponse } from '@/types/api';
 
 const Files = () => {
   const { currentWorkspace } = useWorkspace();
@@ -16,7 +16,7 @@ const Files = () => {
   // Fetch files
   const { data: filesData, isLoading } = useQuery({
     queryKey: ['files', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<File[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<File>>(
       API_ENDPOINTS.file.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -85,21 +85,21 @@ const Files = () => {
     input.click();
   };
 
-  const handleView = (item: File) => {
-    // File content'i indir
-    if (!currentWorkspace) return;
-    const url = API_ENDPOINTS.file.getContent(currentWorkspace.id, item.id);
+  const handleView = (item: { id: string; name: string; description?: string }) => {
+    const file = files.find(f => f.id === item.id);
+    if (!currentWorkspace || !file) return;
+    const url = API_ENDPOINTS.file.getContent(currentWorkspace.id, file.id);
     window.open(url, '_blank');
   };
 
-  const handleEdit = (item: File) => {
+  const handleEdit = (item: { id: string; name: string; description?: string }) => {
     toast({
       title: 'Edit File',
       description: `Editing metadata for: ${item.name}`,
     });
   };
 
-  const handleDelete = async (item: File) => {
+  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
     if (!currentWorkspace) return;
     deleteFileMutation.mutate(item.id);
   };

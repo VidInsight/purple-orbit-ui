@@ -204,7 +204,7 @@ export class ApiClient {
       // Error handling
       if (!response.ok) {
         // HTTP status code hatası
-        const error = (data as ApiErrorResponse) || {};
+        const error = (data as any) || {};
         throw new ApiError(
           error.error_message || response.statusText || 'Request failed',
           response.status,
