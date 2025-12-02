@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { ApiKey, CreateApiKeyRequest, UpdateApiKeyRequest, PaginationResponse } from '@/types/api';
+import { ApiKey, CreateApiKeyRequest, UpdateApiKeyRequest, PaginatedResponse } from '@/types/api';
 
 const ApiKeys = () => {
   const { currentWorkspace } = useWorkspace();
@@ -24,7 +24,7 @@ const ApiKeys = () => {
   // Fetch API keys
   const { data: apiKeysData, isLoading } = useQuery({
     queryKey: ['apiKeys', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<ApiKey[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<ApiKey>>(
       API_ENDPOINTS.apiKey.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -131,16 +131,22 @@ const ApiKeys = () => {
     createApiKeyMutation.mutate(request);
   };
 
-  const handleView = (item: ApiKey) => {
-    toast({
-      title: 'View API Key',
-      description: `Viewing: ${item.name}`,
-    });
+  const handleView = (item: { id: string; name: string; description?: string }) => {
+    const apiKey = apiKeys.find(k => k.id === item.id);
+    if (apiKey) {
+      toast({
+        title: 'View API Key',
+        description: `Viewing: ${apiKey.name}`,
+      });
+    }
   };
 
-  const handleEdit = (item: ApiKey) => {
-    setEditingApiKey(item);
-    setEditModalOpen(true);
+  const handleEdit = (item: { id: string; name: string; description?: string }) => {
+    const apiKey = apiKeys.find(k => k.id === item.id);
+    if (apiKey) {
+      setEditingApiKey(apiKey);
+      setEditModalOpen(true);
+    }
   };
 
   const handleEditSubmit = (data: UpdateApiKeyRequest) => {
@@ -151,7 +157,7 @@ const ApiKeys = () => {
     });
   };
 
-  const handleDelete = async (item: ApiKey) => {
+  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
     if (!currentWorkspace) return;
     deleteApiKeyMutation.mutate(item.id);
   };

@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { Credential, PaginationResponse } from '@/types/api';
+import { Credential, PaginatedResponse } from '@/types/api';
 
 const Credentials = () => {
   const { currentWorkspace } = useWorkspace();
@@ -16,7 +16,7 @@ const Credentials = () => {
   // Fetch credentials
   const { data: credentialsData, isLoading } = useQuery({
     queryKey: ['credentials', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<Credential[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Credential>>(
       API_ENDPOINTS.credential.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -55,21 +55,21 @@ const Credentials = () => {
     });
   };
 
-  const handleView = (item: Credential) => {
+  const handleView = (item: { id: string; name: string; description?: string }) => {
     toast({
       title: 'View Credential',
       description: `Viewing: ${item.name}`,
     });
   };
 
-  const handleEdit = (item: Credential) => {
+  const handleEdit = (item: { id: string; name: string; description?: string }) => {
     toast({
       title: 'Edit Credential',
       description: `Editing: ${item.name}`,
     });
   };
 
-  const handleDelete = async (item: Credential) => {
+  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
     if (!currentWorkspace) return;
     deleteCredentialMutation.mutate(item.id);
   };

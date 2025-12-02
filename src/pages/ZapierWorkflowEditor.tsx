@@ -24,7 +24,7 @@ import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { mapApiNodeToWorkflowNode, type WorkflowNode } from '@/utils/workflowMapper';
-import type { Workflow, CreateWorkflowRequest, Node, Edge, Trigger, Execution, Script, ScriptContent, PaginationResponse } from '@/types/api';
+import type { Workflow, CreateWorkflowRequest, Node, Edge, Trigger, Execution, Script, ScriptContent, PaginatedResponse } from '@/types/api';
 
 // WorkflowNode type is now imported from workflowMapper
 
@@ -70,7 +70,7 @@ export default function ZapierWorkflowEditor() {
   // Fetch nodes
   const { data: nodesData, isLoading: isLoadingNodes } = useQuery({
     queryKey: ['workflowNodes', currentWorkspace?.id, workflowId],
-    queryFn: () => apiClient.get<PaginationResponse<Node[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Node>>(
       API_ENDPOINTS.node.list(currentWorkspace!.id, workflowId!),
       { token: getToken() }
     ),
@@ -80,7 +80,7 @@ export default function ZapierWorkflowEditor() {
   // Fetch edges
   const { data: edgesData, isLoading: isLoadingEdges } = useQuery({
     queryKey: ['workflowEdges', currentWorkspace?.id, workflowId],
-    queryFn: () => apiClient.get<PaginationResponse<Edge[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Edge>>(
       API_ENDPOINTS.edge.list(currentWorkspace!.id, workflowId!),
       { token: getToken() }
     ),
@@ -138,7 +138,7 @@ export default function ZapierWorkflowEditor() {
   // Fetch global scripts
   const { data: globalScriptsData } = useQuery({
     queryKey: ['globalScripts'],
-    queryFn: () => apiClient.get<PaginationResponse<Script[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Script>>(
       API_ENDPOINTS.globalScript.list,
       { skipAuth: true } // Global scripts public
     ),
@@ -147,7 +147,7 @@ export default function ZapierWorkflowEditor() {
   // Fetch custom scripts
   const { data: customScriptsData } = useQuery({
     queryKey: ['customScripts', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<Script[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Script>>(
       API_ENDPOINTS.customScript.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -157,7 +157,7 @@ export default function ZapierWorkflowEditor() {
   // Fetch variables
   const { data: variablesData } = useQuery({
     queryKey: ['variables', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<any[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<any>>(
       API_ENDPOINTS.variable.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -168,7 +168,7 @@ export default function ZapierWorkflowEditor() {
   const { data: triggersData } = useQuery({
     queryKey: ['workflowTriggers', currentWorkspace?.id, workflowId],
     queryFn: () => {
-      return apiClient.get<PaginationResponse<Trigger[]>>(
+      return apiClient.get<PaginatedResponse<Trigger>>(
         API_ENDPOINTS.trigger.list(currentWorkspace!.id),
         { 
           token: getToken(),
@@ -822,45 +822,7 @@ export default function ZapierWorkflowEditor() {
       }
       return node;
     }));
-
-    // Eğer API node ise, input params'ı API'ye kaydet
-    if (selectedNode.apiNodeId) {
-      try {
-        // Tüm input params'ı topla
-        const updatedNode = nodes.find(n => n.id === selectedNode.id);
-        if (!updatedNode) return;
-
-        const input_params: Record<string, any> = {};
-        updatedNode.parameters?.forEach(param => {
-          if (param.isDynamic && param.dynamicPath) {
-            input_params[param.id] = {
-              type: 'string', // TODO: Schema'dan al
-              value: param.dynamicPath,
-              required: true,
-            };
-          } else {
-            input_params[param.id] = {
-              type: 'string', // TODO: Schema'dan al
-              value: param.value,
-              required: true,
-            };
-          }
-        });
-
-        // Debounce için setTimeout kullan
-        const timeoutId = setTimeout(() => {
-          updateNodeInputParamsMutation.mutate({
-            nodeId: selectedNode.apiNodeId!,
-            inputParams: input_params,
-          });
-        }, 500);
-
-        return () => clearTimeout(timeoutId);
-      } catch (error) {
-        console.error('Error updating node parameters:', error);
-      }
-    }
-  }, [selectedNode, nodes, currentWorkspace, workflowId, updateNodeInputParamsMutation]);
+  }, [selectedNode, nodes]);
 
   // Generate mock outputs for demonstration (memoized)
   const mockOutputs = useMemo(() => {
@@ -1203,8 +1165,8 @@ export default function ZapierWorkflowEditor() {
       { token: getToken() }
     ),
     enabled: !!currentWorkspace?.id && !!testExecutionId && !!getToken() && testExecutionStatus === 'running',
-    refetchInterval: (data) => {
-      const status = data?.data.status;
+    refetchInterval: (query) => {
+      const status = query.state.data?.data.status;
       if (status === 'PENDING' || status === 'RUNNING') {
         return 1000; // Poll every 1 second
       }
@@ -1218,7 +1180,7 @@ export default function ZapierWorkflowEditor() {
       const execution = testExecutionData.data;
       setTestExecutionResults(execution);
 
-      if (execution.status === 'COMPLETED' || execution.status === 'SUCCESS') {
+      if (execution.status === 'COMPLETED') {
         setTestExecutionStatus('completed');
       } else if (execution.status === 'FAILED' || execution.status === 'CANCELLED') {
         setTestExecutionStatus('failed');

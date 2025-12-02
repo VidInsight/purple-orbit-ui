@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { Database, PaginationResponse } from '@/types/api';
+import { Database, PaginatedResponse } from '@/types/api';
 
 const Databases = () => {
   const { currentWorkspace } = useWorkspace();
@@ -16,7 +16,7 @@ const Databases = () => {
   // Fetch databases
   const { data: databasesData, isLoading } = useQuery({
     queryKey: ['databases', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<Database[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Database>>(
       API_ENDPOINTS.database.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -55,21 +55,21 @@ const Databases = () => {
     });
   };
 
-  const handleView = (item: Database) => {
+  const handleView = (item: { id: string; name: string; description?: string }) => {
     toast({
       title: 'View Database',
       description: `Viewing: ${item.name}`,
     });
   };
 
-  const handleEdit = (item: Database) => {
+  const handleEdit = (item: { id: string; name: string; description?: string }) => {
     toast({
       title: 'Edit Database',
       description: `Editing: ${item.name}`,
     });
   };
 
-  const handleDelete = async (item: Database) => {
+  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
     if (!currentWorkspace) return;
     deleteDatabaseMutation.mutate(item.id);
   };

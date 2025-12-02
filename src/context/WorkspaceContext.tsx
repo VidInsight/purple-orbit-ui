@@ -1,9 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useAuth } from './AuthContext';
-import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '@/config/api';
-import { getCurrentWorkspace, setCurrentWorkspace } from '@/utils/workspaceStorage';
-import type { Workspace as ApiWorkspace, UserWorkspaces, WorkspaceLimits } from '@/types/api';
+import { getCurrentWorkspace, setCurrentWorkspace as saveCurrentWorkspace } from '@/utils/workspaceStorage';
 import type { Workspace } from '@/types/workspace';
 
 interface WorkspaceContextType {
@@ -19,250 +15,162 @@ interface WorkspaceContextType {
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-/**
- * API Workspace'i app Workspace type'ına dönüştür
- */
-const mapApiWorkspaceToWorkspace = (
-  apiWorkspace: ApiWorkspace,
-  limits?: WorkspaceLimits,
-  role?: 'OWNER' | 'MEMBER' | 'EDITOR' | 'VIEWER'
-): Workspace => {
-  return {
-    id: apiWorkspace.id,
-    name: apiWorkspace.name,
-    slug: apiWorkspace.slug,
-    description: apiWorkspace.description,
-    memberCount: limits?.current_members_count || 0,
+// Mock workspace data
+const mockWorkspaces: Workspace[] = [
+  {
+    id: 'workspace-1',
+    name: 'Development Workspace',
+    slug: 'development-workspace',
+    description: 'Main development environment',
+    memberCount: 5,
     lastAccessed: new Date().toISOString(),
     createdAt: new Date().toISOString(),
-    role: role === 'OWNER' ? 'owner' : role?.toLowerCase() as 'admin' | 'editor' | 'viewer' || 'viewer',
-    member_limit: limits?.max_members_per_workspace || 0,
-    current_member_count: limits?.current_members_count || 0,
-    workflow_limit: limits?.max_workflows_per_workspace || 0,
-    current_workflow_count: limits?.current_workflows_count || 0,
-    custom_script_limit: limits?.max_custom_scripts_per_workspace || 0,
-    current_custom_script_count: limits?.current_custom_scripts_count || 0,
-    storage_limit_mb: limits?.storage_limit_mb_per_workspace || 0,
-    current_storage_mb: limits?.current_storage_mb || 0,
-    api_key_limit: limits?.max_api_keys_per_workspace || 0,
-    current_api_key_count: limits?.current_api_keys_count || 0,
-    monthly_execution_limit: limits?.monthly_execution_limit || 0,
-    current_month_executions: limits?.current_month_executions || 0,
-    monthly_concurrent_executions: limits?.monthly_concurrent_executions || 0,
-    current_month_concurrent_executions: limits?.current_month_concurrent_executions || 0,
-    current_period_start: limits?.current_period_start || new Date().toISOString(),
-    current_period_end: limits?.current_period_end || new Date().toISOString(),
-    plan_name: apiWorkspace.plan_name,
-  };
-};
+    role: 'owner',
+    plan_name: 'Pro',
+    member_limit: 10,
+    current_member_count: 5,
+    workflow_limit: 100,
+    current_workflow_count: 23,
+    custom_script_limit: 50,
+    current_custom_script_count: 12,
+    storage_limit_mb: 5000,
+    current_storage_mb: 1250,
+    api_key_limit: 20,
+    current_api_key_count: 8,
+    monthly_execution_limit: 100000,
+    current_month_executions: 45000,
+    monthly_concurrent_executions: 50,
+    current_month_concurrent_executions: 12,
+    current_period_start: new Date(new Date().setDate(1)).toISOString(),
+    current_period_end: new Date(new Date().setMonth(new Date().getMonth() + 1, 0)).toISOString(),
+  },
+  {
+    id: 'workspace-2',
+    name: 'Production Workspace',
+    slug: 'production-workspace',
+    description: 'Production environment',
+    memberCount: 3,
+    lastAccessed: new Date(Date.now() - 86400000).toISOString(),
+    createdAt: new Date(Date.now() - 7776000000).toISOString(),
+    role: 'owner',
+    plan_name: 'Enterprise',
+    member_limit: 20,
+    current_member_count: 3,
+    workflow_limit: 500,
+    current_workflow_count: 89,
+    custom_script_limit: 200,
+    current_custom_script_count: 45,
+    storage_limit_mb: 20000,
+    current_storage_mb: 5600,
+    api_key_limit: 50,
+    current_api_key_count: 15,
+    monthly_execution_limit: 1000000,
+    current_month_executions: 234000,
+    monthly_concurrent_executions: 200,
+    current_month_concurrent_executions: 45,
+    current_period_start: new Date(new Date().setDate(1)).toISOString(),
+    current_period_end: new Date(new Date().setMonth(new Date().getMonth() + 1, 0)).toISOString(),
+  },
+];
 
 export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
-  const { user, getToken, isAuthenticated } = useAuth();
   const [currentWorkspace, setCurrentWorkspaceState] = useState<Workspace | null>(null);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(mockWorkspaces);
+  const [isLoading, setIsLoading] = useState(false);
 
-  /**
-   * Workspace'leri API'den yükle
-   */
-  const loadWorkspaces = useCallback(async () => {
-    if (!user?.id || !isAuthenticated) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const token = getToken();
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      // User'ın workspace'lerini al
-      console.log('Loading workspaces for user:', user.id);
-      console.log('API endpoint:', API_ENDPOINTS.user.getWorkspaces(user.id));
-      
-      const response = await apiClient.get<UserWorkspaces>(
-        API_ENDPOINTS.user.getWorkspaces(user.id),
-        { token }
-      );
-
-      console.log('Workspaces response (full):', JSON.stringify(response, null, 2));
-      console.log('Workspaces response.data:', response.data);
-      console.log('Owned workspaces:', response.data?.owned_workspaces);
-      console.log('Member workspaces:', response.data?.member_workspaces);
-
-      // Owned ve member workspace'leri birleştir (backend formatını normalize et)
-      const allApiWorkspaces = [
-        ...(response.data.owned_workspaces || []).map((w) => ({
-          id: w.workspace_id,
-          name: w.workspace_name,
-          slug: w.workspace_slug,
-          role: w.user_role as 'OWNER',
-        })),
-        ...(response.data.memberships || []).map((w) => ({
-          id: w.workspace_id,
-          name: w.workspace_name,
-          slug: w.workspace_slug,
-          role: w.user_role as 'MEMBER' | 'EDITOR' | 'VIEWER',
-        })),
-      ];
-
-      console.log('All API workspaces (normalized):', allApiWorkspaces);
-
-      // Workspace'leri basit formata dönüştür (limits bilgisi lazy load edilecek)
-      const workspacesWithLimits = allApiWorkspaces.map((apiWs) =>
-        mapApiWorkspaceToWorkspace(
-          { id: apiWs.id, name: apiWs.name, slug: apiWs.slug, description: '' },
-          undefined,
-          apiWs.role
-        )
-      );
-
-      console.log('Workspaces with limits:', workspacesWithLimits);
-
-      setWorkspaces(workspacesWithLimits);
-
-      // Mevcut workspace'i yükle
-      const currentId = getCurrentWorkspace();
-      if (currentId) {
-        const workspace = workspacesWithLimits.find((w) => w.id === currentId);
-        if (workspace) {
-          // Workspace detaylarını ve limits'i yükle
-          try {
-            const detailResponse = await apiClient.get<ApiWorkspace>(
-              API_ENDPOINTS.workspace.get(currentId),
-              { token }
-            );
-            const limitsResponse = await apiClient.get<WorkspaceLimits>(
-              API_ENDPOINTS.workspace.getLimits(currentId),
-              { token }
-            );
-            const currentWs = workspacesWithLimits.find((w) => w.id === currentId);
-            setCurrentWorkspaceState(
-              mapApiWorkspaceToWorkspace(
-                detailResponse.data,
-                limitsResponse.data,
-                currentWs?.role === 'owner' ? 'OWNER' : 'MEMBER'
-              )
-            );
-          } catch (error) {
-            setCurrentWorkspaceState(workspace);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading workspaces:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, isAuthenticated, getToken]);
-
+  // Load workspace from localStorage on mount
   useEffect(() => {
-    loadWorkspaces();
-  }, [loadWorkspaces]);
-
-  /**
-   * Workspace seç
-   */
-  const setWorkspace = useCallback(async (workspaceId: string) => {
-    const token = getToken();
-    if (!token) return;
-
-    try {
-      // Workspace detaylarını ve limits'i yükle
-      const [detailResponse, limitsResponse] = await Promise.all([
-        apiClient.get<ApiWorkspace>(
-          API_ENDPOINTS.workspace.get(workspaceId),
-          { token }
-        ),
-        apiClient.get<WorkspaceLimits>(
-          API_ENDPOINTS.workspace.getLimits(workspaceId),
-          { token }
-        ),
-      ]);
-
-      const workspace = workspaces.find((w) => w.id === workspaceId);
-      const mappedWorkspace = mapApiWorkspaceToWorkspace(
-        detailResponse.data,
-        limitsResponse.data,
-        workspace?.role === 'owner' ? 'OWNER' : 'MEMBER'
-      );
-
-      setCurrentWorkspaceState(mappedWorkspace);
-      setCurrentWorkspace(workspaceId);
-    } catch (error) {
-      console.error('Error setting workspace:', error);
+    const savedWorkspaceId = getCurrentWorkspace();
+    if (savedWorkspaceId) {
+      const workspace = mockWorkspaces.find(w => w.id === savedWorkspaceId);
+      if (workspace) {
+        setCurrentWorkspaceState(workspace);
+      } else {
+        // Default to first workspace
+        setCurrentWorkspaceState(mockWorkspaces[0]);
+        saveCurrentWorkspace(mockWorkspaces[0].id);
+      }
+    } else {
+      // Default to first workspace
+      setCurrentWorkspaceState(mockWorkspaces[0]);
+      saveCurrentWorkspace(mockWorkspaces[0].id);
     }
-  }, [workspaces, getToken]);
+  }, []);
 
-  /**
-   * Workspace oluştur
-   */
+  const setWorkspace = useCallback(async (workspaceId: string) => {
+    const workspace = workspaces.find(w => w.id === workspaceId);
+    if (workspace) {
+      setCurrentWorkspaceState(workspace);
+      saveCurrentWorkspace(workspaceId);
+    }
+  }, [workspaces]);
+
+  const refreshWorkspaces = useCallback(async () => {
+    // Mock refresh - in real app would fetch from API
+    setWorkspaces(mockWorkspaces);
+  }, []);
+
   const createWorkspace = useCallback(async (
     name: string,
     slug: string,
     description?: string
   ): Promise<Workspace> => {
-    const token = getToken();
-    if (!token) throw new Error('Not authenticated');
-
-    const response = await apiClient.post<ApiWorkspace>(
-      API_ENDPOINTS.workspace.create,
-      { name, slug, description },
-      { token }
-    );
-
-    // Workspace'i listeye ekle ve seç
-    const newWorkspace = mapApiWorkspaceToWorkspace(response.data, undefined, 'OWNER');
-    setWorkspaces((prev) => [...prev, newWorkspace]);
-    await setWorkspace(response.data.id);
-
+    const newWorkspace: Workspace = {
+      id: `workspace-${Date.now()}`,
+      name,
+      slug,
+      description,
+      memberCount: 1,
+      lastAccessed: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      role: 'owner',
+      plan_name: 'Free',
+      member_limit: 5,
+      current_member_count: 1,
+      workflow_limit: 10,
+      current_workflow_count: 0,
+      custom_script_limit: 5,
+      current_custom_script_count: 0,
+      storage_limit_mb: 1000,
+      current_storage_mb: 0,
+      api_key_limit: 5,
+      current_api_key_count: 0,
+      monthly_execution_limit: 10000,
+      current_month_executions: 0,
+      monthly_concurrent_executions: 10,
+      current_month_concurrent_executions: 0,
+      current_period_start: new Date(new Date().setDate(1)).toISOString(),
+      current_period_end: new Date(new Date().setMonth(new Date().getMonth() + 1, 0)).toISOString(),
+    };
+    setWorkspaces(prev => [...prev, newWorkspace]);
+    await setWorkspace(newWorkspace.id);
     return newWorkspace;
-  }, [getToken, setWorkspace]);
+  }, [setWorkspace]);
 
-  /**
-   * Workspace güncelle
-   */
   const updateWorkspace = useCallback(async (
     workspaceId: string,
     data: { name?: string; slug?: string; description?: string }
   ): Promise<void> => {
-    const token = getToken();
-    if (!token) throw new Error('Not authenticated');
-
-    await apiClient.put(
-      API_ENDPOINTS.workspace.update(workspaceId),
-      data,
-      { token }
-    );
-
-    // Workspace'leri yenile
-    await loadWorkspaces();
-  }, [getToken, loadWorkspaces]);
-
-  /**
-   * Workspace sil
-   */
-  const deleteWorkspace = useCallback(async (workspaceId: string): Promise<void> => {
-    const token = getToken();
-    if (!token) throw new Error('Not authenticated');
-
-    await apiClient.delete(
-      API_ENDPOINTS.workspace.delete(workspaceId),
-      { token }
-    );
-
-    // Workspace'leri yenile
-    await loadWorkspaces();
-
-    // Eğer silinen workspace seçiliyse, seçimi temizle
+    setWorkspaces(prev => prev.map(w => 
+      w.id === workspaceId ? { ...w, ...data } : w
+    ));
     if (currentWorkspace?.id === workspaceId) {
-      setCurrentWorkspaceState(null);
-      localStorage.removeItem('current_workspace');
+      setCurrentWorkspaceState(prev => prev ? { ...prev, ...data } : null);
     }
-  }, [getToken, loadWorkspaces, currentWorkspace]);
+  }, [currentWorkspace]);
+
+  const deleteWorkspace = useCallback(async (workspaceId: string): Promise<void> => {
+    setWorkspaces(prev => prev.filter(w => w.id !== workspaceId));
+    if (currentWorkspace?.id === workspaceId) {
+      const remaining = workspaces.filter(w => w.id !== workspaceId);
+      if (remaining.length > 0) {
+        await setWorkspace(remaining[0].id);
+      } else {
+        setCurrentWorkspaceState(null);
+        localStorage.removeItem('current_workspace');
+      }
+    }
+  }, [currentWorkspace, workspaces, setWorkspace]);
 
   return (
     <WorkspaceContext.Provider
@@ -270,7 +178,7 @@ export const WorkspaceProvider = ({ children }: { children: ReactNode }) => {
         currentWorkspace,
         workspaces,
         setWorkspace,
-        refreshWorkspaces: loadWorkspaces,
+        refreshWorkspaces,
         createWorkspace,
         updateWorkspace,
         deleteWorkspace,

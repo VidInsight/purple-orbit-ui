@@ -5,7 +5,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { Execution, PaginationResponse } from '@/types/api';
+import { Execution, PaginatedResponse } from '@/types/api';
 
 const Executions = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Executions = () => {
   // Fetch executions
   const { data: executionsData, isLoading } = useQuery({
     queryKey: ['executions', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<Execution[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Execution>>(
       API_ENDPOINTS.execution.list(currentWorkspace!.id),
       { token: getToken() }
     ),

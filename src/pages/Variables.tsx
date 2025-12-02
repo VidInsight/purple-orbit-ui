@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/apiClient';
 import { API_ENDPOINTS } from '@/config/api';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
-import { Variable, PaginationResponse, CreateVariableRequest, UpdateVariableRequest } from '@/types/api';
+import { Variable, PaginatedResponse, CreateVariableRequest, UpdateVariableRequest } from '@/types/api';
 import { VariableModal } from '@/components/variables/VariableModal';
 
 const Variables = () => {
@@ -20,7 +20,7 @@ const Variables = () => {
   // Fetch variables
   const { data: variablesData, isLoading } = useQuery({
     queryKey: ['variables', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginationResponse<Variable[]>>(
+    queryFn: () => apiClient.get<PaginatedResponse<Variable>>(
       API_ENDPOINTS.variable.list(currentWorkspace!.id),
       { token: getToken() }
     ),
@@ -106,14 +106,17 @@ const Variables = () => {
     setModalOpen(true);
   };
 
-  const handleView = (item: Variable) => {
-    toast({
-      title: 'View Variable',
-      description: `Viewing: ${item.key}`,
-    });
+  const handleView = (item: { id: string; name: string; description?: string }) => {
+    const variable = variables.find(v => v.id === item.id);
+    if (variable) {
+      toast({
+        title: 'View Variable',
+        description: `Viewing: ${variable.key}`,
+      });
+    }
   };
 
-  const handleEdit = async (item: Variable) => {
+  const handleEdit = async (item: { id: string; name: string; description?: string }) => {
     // Secret variable'ların değerini almak için detay endpoint'ini kullan
     try {
       const response = await apiClient.get<Variable>(
@@ -150,7 +153,7 @@ const Variables = () => {
     }
   };
 
-  const handleDelete = async (item: Variable) => {
+  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
     if (!currentWorkspace) return;
     deleteVariableMutation.mutate(item.id);
   };
