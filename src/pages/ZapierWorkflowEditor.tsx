@@ -233,19 +233,85 @@ export default function ZapierWorkflowEditor() {
   useEffect(() => {
     const loadNodes = async () => {
       if (!nodesData?.data.items || !currentWorkspace?.id || !workflowId) {
-        // Yeni workflow için default trigger node ekle
+        // Yeni workflow için demo nodes ekle
         if (workflowId === null && id === 'new') {
-          setNodes([{
-            id: 'trigger-1',
-            type: 'trigger',
-            title: 'API Trigger',
-            icon: Zap,
-            variables: [
-              { name: 'user_id', type: 'string', defaultValue: '' },
-              { name: 'event_type', type: 'string', defaultValue: 'create' },
-              { name: 'timestamp', type: 'number', defaultValue: '' },
-            ],
-          }]);
+          setNodes([
+            {
+              id: 'trigger-1',
+              type: 'trigger',
+              title: 'API Trigger',
+              icon: Zap,
+              configured: true,
+              variables: [
+                { name: 'user_id', type: 'string', defaultValue: 'usr_123' },
+                { name: 'email', type: 'string', defaultValue: 'user@example.com' },
+                { name: 'event_type', type: 'string', defaultValue: 'user.created' },
+                { name: 'timestamp', type: 'number', defaultValue: '1699500000' },
+              ],
+            },
+            {
+              id: 'action-1',
+              type: 'action',
+              title: 'GPT-4 Completion',
+              icon: MessageSquare,
+              category: 'AI Models',
+              nodeType: 'AI Models > OpenAI > GPT-4 Completion',
+              configured: true,
+              parameters: [
+                { id: 'model', label: 'Model', type: 'dropdown', options: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'], value: 'gpt-4' },
+                { id: 'prompt', label: 'Prompt', type: 'textarea', placeholder: 'Enter your prompt...', value: 'Analyze user: ${trigger.email}' },
+                { id: 'max_tokens', label: 'Max Tokens', type: 'number', min: 1, max: 4096, value: 1000 },
+                { id: 'temperature', label: 'Temperature', type: 'number', min: 0, max: 2, value: 0.7 },
+              ],
+            },
+            {
+              id: 'conditional-1',
+              type: 'conditional',
+              title: 'Check Response',
+              icon: GitBranch,
+              category: 'Logic & Flow',
+              nodeType: 'Logic & Flow > Conditions > If/Else',
+              configured: true,
+              parameters: [
+                { id: 'condition_field', label: 'Field to Check', type: 'text', value: '${action-1.response.status}' },
+                { id: 'operator', label: 'Operator', type: 'dropdown', options: ['equals', 'not_equals', 'contains', 'greater_than', 'less_than'], value: 'equals' },
+                { id: 'compare_value', label: 'Compare Value', type: 'text', value: 'success' },
+              ],
+              branches: {
+                true: ['action-2'],
+                false: ['action-3'],
+              },
+            },
+            {
+              id: 'action-2',
+              type: 'action',
+              title: 'Send Email',
+              icon: MessageSquare,
+              category: 'Integrations',
+              nodeType: 'Integrations > Email > Send Email',
+              configured: true,
+              parentBranch: { nodeId: 'conditional-1', branchType: 'true' },
+              parameters: [
+                { id: 'to', label: 'To', type: 'text', value: '${trigger.email}' },
+                { id: 'subject', label: 'Subject', type: 'text', value: 'Welcome!' },
+                { id: 'body', label: 'Body', type: 'textarea', value: 'Hello ${trigger.user_id}, welcome to our platform!' },
+              ],
+            },
+            {
+              id: 'action-3',
+              type: 'action',
+              title: 'Log Error',
+              icon: FileJson,
+              category: 'Data Processing',
+              nodeType: 'Data Processing > Transform > JSON Parse',
+              configured: false,
+              parentBranch: { nodeId: 'conditional-1', branchType: 'false' },
+              parameters: [
+                { id: 'message', label: 'Error Message', type: 'text', placeholder: 'Enter error message...' },
+                { id: 'level', label: 'Log Level', type: 'dropdown', options: ['info', 'warn', 'error'], value: 'error' },
+              ],
+            },
+          ]);
         }
         return;
       }
