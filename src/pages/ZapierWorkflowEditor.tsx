@@ -815,9 +815,9 @@ export default function ZapierWorkflowEditor() {
   }, [currentWorkspace, workflowId, refetchNodeFormSchema]);
 
   const handleParameterChange = useCallback(async (parameterId: string, value: any, isDynamic: boolean = false) => {
-    if (!selectedNode || !currentWorkspace?.id || !workflowId) return;
+    if (!selectedNode) return;
 
-    // Frontend state'i güncelle
+    // Frontend state'i güncelle (yeni workflow için de çalışır)
     setNodes(prevNodes => prevNodes.map(node => {
       if (node.id === selectedNode.id) {
         const updatedParameters = node.parameters?.map(param =>
@@ -836,7 +836,7 @@ export default function ZapierWorkflowEditor() {
       }
       return node;
     }));
-  }, [selectedNode, nodes]);
+  }, [selectedNode]);
 
   // Generate mock outputs for demonstration (memoized)
   const mockOutputs = useMemo(() => {
