@@ -54,41 +54,35 @@ export default function ZapierWorkflowEditor() {
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
-  // Load workflow from API
-  const [nodes, setNodes] = useState<WorkflowNode[]>([]);
-  const [nodesInitialized, setNodesInitialized] = useState(false);
+  // Load workflow from API - start with mock data directly
+  const [nodes, setNodes] = useState<WorkflowNode[]>([
+    {
+      id: 'trigger-1',
+      type: 'trigger',
+      title: 'API Trigger',
+      icon: Zap,
+      configured: true,
+      variables: [
+        { name: 'user_id', type: 'string', defaultValue: 'usr_123' },
+        { name: 'email', type: 'string', defaultValue: 'user@example.com' },
+      ],
+    },
+    {
+      id: 'action-1',
+      type: 'action',
+      title: 'GPT-4 Completion',
+      icon: MessageSquare,
+      category: 'AI Models',
+      nodeType: 'AI Models > OpenAI > GPT-4 Completion',
+      configured: true,
+      parameters: [
+        { id: 'prompt', label: 'Prompt', type: 'textarea', value: 'Analyze user: ${trigger.email}' },
+      ],
+    },
+  ]);
 
-  // Initialize mock nodes for new workflows
-  useEffect(() => {
-    if (id === 'new' && !nodesInitialized) {
-      setNodesInitialized(true);
-      setNodes([
-        {
-          id: 'trigger-1',
-          type: 'trigger',
-          title: 'API Trigger',
-          icon: Zap,
-          configured: true,
-          variables: [
-            { name: 'user_id', type: 'string', defaultValue: 'usr_123' },
-            { name: 'email', type: 'string', defaultValue: 'user@example.com' },
-          ],
-        },
-        {
-          id: 'action-1',
-          type: 'action',
-          title: 'GPT-4 Completion',
-          icon: MessageSquare,
-          category: 'AI Models',
-          nodeType: 'AI Models > OpenAI > GPT-4 Completion',
-          configured: true,
-          parameters: [
-            { id: 'prompt', label: 'Prompt', type: 'textarea', value: 'Analyze user: ${trigger.email}' },
-          ],
-        },
-      ]);
-    }
-  }, [id, nodesInitialized]);
+  // Debug log
+  console.log('ZapierWorkflowEditor - id:', id, 'nodes count:', nodes.length);
 
   // Fetch workflow
   const { data: workflowData, isLoading: isLoadingWorkflow } = useQuery({
