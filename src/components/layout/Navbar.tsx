@@ -74,7 +74,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         {!isCollapsed ? (
           <div className="space-y-2">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/workspace-selection')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-200 group"
             >
               <ArrowLeft className="h-3 w-3 flex-shrink-0 group-hover:-translate-x-1 transition-transform duration-200" />
@@ -88,7 +88,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
         ) : (
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/workspace-selection')}
             className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200"
             title="Back to workspaces"
           >

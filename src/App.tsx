@@ -54,7 +54,7 @@ const AppRoutes = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      <Route path="/workspaces" element={<WorkspaceSelection />} />
+      <Route path="/workspace-selection" element={<WorkspaceSelection />} />
       
       {/* Protected Routes - Require Workspace Context */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

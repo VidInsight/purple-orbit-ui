@@ -76,8 +76,8 @@ const WorkspaceSelection = () => {
   const userEmail = user?.email || '';
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Background */}
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px]" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[128px]" />
@@ -163,7 +163,7 @@ const WorkspaceSelection = () => {
             <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
               <Plus className="h-10 w-10 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">No workspaces yet</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">No workspaces yet</h3>
             <p className="text-muted-foreground mb-8">Create your first workspace to get started</p>
             <Button onClick={() => setIsModalOpen(true)} size="lg" className="gap-2">
               <Plus className="h-5 w-5" />
@@ -195,7 +195,7 @@ const WorkspaceSelection = () => {
               disabled={isCreating}
             />
             <div>
-              <label className="block text-sm font-medium mb-2">Description (Optional)</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Description (Optional)</label>
               <textarea
                 placeholder="Describe your workspace..."
                 value={formData.description}
