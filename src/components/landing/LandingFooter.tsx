@@ -1,7 +1,25 @@
 import { Link } from 'react-router-dom';
-import { Workflow, Github, Twitter, Linkedin } from 'lucide-react';
+import { Workflow, Github, Twitter, Linkedin, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { toast } from 'sonner';
 
 export const LandingFooter = () => {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    
+    setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
+    setEmail('');
+    toast.success('Bültene başarıyla abone oldunuz!');
+  };
+
   const footerLinks = {
     product: [
       { label: 'Özellikler', href: '#features' },
@@ -32,6 +50,32 @@ export const LandingFooter = () => {
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Newsletter Section */}
+        <div className="mb-12 pb-12 border-b border-border">
+          <div className="max-w-xl mx-auto text-center">
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              Bültene Abone Olun
+            </h3>
+            <p className="text-muted-foreground text-sm mb-6">
+              Yeni özellikler, güncellemeler ve otomasyon ipuçları için bültenimize abone olun.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-posta adresiniz"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                required
+              />
+              <Button type="submit" loading={isLoading} className="gap-2">
+                <Send className="h-4 w-4" />
+                Abone Ol
+              </Button>
+            </form>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
           {/* Logo & Description */}
           <div className="col-span-2">
