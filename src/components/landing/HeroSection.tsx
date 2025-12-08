@@ -57,37 +57,37 @@ export const HeroSection = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          <span className="text-sm text-primary font-medium">Yeni: AI Entegrasyonları Aktif</span>
+          <span className="text-sm text-primary font-medium">Kurumsal AI Çözümleri Artık Aktif</span>
         </div>
 
         {/* Main Heading */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-            Workflow Otomasyonunu
+            İş Süreçlerinizi
           </span>
           <br />
           <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
-            Yeniden Keşfedin
+            Dönüştürün
           </span>
         </h1>
 
         {/* Subheading */}
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          Sürükle-bırak arayüzü, 50+ entegrasyon ve yapay zeka desteğiyle 
-          iş süreçlerinizi dakikalar içinde otomatikleştirin.
+          Kurumsal düzeyde güvenlik, 50+ entegrasyon ve yapay zeka destekli 
+          otomasyon platformuyla operasyonel verimliliğinizi maksimize edin.
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <Link to="/register">
             <Button size="lg" className="gap-2 px-8 shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
-              Ücretsiz Başla
+              Ücretsiz Deneme Başlat
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
           <Button size="lg" variant="outline" className="gap-2 px-8 hover:bg-primary/5 hover:border-primary/50 transition-all duration-300">
             <Play className="h-4 w-4" />
-            Demo İzle
+            Ürün Tanıtımı
           </Button>
         </div>
 
@@ -95,17 +95,17 @@ export const HeroSection = () => {
         <div className="flex items-center justify-center gap-8 mt-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <div className="text-center">
             <div className="text-2xl font-bold text-foreground">5,000+</div>
-            <div className="text-sm text-muted-foreground">Aktif Kullanıcı</div>
+            <div className="text-sm text-muted-foreground">Kurumsal Kullanıcı</div>
           </div>
           <div className="w-px h-10 bg-border" />
           <div className="text-center">
             <div className="text-2xl font-bold text-foreground">1M+</div>
-            <div className="text-sm text-muted-foreground">İşlenen Task</div>
+            <div className="text-sm text-muted-foreground">İşlem Hacmi</div>
           </div>
           <div className="w-px h-10 bg-border" />
           <div className="text-center">
             <div className="text-2xl font-bold text-foreground">99.9%</div>
-            <div className="text-sm text-muted-foreground">Uptime</div>
+            <div className="text-sm text-muted-foreground">Çalışma Süresi</div>
           </div>
         </div>
       </div>
