@@ -42,7 +42,7 @@ export const Login = () => {
         description: 'Logged in successfully',
       });
 
-      navigate('/workspaces');
+      navigate('/workspace-selection');
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
