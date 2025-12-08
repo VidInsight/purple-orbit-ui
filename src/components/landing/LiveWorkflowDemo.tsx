@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Zap, Database, Bot, CheckCircle2, ArrowDown, Plus, Settings, Play, Eye, Trash2, GripVertical, ChevronRight, X, MessageSquare, Image, FileJson, GitBranch, Repeat, Search, Star, Clock } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Zap, Database, Bot, CheckCircle2, ArrowDown, Plus, Settings, Play, Eye, Trash2, GripVertical, ChevronRight, X, MessageSquare, GitBranch, Search, Clock, Pause, SkipForward, SkipBack, RotateCcw } from 'lucide-react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +40,16 @@ const nodeCategories = [
   { name: 'Integrations', icon: Zap, items: ['Slack', 'Discord', 'Email'] },
 ];
 
+// Demo steps
+type DemoStep = 'idle' | 'select-node' | 'show-panel' | 'close-panel' | 'show-menu' | 'close-menu' | 'run-step-0' | 'run-step-1' | 'run-step-2' | 'complete';
+
+const SPEED_OPTIONS = [
+  { label: '0.5x', value: 2 },
+  { label: '1x', value: 1 },
+  { label: '1.5x', value: 0.67 },
+  { label: '2x', value: 0.5 },
+];
+
 export const LiveWorkflowDemo = () => {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.3 });
   const [nodes, setNodes] = useState<WorkflowNode[]>(initialNodes);
@@ -49,33 +59,151 @@ export const LiveWorkflowDemo = () => {
   const [currentStep, setCurrentStep] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  
+  // Manual control states
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [demoStep, setDemoStep] = useState<DemoStep>('idle');
+  const isPausedRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const wait = useCallback((ms: number) => {
+    return new Promise<void>(resolve => {
+      const checkPause = () => {
+        if (isPausedRef.current) {
+          timeoutRef.current = setTimeout(checkPause, 100);
+        } else {
+          timeoutRef.current = setTimeout(resolve, ms * speedMultiplier);
+        }
+      };
+      checkPause();
+    });
+  }, [speedMultiplier]);
+
+  const resetDemo = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setNodes(initialNodes.map(n => ({ ...n, status: 'idle' })));
+    setSelectedNodeId(null);
+    setShowAddMenu(false);
+    setShowPanel(false);
+    setCurrentStep(-1);
+    setIsRunning(false);
+    setDemoStep('idle');
+  }, []);
+
+  const selectedNode = nodes.find(n => n.id === selectedNodeId);
+
+  // Navigation functions
+  const goToNextStep = useCallback(() => {
+    const steps: DemoStep[] = ['idle', 'select-node', 'show-panel', 'close-panel', 'show-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
+    const currentIndex = steps.indexOf(demoStep);
+    if (currentIndex < steps.length - 1) {
+      const nextStep = steps[currentIndex + 1];
+      applyStep(nextStep);
+    }
+  }, [demoStep]);
+
+  const goToPrevStep = useCallback(() => {
+    const steps: DemoStep[] = ['idle', 'select-node', 'show-panel', 'close-panel', 'show-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
+    const currentIndex = steps.indexOf(demoStep);
+    if (currentIndex > 0) {
+      const prevStep = steps[currentIndex - 1];
+      applyStep(prevStep);
+    }
+  }, [demoStep]);
+
+  const applyStep = useCallback((step: DemoStep) => {
+    setDemoStep(step);
+    switch (step) {
+      case 'idle':
+        resetDemo();
+        break;
+      case 'select-node':
+        setSelectedNodeId('ai');
+        setShowPanel(false);
+        setShowAddMenu(false);
+        break;
+      case 'show-panel':
+        setSelectedNodeId('ai');
+        setShowPanel(true);
+        setShowAddMenu(false);
+        break;
+      case 'close-panel':
+        setShowPanel(false);
+        setSelectedNodeId(null);
+        setShowAddMenu(false);
+        break;
+      case 'show-menu':
+        setShowAddMenu(true);
+        setShowPanel(false);
+        break;
+      case 'close-menu':
+        setShowAddMenu(false);
+        break;
+      case 'run-step-0':
+        setIsRunning(true);
+        setCurrentStep(0);
+        setNodes(prev => prev.map((n, i) => ({ ...n, status: i === 0 ? 'running' : 'idle' })));
+        break;
+      case 'run-step-1':
+        setCurrentStep(1);
+        setNodes(prev => prev.map((n, i) => ({ ...n, status: i === 0 ? 'complete' : i === 1 ? 'running' : 'idle' })));
+        break;
+      case 'run-step-2':
+        setCurrentStep(2);
+        setNodes(prev => prev.map((n, i) => ({ ...n, status: i <= 1 ? 'complete' : i === 2 ? 'running' : 'idle' })));
+        break;
+      case 'complete':
+        setNodes(prev => prev.map(n => ({ ...n, status: 'complete' })));
+        setIsRunning(false);
+        setCurrentStep(-1);
+        break;
+    }
+  }, [resetDemo]);
+
+  // Toggle play/pause
+  const togglePlay = useCallback(() => {
+    setIsPlaying(prev => {
+      isPausedRef.current = prev;
+      return !prev;
+    });
+  }, []);
 
   // Auto-demo animation
   useEffect(() => {
     if (!isVisible) return;
+    isPausedRef.current = !isPlaying;
 
     const runDemo = async () => {
       // Step 1: Show node selection
+      setDemoStep('select-node');
       await wait(1000);
       setSelectedNodeId('ai');
       setShowPanel(true);
+      setDemoStep('show-panel');
       
       // Step 2: Show add menu briefly
       await wait(2500);
       setShowPanel(false);
       setSelectedNodeId(null);
+      setDemoStep('close-panel');
       await wait(500);
       setShowAddMenu(true);
+      setDemoStep('show-menu');
       
       // Step 3: Close menu and run workflow
       await wait(2000);
       setShowAddMenu(false);
+      setDemoStep('close-menu');
       await wait(500);
       
       // Step 4: Run workflow animation
       setIsRunning(true);
       for (let i = 0; i < nodes.length; i++) {
         setCurrentStep(i);
+        setDemoStep(`run-step-${i}` as DemoStep);
         setNodes(prev => prev.map((node, idx) => ({
           ...node,
           status: idx === i ? 'running' : idx < i ? 'complete' : 'idle'
@@ -87,6 +215,7 @@ export const LiveWorkflowDemo = () => {
         })));
       }
       
+      setDemoStep('complete');
       await wait(1500);
       setIsRunning(false);
       setNodes(prev => prev.map(n => ({ ...n, status: 'idle' })));
@@ -94,16 +223,21 @@ export const LiveWorkflowDemo = () => {
       
       // Restart demo
       await wait(2000);
+      setDemoStep('idle');
       runDemo();
     };
 
     runDemo();
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible]);
+  }, [isVisible, wait]);
 
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-  const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  // selectedNode is already defined above
 
   return (
     <section ref={ref} className="py-24 relative overflow-hidden">
@@ -124,6 +258,75 @@ export const LiveWorkflowDemo = () => {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Sürükle-bırak arayüzü ile node'ları kolayca yapılandırın ve bağlayın
           </p>
+        </div>
+
+        {/* Demo Controls */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          {/* Speed Control */}
+          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+            <span className="text-xs text-muted-foreground">Hız:</span>
+            <div className="flex gap-1">
+              {SPEED_OPTIONS.map(option => (
+                <button
+                  key={option.label}
+                  onClick={() => setSpeedMultiplier(option.value)}
+                  className={cn(
+                    'px-2 py-1 rounded text-xs font-medium transition-colors',
+                    speedMultiplier === option.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Playback Controls */}
+          <div className="flex items-center gap-1 bg-card border border-border rounded-lg px-2 py-1">
+            <button
+              onClick={goToPrevStep}
+              className="p-2 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+              title="Önceki adım"
+            >
+              <SkipBack className="h-4 w-4" />
+            </button>
+            <button
+              onClick={togglePlay}
+              className={cn(
+                'p-2 rounded transition-colors',
+                isPlaying 
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+                  : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
+              )}
+              title={isPlaying ? 'Duraklat' : 'Oynat'}
+            >
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={goToNextStep}
+              className="p-2 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+              title="Sonraki adım"
+            >
+              <SkipForward className="h-4 w-4" />
+            </button>
+            <div className="w-px h-4 bg-border mx-1" />
+            <button
+              onClick={resetDemo}
+              className="p-2 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+              title="Sıfırla"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Step Indicator */}
+          <div className="bg-card border border-border rounded-lg px-3 py-2">
+            <span className="text-xs text-muted-foreground">
+              Adım: <span className="text-foreground font-medium">{demoStep}</span>
+            </span>
+          </div>
         </div>
 
         {/* Mock Editor */}
