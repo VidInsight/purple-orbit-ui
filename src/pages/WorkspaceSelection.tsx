@@ -7,7 +7,7 @@ import { CreateWorkspaceData } from '@/types/workspace';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Building2, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const WorkspaceSelection = () => {
@@ -37,7 +37,6 @@ const WorkspaceSelection = () => {
         title: 'Workspace Selected',
         description: `Entering ${workspace.name}...`,
       });
-      // Navigate to dashboard page
       setTimeout(() => {
         navigate('/dashboard');
       }, 500);
@@ -63,7 +62,6 @@ const WorkspaceSelection = () => {
         description: `${newWorkspace.name} is ready to use.`,
       });
       
-      // Auto-select the new workspace
       setTimeout(() => {
         handleWorkspaceSelect(newWorkspace);
       }, 500);
@@ -91,7 +89,10 @@ const WorkspaceSelection = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading workspaces...</p>
+        </div>
       </div>
     );
   }
@@ -102,9 +103,15 @@ const WorkspaceSelection = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
+      {/* Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[128px]" />
+      </div>
+
       {/* Main Content */}
-      <div className="container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
-        {/* User Card at Top - Enhanced spacing */}
+      <div className="relative z-10 container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
+        {/* User Card at Top */}
         <div className="mb-12 sm:mb-16">
           <UserCard
             user={currentUser}
@@ -116,34 +123,37 @@ const WorkspaceSelection = () => {
         {/* Header with Create Button */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
-            <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Your Workspaces</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Select a workspace to continue</p>
           </div>
-          <button
+          <Button
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed border-border hover:border-primary transition-all duration-200 hover:bg-surface/50"
+            className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300"
           >
-            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
-              New Workspace
-            </span>
-          </button>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Workspace</span>
+          </Button>
         </div>
 
         {/* Owned Workspaces Section */}
         {ownedWorkspaces.length > 0 && (
           <div className="mb-10">
-...
-            <div className="space-y-2">
-              {ownedWorkspaces.map((workspace, index) => (
-                <div
+            <div className="flex items-center gap-2 mb-4">
+              <Building2 className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Owned Workspaces
+              </h2>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                {ownedWorkspaces.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {ownedWorkspaces.map((workspace) => (
+                <WorkspaceCard
                   key={workspace.id}
-                >
-                  <WorkspaceCard
-                    workspace={workspace}
-                    onClick={handleWorkspaceSelect}
-                  />
-                </div>
+                  workspace={workspace}
+                  onClick={handleWorkspaceSelect}
+                />
               ))}
             </div>
           </div>
@@ -152,17 +162,22 @@ const WorkspaceSelection = () => {
         {/* Joined Workspaces Section */}
         {joinedWorkspaces.length > 0 && (
           <div className="mb-10">
-...
-            <div className="space-y-2">
-              {joinedWorkspaces.map((workspace, index) => (
-                <div
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-4 w-4 text-success" />
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Joined Workspaces
+              </h2>
+              <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded-full font-medium">
+                {joinedWorkspaces.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {joinedWorkspaces.map((workspace) => (
+                <WorkspaceCard
                   key={workspace.id}
-                >
-                  <WorkspaceCard
-                    workspace={workspace}
-                    onClick={handleWorkspaceSelect}
-                  />
-                </div>
+                  workspace={workspace}
+                  onClick={handleWorkspaceSelect}
+                />
               ))}
             </div>
           </div>
@@ -170,28 +185,37 @@ const WorkspaceSelection = () => {
 
         {/* Empty State */}
         {workspaces.length === 0 && (
-          <div className="text-center py-16">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-muted-foreground" />
+          <div className="text-center py-20">
+            <div className="relative inline-flex mb-6">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+              <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/25">
+                <Plus className="h-10 w-10 text-primary-foreground" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
-            <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
-            <Button onClick={() => setIsModalOpen(true)} size="lg">
-              <Plus className="h-4 w-4 mr-2" />
+            <h3 className="text-xl font-bold text-foreground mb-2">No workspaces yet</h3>
+            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+              Create your first workspace to start building automation workflows
+            </p>
+            <Button 
+              onClick={() => setIsModalOpen(true)} 
+              size="lg"
+              className="gap-2 shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all duration-300"
+            >
+              <Plus className="h-5 w-5" />
               Create Your First Workspace
             </Button>
           </div>
         )}
 
-        {/* Footer Info - Better spacing and typography */}
+        {/* Footer Info */}
         <div className="text-center pt-10 mt-10 border-t border-border">
           <p className="text-xs text-muted-foreground leading-relaxed">
             Need help?{' '}
-            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
+            <a href="#" className="text-primary hover:text-primary/80 font-medium transition-colors">
               View documentation
             </a>
             {' '}or{' '}
-            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
+            <a href="#" className="text-primary hover:text-primary/80 font-medium transition-colors">
               contact support
             </a>
           </p>

@@ -64,6 +64,10 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Glow effects for light mode */
+    --glow-purple: 250 90% 62%;
+    --glow-yellow: 48 100% 55%;
+
     /* Shadows */
     --shadow: 0 0% 0%;
     --shadow-sm: 0px 1px 2px hsla(var(--shadow) / 0.05);
