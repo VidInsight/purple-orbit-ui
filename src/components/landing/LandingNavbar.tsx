@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Workflow, LogIn, UserPlus, Sun, Moon } from 'lucide-react';
+import { Workflow, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { useTheme } from '@/context/ThemeContext';
 
 export const LandingNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,18 +40,6 @@ export const LandingNavbar = () => {
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="hover:bg-primary/10"
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
             <Link to="/login">
               <Button variant="ghost" className="gap-2 hover:bg-primary/10">
                 <LogIn className="h-4 w-4" />
