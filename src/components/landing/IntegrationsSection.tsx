@@ -50,14 +50,14 @@ export const IntegrationsSection = () => {
         <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              50+
+              50+ Hazır
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Entegrasyon
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Favori araçlarınızla sorunsuz çalışın
+            Mevcut iş uygulamalarınızla kesintisiz entegrasyon
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export const IntegrationsSection = () => {
         {/* View All Button */}
         <div className={`text-center mt-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '300ms' }}>
           <button className="text-primary hover:text-primary/80 font-medium transition-colors">
-            Tüm Entegrasyonları Gör →
+            Tüm Entegrasyonları İnceleyin →
           </button>
         </div>
       </div>

@@ -23,42 +23,42 @@ export const CTASection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Ücretsiz başlayın, kredi kartı gerekmez</span>
+            <span className="text-sm text-primary font-medium">14 Gün Ücretsiz Deneme - Kredi Kartı Gerektirmez</span>
           </div>
 
           {/* Heading */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Otomasyona
+              Dijital Dönüşümünüzü
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Başlayın
+              Başlatın
             </span>
           </h2>
 
           <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
-            Dakikalar içinde ilk workflow'unuzu oluşturun ve iş süreçlerinizi 
-            otomatikleştirmenin gücünü keşfedin.
+            Kurumsal iş süreçlerinizi otomatikleştirin, operasyonel verimliliğinizi 
+            artırın ve rekabet avantajı elde edin.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/register">
               <Button size="lg" className="gap-2 px-8 shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
-                Ücretsiz Hesap Oluştur
+                Ücretsiz Deneme Başlat
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/login">
               <Button size="lg" variant="outline" className="gap-2 px-8 hover:bg-primary/5 hover:border-primary/50 transition-all duration-300">
-                Giriş Yap
+                Hesabınıza Giriş Yapın
               </Button>
             </Link>
           </div>
 
           {/* Trust Text */}
           <p className="mt-8 text-sm text-muted-foreground">
-            5,000+ şirket tarafından tercih ediliyor
+            5,000+ kurumsal müşteri tarafından tercih edilmektedir
           </p>
         </div>
       </div>

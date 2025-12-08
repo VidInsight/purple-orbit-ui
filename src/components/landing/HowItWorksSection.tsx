@@ -64,18 +64,18 @@ export const HowItWorksSection = () => {
   const steps = [
     {
       icon: Zap,
-      title: 'Trigger Oluştur',
-      description: 'Webhook, zamanlayıcı veya event ile workflow\'unuzu başlatın',
+      title: 'Tetikleyici Tanımlayın',
+      description: 'Webhook, zamanlayıcı veya olay tabanlı başlatıcılar ile sürecinizi yapılandırın',
     },
     {
       icon: GitBranch,
-      title: 'Node\'ları Bağla',
-      description: 'Sürükle-bırak ile aksiyonları ve koşulları ekleyin',
+      title: 'Süreç Adımlarını Oluşturun',
+      description: 'Görsel arayüz ile iş mantığınızı ve koşullarınızı tasarlayın',
     },
     {
       icon: Rocket,
-      title: 'Yayına Al',
-      description: 'Tek tıkla workflow\'unuzu aktifleştirin ve izleyin',
+      title: 'Üretime Alın',
+      description: 'Tek tıkla sürecinizi devreye alın ve performansını izleyin',
     },
   ];
 
@@ -95,14 +95,14 @@ export const HowItWorksSection = () => {
         <div className={`text-center mb-20 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Nasıl
+              Uygulama
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Çalışır?
+              Metodolojisi
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            3 basit adımda workflow'unuzu oluşturun ve çalıştırın
+            Üç adımda iş süreçlerinizi otomatikleştirin ve yönetin
           </p>
         </div>
 

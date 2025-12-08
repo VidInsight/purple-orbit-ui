@@ -74,39 +74,39 @@ export const StatsSection = () => {
       value: 50,
       suffix: '+',
       label: 'Entegrasyon',
-      description: 'Popüler servislerle hazır bağlantılar',
+      description: 'Kurumsal servislerle hazır bağlantılar',
       color: 'from-primary to-primary/70',
     },
     {
       icon: TrendingUp,
       value: 340,
       prefix: '%',
-      label: 'Performans Artışı',
-      description: 'Ortalama verimlilik kazanımı',
+      label: 'Verimlilik Artışı',
+      description: 'Ortalama operasyonel kazanım',
       color: 'from-success to-success/70',
     },
     {
       icon: Zap,
       value: 1,
       suffix: 'M+',
-      label: 'İşlenen Task',
-      description: 'Her ay milyonlarca görev',
+      label: 'İşlem Hacmi',
+      description: 'Aylık işlenen görev sayısı',
       color: 'from-warning to-warning/70',
     },
     {
       icon: Server,
       value: 99.9,
       suffix: '%',
-      label: 'Uptime',
-      description: 'Kesintisiz güvenilir altyapı',
+      label: 'Sistem Güvenilirliği',
+      description: 'Kesintisiz altyapı garantisi',
       color: 'from-primary to-primary/70',
     },
     {
       icon: Clock,
       value: 0.3,
       suffix: 's',
-      label: 'Ortalama Hız',
-      description: 'Milisaniyede yanıt süresi',
+      label: 'Yanıt Süresi',
+      description: 'Ortalama işlem performansı',
       color: 'from-success to-success/70',
     },
   ];
@@ -120,14 +120,14 @@ export const StatsSection = () => {
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Rakamlarla
+              Platform
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              FlowMaster
+              Performans Metrikleri
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Binlerce işletmenin güvendiği performans ve güvenilirlik
+            Kurumsal müşterilerimizin güvendiği ölçülebilir sonuçlar
           </p>
         </div>
 
