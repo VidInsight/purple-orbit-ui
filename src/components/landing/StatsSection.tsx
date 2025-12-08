@@ -74,39 +74,39 @@ export const StatsSection = () => {
       value: 50,
       suffix: '+',
       label: 'Entegrasyon',
-      description: 'Kurumsal servislerle hazır bağlantılar',
+      description: 'Popüler servislerle hazır bağlantılar',
       color: 'from-primary to-primary/70',
     },
     {
       icon: TrendingUp,
       value: 340,
       prefix: '%',
-      label: 'Verimlilik Artışı',
-      description: 'Ortalama operasyonel kazanım',
+      label: 'Performans Artışı',
+      description: 'Ortalama verimlilik kazanımı',
       color: 'from-success to-success/70',
     },
     {
       icon: Zap,
       value: 1,
       suffix: 'M+',
-      label: 'İşlem Hacmi',
-      description: 'Aylık işlenen görev sayısı',
+      label: 'İşlenen Task',
+      description: 'Her ay milyonlarca görev',
       color: 'from-warning to-warning/70',
     },
     {
       icon: Server,
       value: 99.9,
       suffix: '%',
-      label: 'Sistem Güvenilirliği',
-      description: 'Kesintisiz altyapı garantisi',
+      label: 'Uptime',
+      description: 'Kesintisiz güvenilir altyapı',
       color: 'from-primary to-primary/70',
     },
     {
       icon: Clock,
       value: 0.3,
       suffix: 's',
-      label: 'Yanıt Süresi',
-      description: 'Ortalama işlem performansı',
+      label: 'Ortalama Hız',
+      description: 'Milisaniyede yanıt süresi',
       color: 'from-success to-success/70',
     },
   ];
@@ -120,14 +120,14 @@ export const StatsSection = () => {
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Platform
+              Rakamlarla
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Performans Metrikleri
+              FlowMaster
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Kurumsal müşterilerimizin güvendiği ölçülebilir sonuçlar
+            Binlerce işletmenin güvendiği performans ve güvenilirlik
           </p>
         </div>
 

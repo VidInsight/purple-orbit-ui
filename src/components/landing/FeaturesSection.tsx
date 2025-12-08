@@ -54,46 +54,46 @@ export const FeaturesSection = () => {
   const features = [
     {
       icon: MousePointer2,
-      title: 'Görsel Süreç Tasarımı',
-      description: 'Teknik bilgi gerektirmeden profesyonel iş akışları oluşturun',
+      title: 'Sürükle-Bırak Builder',
+      description: 'Kod yazmadan görsel workflow tasarlayın',
       features: [
-        'Sezgisel sürükle-bırak arayüzü',
-        '100+ hazır süreç şablonu',
-        'Koşullu iş mantığı desteği',
-        'Döngü ve iterasyon yapıları',
+        'Zapier-tarzı dikey akış',
+        '100+ hazır node şablonu',
+        'Koşullu dallanma desteği',
+        'Döngü ve iterasyon',
       ],
     },
     {
       icon: Activity,
-      title: 'Anlık Süreç Takibi',
-      description: 'Tüm operasyonlarınızı gerçek zamanlı izleyin',
+      title: 'Gerçek Zamanlı İzleme',
+      description: 'Her adımı canlı olarak takip edin',
       features: [
-        'Canlı yürütme görünümü',
-        'Performans analitiği',
-        'Gelişmiş hata ayıklama',
-        'Kapsamlı denetim kayıtları',
+        'Anlık execution görünümü',
+        'Performans metrikleri',
+        'Hata ayıklama araçları',
+        'Detaylı log kayıtları',
       ],
     },
     {
       icon: Bot,
-      title: 'Yapay Zeka Çözümleri',
-      description: 'Kurumsal AI teknolojileriyle güçlendirilmiş otomasyon',
+      title: 'AI Entegrasyonları',
+      description: 'Yapay zeka ile güçlendirilmiş otomasyon',
       features: [
-        'OpenAI ve Anthropic entegrasyonu',
+        'OpenAI & Anthropic desteği',
         'Doğal dil işleme',
-        'Akıllı veri dönüştürme',
-        'Otonom karar mekanizmaları',
+        'Akıllı veri dönüşümü',
+        'Otomatik karar verme',
       ],
     },
     {
       icon: Shield,
       title: 'Kurumsal Güvenlik',
-      description: 'Enterprise düzeyde koruma ve uyumluluk standartları',
+      description: 'Enterprise-grade koruma ve uyumluluk',
       features: [
-        'Uçtan uca şifreleme',
-        'SOC 2 Type II sertifikası',
-        'Rol tabanlı erişim kontrolü',
-        'Denetim günlüğü yönetimi',
+        'End-to-end şifreleme',
+        'SOC 2 Type II uyumlu',
+        'Rol tabanlı erişim (RBAC)',
+        'Audit log takibi',
       ],
     },
   ];
@@ -105,14 +105,14 @@ export const FeaturesSection = () => {
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Kapsamlı
+              Güçlü
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Platform Özellikleri
+              Özellikler
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Kurumsal iş süreçlerinizi dijitalleştirmek için gereken tüm araçlar tek platformda
+            İş süreçlerinizi otomatikleştirmek için ihtiyacınız olan her şey
           </p>
         </div>
 

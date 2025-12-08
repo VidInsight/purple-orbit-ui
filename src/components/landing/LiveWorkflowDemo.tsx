@@ -81,14 +81,14 @@ export const LiveWorkflowDemo = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Canlı Süreç
+              Gerçek Zamanlı
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              İzleme Paneli
+              Workflow İzleme
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Tüm iş akışlarınızı gerçek zamanlı izleyin ve performans optimizasyonu yapın
+            Her adımı canlı olarak izleyin, performansı optimize edin
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export const LiveWorkflowDemo = () => {
             </div>
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${isRunning ? 'bg-success/20 text-success' : 'bg-muted text-muted-foreground'}`}>
               <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
-              {isRunning ? 'Yürütülüyor' : 'Beklemede'}
+              {isRunning ? 'Çalışıyor' : 'Hazır'}
             </div>
           </div>
 
@@ -180,19 +180,19 @@ export const LiveWorkflowDemo = () => {
             {/* Execution Stats */}
             <div className="mt-8 flex items-center justify-center gap-8 text-sm">
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Yürütme Süresi:</span>
+                <span className="text-muted-foreground">Süre:</span>
                 <span className="font-mono font-medium text-foreground">0.34s</span>
               </div>
               <div className="w-px h-4 bg-border" />
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Durum:</span>
                 <span className={`font-medium ${nodes.every(n => n.status === 'complete') ? 'text-success' : 'text-primary'}`}>
-                  {nodes.every(n => n.status === 'complete') ? 'Tamamlandı' : 'Yürütülüyor'}
+                  {nodes.every(n => n.status === 'complete') ? 'Tamamlandı' : 'İşleniyor'}
                 </span>
               </div>
               <div className="w-px h-4 bg-border" />
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Adım:</span>
+                <span className="text-muted-foreground">Node:</span>
                 <span className="font-mono font-medium text-foreground">
                   {nodes.filter(n => n.status === 'complete').length}/{nodes.length}
                 </span>

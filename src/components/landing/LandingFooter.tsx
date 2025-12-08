@@ -54,10 +54,10 @@ export const LandingFooter = () => {
         <div className="mb-12 pb-12 border-b border-border">
           <div className="max-w-xl mx-auto text-center">
             <h3 className="text-xl font-bold text-foreground mb-2">
-              Kurumsal Bültenimize Kayıt Olun
+              Bültene Abone Olun
             </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Platform güncellemeleri, sektör analizleri ve otomasyon stratejileri için e-posta listemize katılın.
+              Yeni özellikler, güncellemeler ve otomasyon ipuçları için bültenimize abone olun.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="flex gap-3 max-w-md mx-auto">
               <input
@@ -86,7 +86,7 @@ export const LandingFooter = () => {
               <span className="text-lg font-bold text-foreground">FlowMaster</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-              Kurumsal iş süreçlerinizi dijitalleştirmek için tasarlanmış profesyonel otomasyon platformu.
+              İş süreçlerinizi otomatikleştirmek için modern, güçlü ve kullanımı kolay workflow platformu.
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export const LandingFooter = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
             </span>
-            Tüm sistemler aktif
+            Tüm sistemler çalışıyor
           </div>
         </div>
       </div>

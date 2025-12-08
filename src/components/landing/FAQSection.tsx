@@ -8,28 +8,28 @@ import {
 
 const faqs = [
   {
-    question: "FlowMaster platformu nedir ve nasıl çalışır?",
-    answer: "FlowMaster, kurumsal iş süreçlerinizi otomatikleştirmenizi sağlayan enterprise düzeyde bir otomasyon platformudur. Görsel süreç tasarımcısı ile teknik bilgi gerektirmeden karmaşık iş akışları oluşturabilir, 50+ hazır entegrasyon ile mevcut sistemlerinizi sorunsuz şekilde bağlayabilirsiniz."
+    question: "AutoFlow nedir ve nasıl çalışır?",
+    answer: "AutoFlow, iş süreçlerinizi otomatikleştirmenizi sağlayan güçlü bir no-code platform'dur. Görsel workflow builder ile dakikalar içinde karmaşık otomasyonlar oluşturabilir, 50+ entegrasyon ile sistemlerinizi birbirine bağlayabilirsiniz."
   },
   {
-    question: "Teknik bilgi olmadan otomasyon süreçleri oluşturabilir miyim?",
-    answer: "Evet. FlowMaster, sezgisel sürükle-bırak arayüzü sayesinde programlama bilgisi gerektirmeden iş akışları oluşturmanıza olanak tanır. İş analistleri ve süreç yöneticileri, teknik ekip desteği olmaksızın operasyonel süreçleri optimize edebilir."
+    question: "Kod yazmadan otomasyon oluşturabilir miyim?",
+    answer: "Evet! AutoFlow tamamen no-code bir platformdur. Sürükle-bırak arayüzü ile herhangi bir programlama bilgisi olmadan workflow'lar oluşturabilirsiniz. Teknik ekip gerektirmeden iş süreçlerinizi optimize edebilirsiniz."
   },
   {
-    question: "Hangi kurumsal uygulamalarla entegrasyon sağlanmaktadır?",
-    answer: "FlowMaster; Slack, Google Workspace, Salesforce, HubSpot, Stripe, OpenAI ve daha birçok kurumsal uygulama ile hazır entegrasyonlar sunmaktadır. Ayrıca REST API ve webhook desteği ile özel entegrasyonlar da geliştirilebilir."
+    question: "Hangi uygulamalarla entegrasyon yapabilirim?",
+    answer: "AutoFlow, Slack, Google Workspace, Salesforce, HubSpot, Stripe, OpenAI ve daha birçok popüler uygulama ile hazır entegrasyonlar sunar. Ayrıca API ve webhook desteği ile özel entegrasyonlar da oluşturabilirsiniz."
   },
   {
-    question: "Ücretsiz değerlendirme süreci mevcut mudur?",
-    answer: "Evet. FlowMaster platformunu 14 gün boyunca tüm özellikleriyle ücretsiz değerlendirebilirsiniz. Deneme süreci için kredi kartı bilgisi talep edilmez. Değerlendirme sonrasında kurumsal ihtiyaçlarınıza uygun lisans planını seçebilirsiniz."
+    question: "Ücretsiz deneme süresi var mı?",
+    answer: "Evet, AutoFlow'u 14 gün boyunca ücretsiz deneyebilirsiniz. Kredi kartı gerektirmez ve tüm özelliklere tam erişim sağlarsınız. Deneme süresinin sonunda planınızı seçebilirsiniz."
   },
   {
-    question: "Veri güvenliği ve uyumluluk standartları nelerdir?",
-    answer: "FlowMaster, enterprise düzeyde güvenlik standartlarını karşılamaktadır. Tüm veriler uçtan uca şifrelenir. Platform, GDPR ve SOC 2 Type II uyumluluğuna sahiptir. %99.9 çalışma süresi garantisi ile kesintisiz hizmet sunulmaktadır."
+    question: "Verilerim güvende mi?",
+    answer: "Kesinlikle. AutoFlow, enterprise-grade güvenlik standartlarını karşılar. Verileriniz şifrelenir, GDPR ve SOC 2 uyumluluğu sağlanır. %99.9 uptime garantisi ile kesintisiz hizmet sunuyoruz."
   },
   {
-    question: "Teknik destek seçenekleri nelerdir?",
-    answer: "Tüm lisans planlarında e-posta desteği sağlanmaktadır. Pro ve Business planlarında öncelikli destek, canlı sohbet ve özel müşteri temsilcisi hizmetleri mevcuttur. Ayrıca kapsamlı teknik dokümantasyon ve kullanıcı topluluğu forumu aktif olarak hizmet vermektedir."
+    question: "Destek seçenekleri nelerdir?",
+    answer: "Tüm planlarda email desteği sunuyoruz. Pro ve Business planlarında öncelikli destek, canlı chat ve dedicated account manager seçenekleri mevcuttur. Ayrıca kapsamlı dokümantasyon ve topluluk forumu da aktiftir."
   }
 ];
 
@@ -46,13 +46,13 @@ export const FAQSection = () => {
           }`}
         >
           <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            Sıkça Sorulan Sorular
+            SSS
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Bilmeniz Gerekenler
+            Sık Sorulan Sorular
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            FlowMaster platformu hakkında sık sorulan sorular ve yanıtları
+            AutoFlow hakkında merak ettikleriniz
           </p>
         </div>
 
