@@ -41,7 +41,7 @@ const nodeCategories = [
 ];
 
 // Demo steps
-type DemoStep = 'idle' | 'select-node' | 'show-panel' | 'close-panel' | 'show-menu' | 'close-menu' | 'run-step-0' | 'run-step-1' | 'run-step-2' | 'complete';
+type DemoStep = 'idle' | 'click-node' | 'configure-node' | 'close-panel' | 'click-add' | 'browse-menu' | 'close-menu' | 'run-step-0' | 'run-step-1' | 'run-step-2' | 'complete';
 
 const SPEED_OPTIONS = [
   { label: '0.5x', value: 2 },
@@ -97,7 +97,7 @@ export const LiveWorkflowDemo = () => {
 
   // Navigation functions
   const goToNextStep = useCallback(() => {
-    const steps: DemoStep[] = ['idle', 'select-node', 'show-panel', 'close-panel', 'show-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
+    const steps: DemoStep[] = ['idle', 'click-node', 'configure-node', 'close-panel', 'click-add', 'browse-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
     const currentIndex = steps.indexOf(demoStep);
     if (currentIndex < steps.length - 1) {
       const nextStep = steps[currentIndex + 1];
@@ -106,7 +106,7 @@ export const LiveWorkflowDemo = () => {
   }, [demoStep]);
 
   const goToPrevStep = useCallback(() => {
-    const steps: DemoStep[] = ['idle', 'select-node', 'show-panel', 'close-panel', 'show-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
+    const steps: DemoStep[] = ['idle', 'click-node', 'configure-node', 'close-panel', 'click-add', 'browse-menu', 'close-menu', 'run-step-0', 'run-step-1', 'run-step-2', 'complete'];
     const currentIndex = steps.indexOf(demoStep);
     if (currentIndex > 0) {
       const prevStep = steps[currentIndex - 1];
@@ -120,12 +120,13 @@ export const LiveWorkflowDemo = () => {
       case 'idle':
         resetDemo();
         break;
-      case 'select-node':
+      case 'click-node':
         setSelectedNodeId('ai');
+        setHoveredNode('ai');
         setShowPanel(false);
         setShowAddMenu(false);
         break;
-      case 'show-panel':
+      case 'configure-node':
         setSelectedNodeId('ai');
         setShowPanel(true);
         setShowAddMenu(false);
@@ -133,9 +134,14 @@ export const LiveWorkflowDemo = () => {
       case 'close-panel':
         setShowPanel(false);
         setSelectedNodeId(null);
+        setHoveredNode(null);
         setShowAddMenu(false);
         break;
-      case 'show-menu':
+      case 'click-add':
+        setShowAddMenu(false);
+        setShowPanel(false);
+        break;
+      case 'browse-menu':
         setShowAddMenu(true);
         setShowPanel(false);
         break;
@@ -177,29 +183,38 @@ export const LiveWorkflowDemo = () => {
     isPausedRef.current = !isPlaying;
 
     const runDemo = async () => {
-      // Step 1: Show node selection
-      setDemoStep('select-node');
-      await wait(1000);
+      // Step 1: Click on a node (highlight it)
+      setDemoStep('click-node');
+      await wait(800);
       setSelectedNodeId('ai');
-      setShowPanel(true);
-      setDemoStep('show-panel');
+      setHoveredNode('ai');
       
-      // Step 2: Show add menu briefly
-      await wait(2500);
+      // Step 2: Open panel for configuration
+      await wait(600);
+      setShowPanel(true);
+      setDemoStep('configure-node');
+      
+      // Step 3: Wait for "configuration" to complete, then close panel
+      await wait(2000);
       setShowPanel(false);
       setSelectedNodeId(null);
+      setHoveredNode(null);
       setDemoStep('close-panel');
-      await wait(500);
-      setShowAddMenu(true);
-      setDemoStep('show-menu');
       
-      // Step 3: Close menu and run workflow
-      await wait(2000);
+      // Step 4: Click add button
+      await wait(800);
+      setDemoStep('click-add');
+      await wait(400);
+      setShowAddMenu(true);
+      setDemoStep('browse-menu');
+      
+      // Step 5: Browse menu briefly, then close
+      await wait(1500);
       setShowAddMenu(false);
       setDemoStep('close-menu');
       await wait(500);
       
-      // Step 4: Run workflow animation
+      // Step 6: Run workflow animation
       setIsRunning(true);
       for (let i = 0; i < nodes.length; i++) {
         setCurrentStep(i);
@@ -208,7 +223,7 @@ export const LiveWorkflowDemo = () => {
           ...node,
           status: idx === i ? 'running' : idx < i ? 'complete' : 'idle'
         })));
-        await wait(800);
+        await wait(700);
         setNodes(prev => prev.map((node, idx) => ({
           ...node,
           status: idx <= i ? 'complete' : 'idle'
@@ -216,13 +231,13 @@ export const LiveWorkflowDemo = () => {
       }
       
       setDemoStep('complete');
-      await wait(1500);
+      await wait(1200);
       setIsRunning(false);
       setNodes(prev => prev.map(n => ({ ...n, status: 'idle' })));
       setCurrentStep(-1);
       
       // Restart demo
-      await wait(2000);
+      await wait(1500);
       setDemoStep('idle');
       runDemo();
     };
