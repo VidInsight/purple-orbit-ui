@@ -5,6 +5,7 @@ import { StatsSection } from '@/components/landing/StatsSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { IntegrationsSection } from '@/components/landing/IntegrationsSection';
+import { FAQSection } from '@/components/landing/FAQSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
@@ -19,6 +20,7 @@ const LandingPage = () => {
         <FeaturesSection />
         <HowItWorksSection />
         <IntegrationsSection />
+        <FAQSection />
         <CTASection />
       </main>
       <LandingFooter />
