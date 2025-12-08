@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
 import { seedDemoData } from "@/utils/seedData";
+import LandingPage from "@/pages/LandingPage";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import WorkspaceSettings from "@/pages/WorkspaceSettings";
 import Dashboard from "@/pages/Dashboard";
@@ -44,13 +45,16 @@ const AppRoutes = () => {
 
   return (
     <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      <Route path="/" element={<WorkspaceSelection />} />
+      <Route path="/workspaces" element={<WorkspaceSelection />} />
       <Route path="/workspaces" element={<WorkspaceSelection />} />
       
       {/* Protected Routes - Require Workspace Context */}
