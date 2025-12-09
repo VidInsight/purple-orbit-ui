@@ -1,6 +1,6 @@
 import { LandingNavbar } from '@/components/landing/LandingNavbar';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { LiveWorkflowDemo } from '@/components/landing/LiveWorkflowDemo';
+import { WhatIsSection } from '@/components/landing/WhatIsSection';
 import { StatsSection } from '@/components/landing/StatsSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
@@ -15,7 +15,7 @@ const LandingPage = () => {
       <LandingNavbar />
       <main>
         <HeroSection />
-        <LiveWorkflowDemo />
+        <WhatIsSection />
         <StatsSection />
         <FeaturesSection />
         <HowItWorksSection />
