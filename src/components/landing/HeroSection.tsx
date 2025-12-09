@@ -75,24 +75,6 @@ export const HeroSection = () => {
             <div className="animate-fade-in" style={{ animationDelay: '0.35s' }}>
               <IntegrationLogos />
             </div>
-
-            {/* Trust Indicators */}
-            <div className="flex items-center justify-center lg:justify-start gap-6 mt-10 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">5,000+</div>
-                <div className="text-xs text-muted-foreground">Aktif Kullanıcı</div>
-              </div>
-              <div className="w-px h-10 bg-border" />
-              <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">1M+</div>
-                <div className="text-xs text-muted-foreground">İşlenen Task</div>
-              </div>
-              <div className="w-px h-10 bg-border" />
-              <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">99.9%</div>
-                <div className="text-xs text-muted-foreground">Uptime</div>
-              </div>
-            </div>
           </div>
 
           {/* Right Side - Animated Workflow Preview */}
