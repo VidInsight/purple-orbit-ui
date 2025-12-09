@@ -17,37 +17,46 @@ const initialNodes: WorkflowNode[] = [
 
 export const HeroWorkflowPreview = () => {
   const [nodes, setNodes] = useState(initialNodes);
-  const [activeConnection, setActiveConnection] = useState(-1);
+  const [completedConnections, setCompletedConnections] = useState<number[]>([]);
+  const [animatingConnection, setAnimatingConnection] = useState(-1);
 
   useEffect(() => {
     const runWorkflow = () => {
       // Reset
       setNodes(initialNodes.map(n => ({ ...n, status: 'idle' })));
-      setActiveConnection(-1);
+      setCompletedConnections([]);
+      setAnimatingConnection(-1);
 
       // Animate each node sequentially
       initialNodes.forEach((_, index) => {
-        // Start node
+        // Start node (running state)
         setTimeout(() => {
           setNodes(prev => prev.map((n, i) => 
             i === index ? { ...n, status: 'running' } : n
           ));
         }, index * 1200);
 
-        // Complete node and activate connection
+        // Complete node
         setTimeout(() => {
           setNodes(prev => prev.map((n, i) => 
             i === index ? { ...n, status: 'complete' } : n
           ));
+          
+          // After node completes, animate the connection to next node
           if (index < initialNodes.length - 1) {
-            setActiveConnection(index);
+            setAnimatingConnection(index);
+            // After animation, mark connection as permanently complete
+            setTimeout(() => {
+              setCompletedConnections(prev => [...prev, index]);
+              setAnimatingConnection(-1);
+            }, 400);
           }
         }, index * 1200 + 800);
       });
     };
 
     runWorkflow();
-    const interval = setInterval(runWorkflow, 6500);
+    const interval = setInterval(runWorkflow, 7000);
     return () => clearInterval(interval);
   }, []);
 
@@ -123,11 +132,11 @@ export const HeroWorkflowPreview = () => {
                 {index < nodes.length - 1 && (
                   <div className="flex justify-center py-1">
                     <div className={`
-                      relative w-0.5 h-4 rounded-full transition-all duration-500
-                      ${activeConnection >= index ? 'bg-success' : 'bg-border'}
+                      relative w-0.5 h-4 rounded-full transition-all duration-300
+                      ${completedConnections.includes(index) ? 'bg-success' : 'bg-border'}
                     `}>
-                      {/* Animated particle */}
-                      {activeConnection === index && (
+                      {/* Animated particle - only shows during transition */}
+                      {animatingConnection === index && (
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-success rounded-full animate-flow-down shadow-glow-success" />
                       )}
                     </div>
