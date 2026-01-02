@@ -1,132 +1,184 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
+import { FileItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
-import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '@/config/api';
+import { UploadFileModal } from '@/components/files/UploadFileModal';
+import { EditFileModal } from '@/components/files/EditFileModal';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { useAuth } from '@/context/AuthContext';
-import { File, PaginatedResponse } from '@/types/api';
+import { getFiles, deleteFile } from '@/services/filesApi';
 
 const Files = () => {
   const { currentWorkspace } = useWorkspace();
-  const { getToken } = useAuth();
-  const queryClient = useQueryClient();
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingFileId, setEditingFileId] = useState<string | null>(null);
 
-  // Fetch files
-  const { data: filesData, isLoading } = useQuery({
-    queryKey: ['files', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginatedResponse<File>>(
-      API_ENDPOINTS.file.list(currentWorkspace!.id),
-      { token: getToken() }
-    ),
-    enabled: !!currentWorkspace?.id && !!getToken(),
-  });
+  useEffect(() => {
+    loadFiles();
+  }, [currentWorkspace]);
 
-  const files = filesData?.data.items || [];
+  const loadFiles = async () => {
+    if (!currentWorkspace?.id) {
+      setIsLoading(false);
+      return;
+    }
 
-  // Delete file mutation
-  const deleteFileMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiClient.delete(
-        API_ENDPOINTS.file.delete(currentWorkspace!.id, fileId),
-        { token: getToken() }
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['files'] });
-      toast({
-        title: 'File Deleted',
-        description: 'File has been deleted successfully.',
+    try {
+      setIsLoading(true);
+      const response = await getFiles(currentWorkspace.id);
+
+      // Map API response to FileItem type
+      const mappedFiles: FileItem[] = [];
+      
+      // API response formatına göre files'ları map et
+      const filesData = Array.isArray(response.data) 
+        ? response.data 
+        : response.data?.items || response.data?.files || [];
+
+      filesData.forEach((file: any) => {
+        mappedFiles.push({
+          id: file.id || file.file_id || `file-${Date.now()}`,
+          name: file.name || file.file_name || 'Unnamed File',
+          description: file.description || file.file_description,
+          size: file.size || file.file_size || 0,
+          type: file.type || file.file_type || file.mime_type || 'application/octet-stream',
+          url: file.url || file.file_url || file.download_url || '',
+          createdAt: file.created_at || file.createdAt || new Date().toISOString(),
+          updatedAt: file.updated_at || file.updatedAt || new Date().toISOString(),
+        });
       });
-    },
-    onError: (error: any) => {
+
+      setFiles(mappedFiles);
+    } catch (error) {
+      console.error('Error loading files:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete file',
+        description: error instanceof Error ? error.message : 'Failed to load files',
         variant: 'destructive',
       });
-    },
-  });
+      setFiles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCreate = () => {
-    // File upload için input oluştur
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = false;
-    input.onchange = async (e) => {
-      const target = e.target as HTMLInputElement;
-      const file = target.files?.[0];
-      if (!file || !currentWorkspace) return;
-
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('name', file.name);
-
-        const response = await apiClient.upload<File>(
-          API_ENDPOINTS.file.upload(currentWorkspace.id),
-          formData,
-          { token: getToken() }
-        );
-
-        queryClient.invalidateQueries({ queryKey: ['files'] });
-        toast({
-          title: 'File Uploaded',
-          description: `${file.name} has been uploaded successfully.`,
-        });
-      } catch (error: any) {
-        toast({
-          title: 'Upload Failed',
-          description: error.message || 'Failed to upload file',
-          variant: 'destructive',
-        });
-      }
-    };
-    input.click();
+    if (!currentWorkspace) {
+      toast({
+        title: 'Error',
+        description: 'Please select a workspace first',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsUploadModalOpen(true);
   };
 
-  const handleView = (item: { id: string; name: string; description?: string }) => {
-    const file = files.find(f => f.id === item.id);
-    if (!currentWorkspace || !file) return;
-    const url = API_ENDPOINTS.file.getContent(currentWorkspace.id, file.id);
-    window.open(url, '_blank');
+  const handleUploadSuccess = () => {
+    loadFiles();
   };
 
-  const handleEdit = (item: { id: string; name: string; description?: string }) => {
+  const handleView = (item: FileItem) => {
     toast({
-      title: 'Edit File',
-      description: `Editing metadata for: ${item.name}`,
+      title: 'View File',
+      description: `Opening: ${item.name}`,
     });
   };
 
-  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
-    if (!currentWorkspace) return;
-    deleteFileMutation.mutate(item.id);
+  const handleEdit = (item: FileItem) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setEditingFileId(item.id);
+    setIsEditModalOpen(true);
   };
 
-  // Map File to ListPageTemplate format
-  const mappedFiles = files.map((file) => ({
-    id: file.id,
-    name: file.name,
-    description: file.description || `${(file.file_size_mb).toFixed(2)} MB - ${file.mime_type}`,
-  }));
+  const handleDelete = async (item: FileItem) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await deleteFile(currentWorkspace.id, item.id);
+      toast({
+        title: 'Success',
+        description: `${item.name} has been deleted successfully.`,
+      });
+      // Reload files after deletion
+      await loadFiles();
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete file',
+        variant: 'destructive',
+      });
+      throw error; // Re-throw to let ListPageTemplate handle the error state
+    }
+  };
+
+  if (!currentWorkspace) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Please select a workspace first</p>
+      </div>
+    );
+  }
 
   return (
-    <ListPageTemplate
-      pageTitle="Files"
-      pageDescription="Manage files and assets for your workflows"
-      items={mappedFiles}
-      isLoading={isLoading}
-      searchPlaceholder="Search files..."
-      createButtonText="Upload File"
-      itemTypeName="file"
-      emptyMessage="No files uploaded yet"
-      emptyDescription="Upload files to use in your workflows."
-      onCreate={handleCreate}
-      onView={handleView}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-    />
+    <>
+      <ListPageTemplate
+        pageTitle="Files"
+        pageDescription="Manage files and assets for your workflows"
+        items={files}
+        isLoading={isLoading}
+        searchPlaceholder="Search files..."
+        createButtonText="Upload File"
+        itemTypeName="file"
+        emptyMessage="No files uploaded yet"
+        emptyDescription="Upload files to use in your workflows."
+        onCreate={handleCreate}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+      {currentWorkspace && (
+        <UploadFileModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          workspaceId={currentWorkspace.id}
+          onSuccess={handleUploadSuccess}
+        />
+      )}
+
+      {/* Edit File Modal */}
+      {currentWorkspace && editingFileId && (
+        <EditFileModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingFileId(null);
+          }}
+          workspaceId={currentWorkspace.id}
+          fileId={editingFileId}
+          onSuccess={() => {
+            loadFiles();
+          }}
+        />
+      )}
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useUser } from '@/context/UserContext';
 import {
   Workflow,
   PlayCircle,
@@ -61,6 +62,16 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   const navigate = useNavigate();
   const { currentWorkspace } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
+  const { currentUser } = useUser();
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <nav
@@ -74,7 +85,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         {!isCollapsed ? (
           <div className="space-y-2">
             <button
-              onClick={() => navigate('/workspace-selection')}
+              onClick={() => navigate('/workspaces')}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-200 group"
             >
               <ArrowLeft className="h-3 w-3 flex-shrink-0 group-hover:-translate-x-1 transition-transform duration-200" />
@@ -88,7 +99,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
           </div>
         ) : (
           <button
-            onClick={() => navigate('/workspace-selection')}
+            onClick={() => navigate('/')}
             className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-primary hover:scale-110 transition-all duration-200"
             title="Back to workspaces"
           >
@@ -309,16 +320,22 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
         
         <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-all duration-200 cursor-pointer group">
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 group-hover:shadow-glow-primary transition-all duration-200">
-            <User className="h-5 w-5 text-primary-foreground" />
+            {currentUser?.name ? (
+              <span className="text-xs font-semibold text-primary-foreground">
+                {getUserInitials(currentUser.name)}
+              </span>
+            ) : (
+              <User className="h-5 w-5 text-primary-foreground" />
+            )}
           </div>
           
           {!isCollapsed && (
             <div className="overflow-hidden flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                Sarah Johnson
+                {currentUser?.name || 'User'}
               </p>
               <p className="text-xs text-foreground/70 truncate">
-                sarah@company.com
+                {currentUser?.email || 'No email'}
               </p>
             </div>
           )}

@@ -1,250 +1,357 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '@/context/WorkspaceContext';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
+import { WorkspaceCard } from '@/components/workspace/WorkspaceCard';
+import { UserCard } from '@/components/workspace/UserCard';
+import { CreateWorkspaceModal } from '@/components/workspace/CreateWorkspaceModal';
+import { Workspace, CreateWorkspaceData } from '@/types/workspace';
+import { getWorkspaces, createWorkspace as createWorkspaceUtil, setCurrentWorkspace, saveWorkspaces } from '@/utils/workspaceStorage';
 import { Button } from '@/components/ui/Button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/Input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { toast } from '@/hooks/use-toast';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Plus, Loader2, Building2, Users, ArrowRight, Settings, LogOut, Sun, Moon } from 'lucide-react';
-import type { Workspace } from '@/types/workspace';
+import { toast } from '@/hooks/use-toast';
+import { getUserWorkspaces, createWorkspace as createWorkspaceApi } from '@/services/workspaceApi';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { useUser } from '@/context/UserContext';
+import { getAccessToken, clearAllLocalStorage } from '@/utils/tokenUtils';
 
 const WorkspaceSelection = () => {
   const navigate = useNavigate();
-  const { workspaces, setWorkspace, createWorkspace, isLoading } = useWorkspace();
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { refreshWorkspaces } = useWorkspace();
+  const { currentUser } = useUser();
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState({ name: '', slug: '', description: '' });
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Check authentication on mount
+  useEffect(() => {
+    const accessToken = getAccessToken();
+    if (!accessToken) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  // Map User type to UserCard format
+  const userCardData = currentUser ? {
+    name: currentUser.name,
+    email: currentUser.email,
+    role: currentUser.role,
+  } : {
+    name: 'User',
+    email: '',
+    role: 'User',
+  };
+
+  // Separate workspaces into owned and joined
   const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
   const joinedWorkspaces = workspaces.filter(ws => ws.role !== 'owner');
 
-  const getInitials = (name: string | undefined) => {
-    if (!name || typeof name !== 'string') return 'U';
-    return name.split(' ').filter(n => n.length > 0).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
-  };
+  useEffect(() => {
+    loadWorkspaces();
+  }, []);
 
-  const generateSlug = (name: string): string => {
-    return name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-  };
-
-  const handleWorkspaceSelect = async (workspace: Workspace) => {
+  const loadWorkspaces = async () => {
     try {
-      await setWorkspace(workspace.id);
-      toast({ title: 'Workspace Selected', description: `Entering ${workspace.name}...` });
-      setTimeout(() => navigate('/dashboard'), 500);
-    } catch {
-      toast({ title: 'Error', description: 'Failed to select workspace', variant: 'destructive' });
+      setIsLoading(true);
+      // getUserWorkspaces artık userId'yi token'dan otomatik alıyor
+      const response = await getUserWorkspaces();
+      console.log('Workspaces API response:', response);
+
+      // Map API response to Workspace type
+      const mappedWorkspaces: Workspace[] = [];
+
+      // Map owned workspaces
+      if (response.data.owned_workspaces && Array.isArray(response.data.owned_workspaces)) {
+        response.data.owned_workspaces.forEach((ws: any) => {
+          mappedWorkspaces.push({
+            id: ws.id || ws.workspace_id || `workspace-${Date.now()}`,
+            name: ws.name || ws.workspace_name || 'Unnamed Workspace',
+            slug: ws.slug || ws.workspace_slug || ws.name?.toLowerCase().replace(/\s+/g, '-') || 'workspace',
+            description: ws.description || ws.workspace_description,
+            icon: ws.icon || ws.workspace_icon,
+            memberCount: ws.member_count || ws.memberCount || 0,
+            lastAccessed: ws.last_accessed || ws.lastAccessed || new Date().toISOString(),
+            createdAt: ws.created_at || ws.createdAt || new Date().toISOString(),
+            role: 'owner',
+            member_limit: ws.member_limit || 5,
+            current_member_count: ws.current_member_count || ws.memberCount || 0,
+            workflow_limit: ws.workflow_limit || 50,
+            current_workflow_count: ws.current_workflow_count || 0,
+            custom_script_limit: ws.custom_script_limit || 25,
+            current_custom_script_count: ws.current_custom_script_count || 0,
+            storage_limit_mb: ws.storage_limit_mb || 10240,
+            current_storage_mb: ws.current_storage_mb || 0,
+            api_key_limit: ws.api_key_limit || 10,
+            current_api_key_count: ws.current_api_key_count || 0,
+            monthly_execution_limit: ws.monthly_execution_limit || 10000,
+            current_month_executions: ws.current_month_executions || 0,
+            monthly_concurrent_executions: ws.monthly_concurrent_executions || 5,
+            current_month_concurrent_executions: ws.current_month_concurrent_executions || 0,
+            current_period_start: ws.current_period_start || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+            current_period_end: ws.current_period_end || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+          });
+        });
+      }
+
+      // Map memberships (joined workspaces)
+      if (response.data.memberships && Array.isArray(response.data.memberships)) {
+        response.data.memberships.forEach((membership: any) => {
+          const ws = membership.workspace || membership;
+          mappedWorkspaces.push({
+            id: ws.id || ws.workspace_id || `workspace-${Date.now()}`,
+            name: ws.name || ws.workspace_name || 'Unnamed Workspace',
+            slug: ws.slug || ws.workspace_slug || ws.name?.toLowerCase().replace(/\s+/g, '-') || 'workspace',
+            description: ws.description || ws.workspace_description,
+            icon: ws.icon || ws.workspace_icon,
+            memberCount: ws.member_count || ws.memberCount || 0,
+            lastAccessed: ws.last_accessed || ws.lastAccessed || new Date().toISOString(),
+            createdAt: ws.created_at || ws.createdAt || new Date().toISOString(),
+            role: membership.role || 'viewer',
+            member_limit: ws.member_limit || 5,
+            current_member_count: ws.current_member_count || ws.memberCount || 0,
+            workflow_limit: ws.workflow_limit || 50,
+            current_workflow_count: ws.current_workflow_count || 0,
+            custom_script_limit: ws.custom_script_limit || 25,
+            current_custom_script_count: ws.current_custom_script_count || 0,
+            storage_limit_mb: ws.storage_limit_mb || 10240,
+            current_storage_mb: ws.current_storage_mb || 0,
+            api_key_limit: ws.api_key_limit || 10,
+            current_api_key_count: ws.current_api_key_count || 0,
+            monthly_execution_limit: ws.monthly_execution_limit || 10000,
+            current_month_executions: ws.current_month_executions || 0,
+            monthly_concurrent_executions: ws.monthly_concurrent_executions || 5,
+            current_month_concurrent_executions: ws.current_month_concurrent_executions || 0,
+            current_period_start: ws.current_period_start || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+            current_period_end: ws.current_period_end || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+          });
+        });
+      }
+
+      // Sort by last accessed
+      mappedWorkspaces.sort((a, b) => 
+        new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
+      );
+
+      // Save workspaces to localStorage so WorkspaceContext can access them
+      saveWorkspaces(mappedWorkspaces);
+      setWorkspaces(mappedWorkspaces);
+    } catch (error) {
+      console.error('Error loading workspaces:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load workspaces',
+        variant: 'destructive',
+      });
+      // Fallback to local storage if API fails
+      const loadedWorkspaces = getWorkspaces();
+      loadedWorkspaces.sort((a, b) => 
+        new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
+      );
+      setWorkspaces(loadedWorkspaces);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleCreateWorkspace = async () => {
-    if (!formData.name.trim()) return;
+  const handleWorkspaceSelect = (workspace: Workspace) => {
+    setCurrentWorkspace(workspace.id);
+    // Refresh WorkspaceContext to update current workspace
+    refreshWorkspaces();
+    toast({
+      title: 'Workspace Selected',
+      description: `Entering ${workspace.name}...`,
+    });
+    // Navigate to dashboard page
+    navigate('/dashboard');
+  };
+
+  const handleCreateWorkspace = async (data: CreateWorkspaceData) => {
     setIsCreating(true);
+    
     try {
-      const newWorkspace = await createWorkspace(formData.name, formData.slug || generateSlug(formData.name), formData.description);
+      const requestData: { name: string; slug: string; description?: string } = {
+        name: data.name,
+        slug: data.slug,
+      };
+      
+      // Only include description if it's not empty
+      if (data.description && data.description.trim()) {
+        requestData.description = data.description.trim();
+      }
+
+      console.log('Sending workspace creation request:', requestData);
+      
+      const response = await createWorkspaceApi(requestData);
+
+      console.log('Workspace created:', response);
+
+      toast({
+        title: 'Workspace Created',
+        description: response.message || `${data.name} is ready to use.`,
+      });
+
       setIsModalOpen(false);
-      setFormData({ name: '', slug: '', description: '' });
-      toast({ title: 'Workspace Created', description: `${newWorkspace.name} is ready to use.` });
-      setTimeout(() => handleWorkspaceSelect(newWorkspace), 500);
-    } catch {
-      toast({ title: 'Error', description: 'Failed to create workspace.', variant: 'destructive' });
+      
+      // Reload workspaces to get the new one from API
+      await loadWorkspaces();
+      
+      // Wait a bit for state to update, then find and select the new workspace
+      setTimeout(() => {
+        // Find workspace by slug in the updated state
+        const newWorkspace = workspaces.find(ws => ws.slug === data.slug);
+        if (newWorkspace) {
+          handleWorkspaceSelect(newWorkspace);
+        } else if (workspaces.length > 0) {
+          // If not found by slug, select the first workspace (should be the newest)
+          handleWorkspaceSelect(workspaces[0]);
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create workspace. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
+  const handleSettings = () => {
+    toast({
+      title: 'Settings',
+      description: 'Opening user settings...',
+    });
+  };
+
+  const handleLogout = () => {
+    // Tüm localStorage verilerini temizle
+    clearAllLocalStorage();
+    
+    toast({
+      title: 'Logged Out',
+      description: 'You have been logged out successfully.',
+    });
+    
+    // Navigate to login page
     navigate('/login');
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  const userName = user ? `${user.name || ''} ${user.surname || ''}`.trim() || user.username || 'User' : 'User';
-  const userEmail = user?.email || '';
-
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Background Effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[128px]" />
-      </div>
-
-      <div className="relative z-10 container mx-auto max-w-4xl px-6 py-12 sm:py-16">
-        {/* User Card */}
-        <div className="bg-surface border border-border rounded-xl p-6 mb-12">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-14 w-14 border-2 border-primary/20">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">{getInitials(userName)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-lg font-bold text-foreground">{userName}</h2>
-                <p className="text-sm text-muted-foreground">{userEmail}</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-8 px-3">
-                  {theme === 'dark' ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />}
-                  <span className="text-xs">{theme === 'dark' ? 'Light' : 'Dark'}</span>
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/settings')} className="h-8 px-3">
-                  <Settings className="h-4 w-4 mr-1" />
-                  <span className="text-xs">Settings</span>
-                </Button>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="h-8 px-3 text-destructive border border-destructive/30 hover:bg-destructive/10">
-                <LogOut className="h-4 w-4 mr-1" />
-                <span className="text-xs">Logout</span>
-              </Button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background transition-colors duration-200">
+      {/* Main Content */}
+      <div className="container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
+        {/* User Card at Top - Enhanced spacing */}
+        <div className="mb-12 sm:mb-16">
+          <UserCard
+            user={userCardData}
+            onSettings={handleSettings}
+            onLogout={handleLogout}
+          />
         </div>
 
-        {/* Header */}
+        {/* Header with Create Button */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Your Workspaces</h1>
-            <p className="text-muted-foreground mt-1">Select a workspace to continue</p>
+            <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
+            <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Workspace</span>
-          </Button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="group flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed border-border hover:border-primary transition-all duration-200 hover:bg-surface/50"
+          >
+            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+              New Workspace
+            </span>
+          </button>
         </div>
 
-        {/* Owned Workspaces */}
+        {/* Owned Workspaces Section */}
         {ownedWorkspaces.length > 0 && (
           <div className="mb-10">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Owned ({ownedWorkspaces.length})</h2>
-            </div>
-            <div className="space-y-3">
-              {ownedWorkspaces.map(ws => (
-                <WorkspaceCard key={ws.id} workspace={ws} onClick={handleWorkspaceSelect} />
+...
+            <div className="space-y-2">
+              {ownedWorkspaces.map((workspace, index) => (
+                <div
+                  key={workspace.id}
+                >
+                  <WorkspaceCard
+                    workspace={workspace}
+                    onClick={handleWorkspaceSelect}
+                  />
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Joined Workspaces */}
+        {/* Joined Workspaces Section */}
         {joinedWorkspaces.length > 0 && (
           <div className="mb-10">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="h-4 w-4 text-success" />
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Joined ({joinedWorkspaces.length})</h2>
-            </div>
-            <div className="space-y-3">
-              {joinedWorkspaces.map(ws => (
-                <WorkspaceCard key={ws.id} workspace={ws} onClick={handleWorkspaceSelect} />
+...
+            <div className="space-y-2">
+              {joinedWorkspaces.map((workspace, index) => (
+                <div
+                  key={workspace.id}
+                >
+                  <WorkspaceCard
+                    workspace={workspace}
+                    onClick={handleWorkspaceSelect}
+                  />
+                </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-16">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
+            <p className="text-sm text-muted-foreground">Loading workspaces...</p>
           </div>
         )}
 
         {/* Empty State */}
-        {workspaces.length === 0 && (
-          <div className="text-center py-20">
-            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
-              <Plus className="h-10 w-10 text-primary" />
+        {!isLoading && workspaces.length === 0 && (
+          <div className="text-center py-16">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">No workspaces yet</h3>
-            <p className="text-muted-foreground mb-8">Create your first workspace to get started</p>
-            <Button onClick={() => setIsModalOpen(true)} size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
+            <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
+            <Button onClick={() => setIsModalOpen(true)} size="lg">
+              <Plus className="h-4 w-4 mr-2" />
               Create Your First Workspace
             </Button>
           </div>
         )}
+
+        {/* Footer Info - Better spacing and typography */}
+        <div className="text-center pt-10 mt-10 border-t border-border">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Need help?{' '}
+            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
+              View documentation
+            </a>
+            {' '}or{' '}
+            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
+              contact support
+            </a>
+          </p>
+        </div>
       </div>
 
-      {/* Create Workspace Dialog */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Workspace</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Input
-              label="Workspace Name"
-              placeholder="My Workspace"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value, slug: generateSlug(e.target.value) })}
-              disabled={isCreating}
-            />
-            <Input
-              label="Slug"
-              placeholder="my-workspace"
-              value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
-              disabled={isCreating}
-            />
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Description (Optional)</label>
-              <textarea
-                placeholder="Describe your workspace..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                disabled={isCreating}
-                rows={3}
-                className="w-full px-4 py-2 rounded-lg bg-surface border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isCreating}>Cancel</Button>
-            <Button onClick={handleCreateWorkspace} loading={isCreating} disabled={!formData.name.trim() || isCreating}>
-              Create Workspace
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateWorkspace}
+        isCreating={isCreating}
+      />
     </div>
-  );
-};
-
-const WorkspaceCard = ({ workspace, onClick }: { workspace: Workspace; onClick: (ws: Workspace) => void }) => {
-  const getInitials = (name: string) => {
-    return name.split(' ').filter(w => w).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'WS';
-  };
-
-  return (
-    <button
-      onClick={() => onClick(workspace)}
-      className={cn(
-        'group w-full px-5 py-4 rounded-lg border border-border bg-surface',
-        'hover:border-primary/60 hover:shadow-lg hover:-translate-y-0.5',
-        'transition-all duration-300 flex items-center gap-4',
-        'focus:outline-none focus:ring-2 focus:ring-primary'
-      )}
-    >
-      <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-        <span className="text-lg font-bold text-primary-foreground">{getInitials(workspace.name)}</span>
-      </div>
-      <div className="flex-1 text-left min-w-0">
-        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate">{workspace.name}</h3>
-        {workspace.description && <p className="text-sm text-muted-foreground truncate">{workspace.description}</p>}
-      </div>
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted/50 group-hover:bg-primary/15 transition-colors">
-        <span className="text-sm font-medium text-muted-foreground group-hover:text-primary">Enter</span>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-      </div>
-    </button>
   );
 };
 

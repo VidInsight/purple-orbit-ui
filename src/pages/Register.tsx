@@ -1,150 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
-import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '@/config/api';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
-import type { RegisterRequest, Agreement } from '@/types/api';
+import i18n from '@/i18n/config';
+import { register as registerApi, fetchAgreement as fetchAgreementApi } from '@/services/authApi';
 
 export const Register = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { register } = useAuth();
   const [loading, setLoading] = useState(false);
-  
-  // Get current locale from i18next and normalize to API format (tr -> tr-TR, en -> en-US)
-  const normalizeLocale = (lang: string): string => {
-    const langMap: Record<string, string> = {
-      'tr': 'tr-TR',
-      'en': 'en-US',
-    };
-    // If already in format like 'tr-TR', return as is
-    if (lang.includes('-')) {
-      return lang;
-    }
-    // Otherwise map to full format
-    return langMap[lang] || 'tr-TR';
-  };
-  const currentLocale = normalizeLocale(i18n.language || 'tr');
-  
-  // Fetch active agreements
-  const { data: termsAgreement, isLoading: isLoadingTerms, error: termsError } = useQuery({
-    queryKey: ['activeAgreement', 'terms', currentLocale],
-    queryFn: async () => {
-      try {
-        console.log('Fetching terms agreement...');
-        const response = await apiClient.get<Agreement>(
-          API_ENDPOINTS.agreement.getActive,
-          { 
-            skipAuth: true,
-            params: {
-              agreement_type: 'terms',
-              locale: currentLocale,
-            },
-          }
-        );
-        console.log('Terms agreement response (full):', JSON.stringify(response, null, 2));
-        console.log('Terms agreement response.data:', response.data);
-        console.log('Terms agreement response.data.id:', response.data?.id);
-        return response;
-      } catch (error) {
-        console.error('Terms agreement error:', error);
-        console.error('Terms agreement error details:', {
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
-        throw error;
-      }
-    },
-    retry: 1, // Retry sayısını azalt
-    refetchOnWindowFocus: false, // Window focus'ta refetch yapma
-    refetchOnMount: true, // Sadece mount'ta refetch yap
-  });
-
-  const { data: privacyAgreement, isLoading: isLoadingPrivacy, error: privacyError } = useQuery({
-    queryKey: ['activeAgreement', 'privacy_policy', currentLocale],
-    queryFn: async () => {
-      try {
-        console.log('Fetching privacy agreement...');
-        const response = await apiClient.get<Agreement>(
-          API_ENDPOINTS.agreement.getActive,
-          { 
-            skipAuth: true,
-            params: {
-              agreement_type: 'privacy_policy',
-              locale: currentLocale,
-            },
-          }
-        );
-        console.log('Privacy agreement response (full):', JSON.stringify(response, null, 2));
-        console.log('Privacy agreement response.data:', response.data);
-        console.log('Privacy agreement response.data.id:', response.data?.id);
-        return response;
-      } catch (error) {
-        console.error('Privacy agreement error:', error);
-        console.error('Privacy agreement error details:', {
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
-        throw error;
-      }
-    },
-    retry: 1, // Retry sayısını azalt
-    refetchOnWindowFocus: false, // Window focus'ta refetch yapma
-    refetchOnMount: true, // Sadece mount'ta refetch yap
-  });
-
-  // Debug: Log agreement data and button state
-  useEffect(() => {
-    console.log('=== Register Page Debug ===');
-    console.log('Terms Agreement (full):', JSON.stringify(termsAgreement, null, 2));
-    console.log('Terms Agreement Data:', termsAgreement?.data);
-    console.log('Terms Agreement ID:', termsAgreement?.data?.id);
-    console.log('Privacy Agreement (full):', JSON.stringify(privacyAgreement, null, 2));
-    console.log('Privacy Agreement Data:', privacyAgreement?.data);
-    console.log('Privacy Agreement ID:', privacyAgreement?.data?.id);
-    console.log('Terms Loading:', isLoadingTerms);
-    console.log('Privacy Loading:', isLoadingPrivacy);
-    console.log('Terms Error:', termsError);
-    console.log('Privacy Error:', privacyError);
-    
-    // Log button disabled state
-    const hasTermsId = !!termsAgreement?.data?.id;
-    const hasPrivacyId = !!privacyAgreement?.data?.id;
-    const isDisabled = isLoadingTerms || isLoadingPrivacy || !hasTermsId || !hasPrivacyId || !!termsError || !!privacyError;
-    
-    console.log('Button State:', {
-      isDisabled,
-      isLoadingTerms,
-      isLoadingPrivacy,
-      hasTermsId,
-      hasPrivacyId,
-      hasTermsError: !!termsError,
-      hasPrivacyError: !!privacyError,
-    });
-    
-    // Log error details if any
-    if (termsError) {
-      console.error('Terms Error Details:', termsError);
-    }
-    if (privacyError) {
-      console.error('Privacy Error Details:', privacyError);
-    }
-    
-    console.log('========================');
-  }, [termsAgreement, privacyAgreement, termsError, privacyError, isLoadingTerms, isLoadingPrivacy]);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     name: '',
@@ -157,6 +31,78 @@ export const Register = () => {
     marketing: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingAgreement, setLoadingAgreement] = useState<{ privacyPolicy: boolean; terms: boolean }>({
+    privacyPolicy: false,
+    terms: false,
+  });
+  const [agreementVersions, setAgreementVersions] = useState<{
+    privacyPolicy: string | null;
+    terms: string | null;
+  }>({
+    privacyPolicy: null,
+    terms: null,
+  });
+
+  const fetchAgreement = async (agreementType: 'terms' | 'privacy_policy'): Promise<{ id: string } | null> => {
+    try {
+      const locale = i18n.language || 'en';
+      console.log('Fetching agreement for type:', agreementType, 'locale:', locale);
+      
+      const responseData = await fetchAgreementApi(locale);
+      console.log('Agreement response:', responseData);
+      
+      // agreement_type'a göre doğru agreement'ı bul
+      const agreement = responseData.data.items.find(
+        (item) => item.agreement_type === agreementType
+      );
+      
+      if (!agreement || !agreement.id) {
+        console.error(`Agreement not found for type: ${agreementType}`, responseData.data.items);
+        throw new Error(`Agreement not found for type: ${agreementType}`);
+      }
+      
+      console.log('Found agreement:', agreement);
+      return { id: String(agreement.id) };
+    } catch (error) {
+      console.error('Error fetching agreement:', error);
+      return null;
+    }
+  };
+
+  const handleAgreementCheck = async (type: 'privacyPolicy' | 'terms', checked: boolean) => {
+    if (checked) {
+      setLoadingAgreement(prev => ({ ...prev, [type]: true }));
+      
+      try {
+        // API'deki agreement_type formatına çevir
+        const agreementType = type === 'privacyPolicy' ? 'privacy_policy' : 'terms';
+        const agreementData = await fetchAgreement(agreementType);
+        
+        if (agreementData && agreementData.id) {
+          setFormData(prev => ({ ...prev, [type]: true }));
+          setAgreementVersions(prev => ({ ...prev, [type]: agreementData.id }));
+        } else {
+          toast({
+            title: t('common:messages.error'),
+            description: 'Failed to fetch agreement. Please try again.',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error('Error in handleAgreementCheck:', error);
+        toast({
+          title: t('common:messages.error'),
+          description: error instanceof Error ? error.message : 'Failed to fetch agreement',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingAgreement(prev => ({ ...prev, [type]: false }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [type]: false }));
+      setAgreementVersions(prev => ({ ...prev, [type]: null }));
+    }
+  };
 
   const registerSchema = z.object({
     username: z.string().min(3, t('auth:register.errors.usernameMin')),
@@ -179,61 +125,41 @@ export const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('=== Form Submit Started ===');
-    console.log('Form Data:', formData);
-    console.log('Terms Agreement:', termsAgreement);
-    console.log('Privacy Agreement:', privacyAgreement);
-    console.log('Terms Agreement ID:', termsAgreement?.data?.id);
-    console.log('Privacy Agreement ID:', privacyAgreement?.data?.id);
-    
     setErrors({});
 
     try {
-      // Validation
       registerSchema.parse(formData);
-      console.log('Validation passed');
-      setLoading(true);
-
-      // Get agreement IDs
-      const termsAgreementId = termsAgreement?.data?.id;
-      const privacyAgreementId = privacyAgreement?.data?.id;
-
-      console.log('Agreement IDs:', { termsAgreementId, privacyAgreementId });
-
-      if (!termsAgreementId || !privacyAgreementId) {
-        console.error('Agreement IDs missing!');
-        setLoading(false);
+      
+      // Agreement version ID'lerini kontrol et
+      if (!agreementVersions.terms || !agreementVersions.privacyPolicy) {
         toast({
           title: t('common:messages.error'),
-          description: 'Unable to load terms and privacy policy. Please try again.',
+          description: 'Please accept terms and privacy policy',
           variant: 'destructive',
         });
         return;
       }
 
-      // Prepare register request
-      const registerData: RegisterRequest = {
+      setLoading(true);
+
+      const registerPayload = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
         name: formData.name,
         surname: formData.surname,
         marketing_consent: formData.marketing,
-        terms_accepted_version: termsAgreementId,
-        privacy_policy_accepted_version: privacyAgreementId,
+        terms_accepted_version_id: agreementVersions.terms!,
+        privacy_policy_accepted_version_id: agreementVersions.privacyPolicy!,
       };
 
-      console.log('Register Data:', { ...registerData, password: '***' });
-      console.log('Calling register API...');
+      const response = await registerApi(registerPayload);
 
-      // Call register API
-      await register(registerData);
-      
-      console.log('Register API call successful!');
+      console.log('Registration successful:', response);
 
       toast({
         title: t('common:messages.success'),
-        description: 'Account created successfully. Please login.',
+        description: response.message || 'Account created successfully',
       });
 
       navigate('/login');
@@ -247,11 +173,9 @@ export const Register = () => {
         });
         setErrors(fieldErrors);
       } else {
-        // API error
-        const errorMessage = (error as any)?.message || 'Registration failed';
         toast({
           title: t('common:messages.error'),
-          description: errorMessage,
+          description: error instanceof Error ? error.message : 'Registration failed',
           variant: 'destructive',
         });
       }
@@ -338,13 +262,27 @@ export const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="transition-colors duration-200">{t('auth:register.password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.password}</p>
             )}
@@ -352,13 +290,27 @@ export const Register = () => {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="transition-colors duration-200">{t('auth:register.confirmPassword')}</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.confirmPassword}</p>
             )}
@@ -369,8 +321,9 @@ export const Register = () => {
               <Checkbox
                 id="privacyPolicy"
                 checked={formData.privacyPolicy}
+                disabled={loadingAgreement.privacyPolicy}
                 onCheckedChange={(checked) =>
-                  setFormData({ ...formData, privacyPolicy: checked as boolean })
+                  handleAgreementCheck('privacyPolicy', checked as boolean)
                 }
                 className="transition-transform duration-200 hover:scale-110"
               />
@@ -389,8 +342,9 @@ export const Register = () => {
               <Checkbox
                 id="terms"
                 checked={formData.terms}
+                disabled={loadingAgreement.terms}
                 onCheckedChange={(checked) =>
-                  setFormData({ ...formData, terms: checked as boolean })
+                  handleAgreementCheck('terms', checked as boolean)
                 }
                 className="transition-transform duration-200 hover:scale-110"
               />
@@ -423,35 +377,14 @@ export const Register = () => {
             </div>
           </div>
 
-          {(termsError || privacyError) && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mb-4">
-              <p className="text-sm text-destructive">
-                {termsError ? 'Failed to load terms and conditions. ' : ''}
-                {privacyError ? 'Failed to load privacy policy. ' : ''}
-                Please refresh the page and try again.
-              </p>
-            </div>
-          )}
-          
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
-            loading={loading || isLoadingTerms || isLoadingPrivacy}
-            disabled={isLoadingTerms || isLoadingPrivacy || !termsAgreement?.data?.id || !privacyAgreement?.data?.id || !!termsError || !!privacyError}
-            onClick={(e) => {
-              console.log('Button clicked!');
-              console.log('Button disabled:', isLoadingTerms || isLoadingPrivacy || !termsAgreement?.data?.id || !privacyAgreement?.data?.id || !!termsError || !!privacyError);
-              console.log('Terms Agreement:', termsAgreement);
-              console.log('Privacy Agreement:', privacyAgreement);
-            }}
+            loading={loading}
+            disabled={loading}
           >
-            {isLoadingTerms || isLoadingPrivacy 
-              ? t('common:messages.loading') || 'Loading...'
-              : !termsAgreement?.data?.id || !privacyAgreement?.data?.id
-              ? 'Waiting for agreements...'
-              : t('auth:register.createAccount')
-            }
+            {t('auth:register.createAccount')}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

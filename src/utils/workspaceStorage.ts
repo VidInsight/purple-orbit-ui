@@ -128,6 +128,8 @@ export const getWorkspaces = (): Workspace[] => {
 export const saveWorkspaces = (workspaces: Workspace[]): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(workspaces));
+    // Dispatch custom event to notify WorkspaceContext in the same tab
+    window.dispatchEvent(new Event('workspaceStorageChange'));
   } catch (error) {
     console.error('Error saving workspaces:', error);
   }
@@ -178,10 +180,25 @@ export const updateWorkspaceAccess = (workspaceId: string): void => {
   }
 };
 
+export const updateWorkspace = (workspaceId: string, updates: Partial<Workspace>): void => {
+  const workspaces = getWorkspaces();
+  const workspaceIndex = workspaces.findIndex((w) => w.id === workspaceId);
+  
+  if (workspaceIndex !== -1) {
+    workspaces[workspaceIndex] = {
+      ...workspaces[workspaceIndex],
+      ...updates,
+    };
+    saveWorkspaces(workspaces);
+  }
+};
+
 export const setCurrentWorkspace = (workspaceId: string): void => {
   try {
     localStorage.setItem('current_workspace', workspaceId);
     updateWorkspaceAccess(workspaceId);
+    // Dispatch custom event to notify WorkspaceContext in the same tab
+    window.dispatchEvent(new Event('workspaceStorageChange'));
   } catch (error) {
     console.error('Error setting current workspace:', error);
   }

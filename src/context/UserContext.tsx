@@ -1,55 +1,81 @@
-import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
-import type { User as ApiUser } from '@/types/api';
-
-// User type'ını API'den gelen type'a uyarla
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  role?: 'admin' | 'editor' | 'viewer';
-  lastActive?: string;
-  createdAt?: string;
-}
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User } from '@/types/user';
+import { decodeToken, getAccessToken } from '@/utils/tokenUtils';
 
 interface UserContextType {
   currentUser: User | null;
+  setCurrentUser: (user: User) => void;
   isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-/**
- * UserProvider - AuthContext'ten user bilgisini alır
- * AuthContext zaten user bilgisini yönetiyor, bu context sadece compatibility için
- */
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user: authUser, isLoading: authLoading } = useAuth();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // API User type'ını app User type'ına dönüştür
-    if (authUser) {
-      setCurrentUser({
-        id: authUser.id,
-        name: `${authUser.name || ''} ${authUser.surname || ''}`.trim() || authUser.username,
-        email: authUser.email,
-        avatar: authUser.avatar_url,
-        role: 'admin', // API'den role gelmiyorsa default
-        lastActive: new Date().toISOString(),
-        createdAt: authUser.created_at,
-      });
-    } else {
-      setCurrentUser(null);
-    }
-  }, [authUser]);
+    const loadUser = () => {
+      const accessToken = getAccessToken();
+      
+      if (!accessToken) {
+        setCurrentUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Decode token to get user info
+        const decoded = decodeToken(accessToken);
+        
+        if (decoded) {
+          // Map token payload to User type
+          // Token'dan gelen field'lara göre mapping yapılabilir
+          const user: User = {
+            id: decoded.user_id || decoded.sub || '',
+            name: decoded.username || decoded.name || 'User',
+            email: decoded.email || '',
+            role: decoded.role || 'viewer',
+            lastActive: new Date().toISOString(),
+            createdAt: decoded.iat ? new Date(decoded.iat * 1000).toISOString() : new Date().toISOString(),
+          };
+          
+          setCurrentUser(user);
+        } else {
+          setCurrentUser(null);
+        }
+      } catch (error) {
+        console.error('Error loading user from token:', error);
+        setCurrentUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
+
+    // Listen for token changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'access_token') {
+        loadUser();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('tokenChange', loadUser);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('tokenChange', loadUser);
+    };
+  }, []);
 
   return (
     <UserContext.Provider
       value={{
         currentUser,
-        isLoading: authLoading,
+        setCurrentUser,
+        isLoading,
       }}
     >
       {children}

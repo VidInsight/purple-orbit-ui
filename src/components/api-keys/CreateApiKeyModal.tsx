@@ -12,11 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { X } from 'lucide-react';
 
 interface CreateApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateApiKeyData) => void;
+  isLoading?: boolean;
 }
 
 export interface CreateApiKeyData {
@@ -24,6 +26,9 @@ export interface CreateApiKeyData {
   description: string;
   expiration: string;
   permissions: string[];
+  tags?: string[];
+  allowed_ips?: string[];
+  key_prefix?: string;
 }
 
 const AVAILABLE_PERMISSIONS = [
@@ -45,14 +50,20 @@ export const CreateApiKeyModal = ({
   isOpen,
   onClose,
   onSubmit,
+  isLoading = false,
 }: CreateApiKeyModalProps) => {
   const [formData, setFormData] = useState<CreateApiKeyData>({
     name: '',
     description: '',
     expiration: '90',
     permissions: [],
+    tags: [],
+    allowed_ips: [],
+    key_prefix: 'sk_live_',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [tagInput, setTagInput] = useState('');
+  const [ipInput, setIpInput] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +93,12 @@ export const CreateApiKeyModal = ({
       description: '',
       expiration: '90',
       permissions: [],
+      tags: [],
+      allowed_ips: [],
+      key_prefix: 'sk_live_',
     });
+    setTagInput('');
+    setIpInput('');
     setErrors({});
     onClose();
   };
@@ -95,6 +111,42 @@ export const CreateApiKeyModal = ({
         : [...prev.permissions, permissionId],
     }));
     setErrors((prev) => ({ ...prev, permissions: '' }));
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...(prev.tags || []), tagInput.trim()],
+      }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags?.filter((t) => t !== tag) || [],
+    }));
+  };
+
+  const addIp = () => {
+    // Basic IP validation
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (ipInput.trim() && ipRegex.test(ipInput.trim()) && !formData.allowed_ips?.includes(ipInput.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        allowed_ips: [...(prev.allowed_ips || []), ipInput.trim()],
+      }));
+      setIpInput('');
+    }
+  };
+
+  const removeIp = (ip: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      allowed_ips: prev.allowed_ips?.filter((i) => i !== ip) || [],
+    }));
   };
 
   return (
@@ -188,11 +240,112 @@ export const CreateApiKeyModal = ({
           )}
         </div>
 
+        <div>
+          <Label className="block text-sm font-medium text-foreground mb-2">
+            Key Prefix
+          </Label>
+          <Input
+            placeholder="sk_live_"
+            value={formData.key_prefix || 'sk_live_'}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, key_prefix: e.target.value }))
+            }
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Prefix for the API key (e.g., sk_live_, sk_test_)
+          </p>
+        </div>
+
+        <div>
+          <Label className="block text-sm font-medium text-foreground mb-2">
+            Tags (Optional)
+          </Label>
+          <div className="flex gap-2 mb-2">
+            <Input
+              placeholder="Add a tag and press Enter"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
+            />
+            <Button type="button" variant="outline" onClick={addTag}>
+              Add
+            </Button>
+          </div>
+          {formData.tags && formData.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <Label className="block text-sm font-medium text-foreground mb-2">
+            Allowed IPs (Optional)
+          </Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Restrict API key usage to specific IP addresses
+          </p>
+          <div className="flex gap-2 mb-2">
+            <Input
+              placeholder="192.168.1.1"
+              value={ipInput}
+              onChange={(e) => setIpInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addIp();
+                }
+              }}
+            />
+            <Button type="button" variant="outline" onClick={addIp}>
+              Add
+            </Button>
+          </div>
+          {formData.allowed_ips && formData.allowed_ips.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.allowed_ips.map((ip) => (
+                <span
+                  key={ip}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm"
+                >
+                  {ip}
+                  <button
+                    type="button"
+                    onClick={() => removeIp(ip)}
+                    className="hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="ghost" onClick={handleClose}>
+          <Button type="button" variant="ghost" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" loading={isLoading} disabled={isLoading}>
             Generate Key
           </Button>
         </div>

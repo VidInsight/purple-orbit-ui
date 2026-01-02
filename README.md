@@ -56,22 +56,14 @@ npm install
 bun install
 ```
 
-3. Configure API endpoint (optional):
-```bash
-# .env.local dosyası oluşturun (veya mevcut dosyayı düzenleyin)
-echo "VITE_API_BASE_URL=http://localhost:8000" > .env.local
-```
-
-**Not:** Default API URL: `http://localhost:8000`. Production için `.env.local` dosyasında değiştirin.
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 # or
 bun run dev
 ```
 
-5. Open your browser to `http://localhost:8080`
+4. Open your browser to `http://localhost:8080`
 
 ### Demo Data
 The application automatically seeds demo data on first load, including:
@@ -118,10 +110,7 @@ src/
 │   ├── execution.ts         # Execution types
 │   ├── workspace.ts         # Workspace types
 │   ├── user.ts              # User types
-│   ├── billing.ts           # Billing types
-│   └── api.ts               # API response types
-├── config/
-│   └── api.ts               # API endpoint configuration
+│   └── billing.ts           # Billing types
 ├── utils/
 │   ├── workspaceStorage.ts  # Workspace localStorage utilities
 │   ├── workflowStorage.ts   # Workflow localStorage utilities
@@ -130,9 +119,6 @@ src/
 │   ├── dashboardData.ts     # Dashboard data
 │   ├── keyboardShortcuts.ts # Keyboard shortcut handlers
 │   └── seedData.ts          # Demo data seeding
-├── lib/
-│   ├── utils.ts             # Utility functions
-│   └── apiClient.ts         # API client (HTTP requests)
 ├── hooks/
 │   ├── use-toast.ts         # Toast notification hook
 │   ├── use-mobile.tsx       # Mobile detection hook
@@ -160,12 +146,6 @@ src/
 - **React Context** - Global state (Theme, Workspace, User)
 - **React Query** - Server state management (ready for backend)
 - **localStorage** - Client-side persistence
-
-### API Integration
-- **API Client** - Centralized HTTP client (`src/lib/apiClient.ts`)
-- **API Config** - Centralized endpoint management (`src/config/api.ts`)
-- **Type-Safe** - Full TypeScript support for API requests/responses
-- **Authentication** - JWT Bearer Token & API Key support
 
 ### Development
 - **ESLint** - Code linting
@@ -283,34 +263,6 @@ The build output will be in the `dist/` directory.
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-
-### API Configuration
-
-Backend API endpoint'leri merkezi olarak `src/config/api.ts` dosyasında yönetilir.
-
-**Environment Variables:**
-- `VITE_API_BASE_URL` - API base URL (default: `http://localhost:8000`)
-
-**Kullanım Örneği:**
-```typescript
-import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '@/config/api';
-
-// Login
-const response = await apiClient.post(
-  API_ENDPOINTS.auth.login,
-  { email_or_username: 'user@example.com', password: 'password' },
-  { skipAuth: true }
-);
-
-// Authenticated request
-const workflows = await apiClient.get(
-  API_ENDPOINTS.workflow.list(workspaceId),
-  { token: accessToken }
-);
-```
-
-**Daha fazla örnek için:** `src/lib/apiClient.example.ts` dosyasına bakın.
 
 ### Adding New Pages
 

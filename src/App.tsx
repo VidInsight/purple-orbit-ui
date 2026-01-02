@@ -7,12 +7,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { UserProvider } from "@/context/UserContext";
-import { AuthProvider } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
 import { seedDemoData } from "@/utils/seedData";
-import LandingPage from "@/pages/LandingPage";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import WorkspaceSettings from "@/pages/WorkspaceSettings";
 import Dashboard from "@/pages/Dashboard";
@@ -28,15 +26,13 @@ import GlobalNodes from "@/pages/GlobalNodes";
 import CustomNodes from "@/pages/CustomNodes";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
-import UserProfile from "@/pages/UserProfile";
-import UserSettings from "@/pages/UserSettings";
-import PendingInvitations from "@/pages/PendingInvitations";
 import Billing from "@/pages/Billing";
 import NotFound from "@/pages/NotFound";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { ForgotPassword } from "@/pages/ForgotPassword";
 import { ResetPassword } from "@/pages/ResetPassword";
+import Welcome from "@/pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -45,8 +41,8 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Welcome/Landing Page */}
+      <Route path="/" element={<Welcome />} />
       
       {/* Auth Routes */}
       <Route path="/login" element={<Login />} />
@@ -54,7 +50,7 @@ const AppRoutes = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       
-      <Route path="/workspace-selection" element={<WorkspaceSelection />} />
+      <Route path="/workspaces" element={<WorkspaceSelection />} />
       
       {/* Protected Routes - Require Workspace Context */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -72,9 +68,6 @@ const AppRoutes = () => {
       <Route path="/custom-nodes" element={<ProtectedRoute><CustomNodes /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
-      <Route path="/invitations" element={<ProtectedRoute><PendingInvitations /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       
       <Route path="*" element={<NotFound />} />
@@ -91,19 +84,17 @@ const App = () => {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark">
-          <AuthProvider>
-            <WorkspaceProvider>
-              <UserProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter>
-                    <AppRoutes />
-                  </BrowserRouter>
-                </TooltipProvider>
-              </UserProvider>
-            </WorkspaceProvider>
-          </AuthProvider>
+          <WorkspaceProvider>
+            <UserProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </TooltipProvider>
+            </UserProvider>
+          </WorkspaceProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

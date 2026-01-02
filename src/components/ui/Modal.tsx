@@ -48,7 +48,7 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/80 backdrop-blur-md transition-all duration-300"
@@ -58,30 +58,32 @@ const Modal = ({
       {/* Modal */}
       <div
         className={cn(
-          'relative w-full bg-surface rounded-lg shadow-2xl border border-border/50',
+          'relative w-full bg-surface rounded-lg shadow-2xl border border-border/50 flex flex-col max-h-[95vh] sm:max-h-[90vh]',
           sizes[size]
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex-shrink-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground pr-2">{title}</h2>
             <button
               onClick={onClose}
-              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:rotate-90 transition-all duration-200 p-1 rounded-lg"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:rotate-90 transition-all duration-200 p-1 rounded-lg flex-shrink-0"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         )}
 
-        {/* Body */}
-        <div className="px-6 py-4">{children}</div>
+        {/* Body - Scrollable */}
+        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1 min-h-0">
+          {children}
+        </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+          <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-border flex-shrink-0">
             {footer}
           </div>
         )}

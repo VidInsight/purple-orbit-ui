@@ -1,176 +1,175 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
+import { VariableItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
-import { apiClient } from '@/lib/apiClient';
-import { API_ENDPOINTS } from '@/config/api';
+import { CreateVariableModal } from '@/components/variables/CreateVariableModal';
+import { VariableDetailModal } from '@/components/variables/VariableDetailModal';
+import { EditVariableModal } from '@/components/variables/EditVariableModal';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { useAuth } from '@/context/AuthContext';
-import { Variable, PaginatedResponse, CreateVariableRequest, UpdateVariableRequest } from '@/types/api';
-import { VariableModal } from '@/components/variables/VariableModal';
+import { getVariables, getVariableDetail, deleteVariable, VariableDetail } from '@/services/variablesApi';
 
 const Variables = () => {
+  const [variables, setVariables] = useState<VariableItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [variableDetail, setVariableDetail] = useState<VariableDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingVariableId, setEditingVariableId] = useState<string | null>(null);
   const { currentWorkspace } = useWorkspace();
-  const { getToken } = useAuth();
-  const queryClient = useQueryClient();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingVariable, setEditingVariable] = useState<Variable | null>(null);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
 
-  // Fetch variables
-  const { data: variablesData, isLoading } = useQuery({
-    queryKey: ['variables', currentWorkspace?.id],
-    queryFn: () => apiClient.get<PaginatedResponse<Variable>>(
-      API_ENDPOINTS.variable.list(currentWorkspace!.id),
-      { token: getToken() }
-    ),
-    enabled: !!currentWorkspace?.id && !!getToken(),
-  });
+  useEffect(() => {
+    loadVariables();
+  }, [currentWorkspace]);
 
-  const variables = variablesData?.data.items || [];
+  const loadVariables = async () => {
+    if (!currentWorkspace?.id) {
+      setIsLoading(false);
+      return;
+    }
 
-  // Create variable mutation
-  const createVariableMutation = useMutation({
-    mutationFn: (data: CreateVariableRequest) =>
-      apiClient.post<Variable>(
-        API_ENDPOINTS.variable.create(currentWorkspace!.id),
-        data,
-        { token: getToken() }
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['variables'] });
-      toast({
-        title: 'Variable Created',
-        description: 'Variable has been created successfully.',
+    try {
+      setIsLoading(true);
+      const response = await getVariables(currentWorkspace.id);
+
+      // Map API response to VariableItem type
+      const mappedVariables: VariableItem[] = [];
+      
+      // API response formatına göre variables'ları map et
+      const variablesData = Array.isArray(response.data) 
+        ? response.data 
+        : response.data?.items || response.data?.variables || [];
+
+      variablesData.forEach((variable: any) => {
+        mappedVariables.push({
+          id: variable.id || `variable-${Date.now()}`,
+          name: variable.key || variable.name || 'Unnamed Variable',
+          key: variable.key || '',
+          description: variable.description || undefined,
+          type: typeof variable.value === 'number' ? 'number' 
+            : typeof variable.value === 'boolean' ? 'boolean'
+            : variable.value?.startsWith('{') || variable.value?.startsWith('[') ? 'json'
+            : 'string',
+          createdAt: variable.created_at || variable.createdAt || new Date().toISOString(),
+          updatedAt: variable.updated_at || variable.updatedAt || new Date().toISOString(),
+        });
       });
-    },
-    onError: (error: any) => {
+
+      setVariables(mappedVariables);
+    } catch (error) {
+      console.error('Error loading variables:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create variable',
+        description: error instanceof Error ? error.message : 'Failed to load variables',
         variant: 'destructive',
       });
-    },
-  });
-
-  // Update variable mutation
-  const updateVariableMutation = useMutation({
-    mutationFn: ({ variableId, data }: { variableId: string; data: UpdateVariableRequest }) =>
-      apiClient.put<Variable>(
-        API_ENDPOINTS.variable.update(currentWorkspace!.id, variableId),
-        data,
-        { token: getToken() }
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['variables'] });
-      toast({
-        title: 'Variable Updated',
-        description: 'Variable has been updated successfully.',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update variable',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Delete variable mutation
-  const deleteVariableMutation = useMutation({
-    mutationFn: (variableId: string) =>
-      apiClient.delete(
-        API_ENDPOINTS.variable.delete(currentWorkspace!.id, variableId),
-        { token: getToken() }
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['variables'] });
-      toast({
-        title: 'Variable Deleted',
-        description: 'Variable has been deleted successfully.',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete variable',
-        variant: 'destructive',
-      });
-    },
-  });
+      setVariables([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCreate = () => {
-    setModalMode('create');
-    setEditingVariable(null);
-    setModalOpen(true);
+    if (!currentWorkspace) {
+      toast({
+        title: 'Error',
+        description: 'Please select a workspace first',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsCreateModalOpen(true);
   };
 
-  const handleView = (item: { id: string; name: string; description?: string }) => {
-    const variable = variables.find(v => v.id === item.id);
-    if (variable) {
+  const handleCreateSuccess = () => {
+    // Refresh variables list
+    loadVariables();
+  };
+
+  const handleView = async (item: VariableItem) => {
+    if (!currentWorkspace?.id) {
       toast({
-        title: 'View Variable',
-        description: `Viewing: ${variable.key}`,
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
       });
+      return;
+    }
+
+    try {
+      setIsLoadingDetail(true);
+      setIsDetailModalOpen(true);
+      const response = await getVariableDetail(currentWorkspace.id, item.id);
+      setVariableDetail(response.data);
+    } catch (error) {
+      console.error('Error loading variable detail:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load variable details',
+        variant: 'destructive',
+      });
+      setIsDetailModalOpen(false);
+    } finally {
+      setIsLoadingDetail(false);
     }
   };
 
-  const handleEdit = async (item: { id: string; name: string; description?: string }) => {
-    // Secret variable'ların değerini almak için detay endpoint'ini kullan
-    try {
-      const response = await apiClient.get<Variable>(
-        API_ENDPOINTS.variable.get(currentWorkspace!.id, item.id),
-        { token: getToken() }
-      );
-      setModalMode('edit');
-      setEditingVariable(response.data);
-      setModalOpen(true);
-    } catch (error: any) {
+  const handleEdit = (item: VariableItem) => {
+    if (!currentWorkspace?.id) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to load variable details',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setEditingVariableId(item.id);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = async (item: VariableItem) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await deleteVariable(currentWorkspace.id, item.id);
+      toast({
+        title: 'Success',
+        description: `${item.key} has been deleted successfully.`,
+      });
+      // Reload variables after deletion
+      await loadVariables();
+    } catch (error) {
+      console.error('Error deleting variable:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete variable',
         variant: 'destructive',
       });
     }
   };
 
-  const handleModalSubmit = async (data: { key: string; value: string; description?: string; is_secret: boolean }) => {
-    if (!currentWorkspace) return;
-
-    if (modalMode === 'create') {
-      createVariableMutation.mutate(data);
-    } else if (editingVariable) {
-      updateVariableMutation.mutate({
-        variableId: editingVariable.id,
-        data: {
-          key: data.key,
-          value: data.value,
-          description: data.description,
-          is_secret: data.is_secret,
-        },
-      });
-    }
-  };
-
-  const handleDelete = async (item: { id: string; name: string; description?: string }) => {
-    if (!currentWorkspace) return;
-    deleteVariableMutation.mutate(item.id);
-  };
-
-  // Map Variable to ListPageTemplate format
-  const mappedVariables = variables.map((variable) => ({
-    id: variable.id,
-    name: variable.key,
-    description: variable.description || (variable.is_secret ? 'Secret variable' : ''),
-  }));
+  if (!currentWorkspace) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Please select a workspace first</p>
+      </div>
+    );
+  }
 
   return (
     <>
       <ListPageTemplate
         pageTitle="Variables"
         pageDescription="Manage environment variables and constants"
-        items={mappedVariables}
+        items={variables}
         isLoading={isLoading}
         searchPlaceholder="Search variables..."
         createButtonText="Add Variable"
@@ -182,14 +181,42 @@ const Variables = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
-
-      <VariableModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleModalSubmit}
-        variable={editingVariable}
-        mode={modalMode}
+      {/* Variable Detail Modal */}
+      <VariableDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setVariableDetail(null);
+        }}
+        variableDetail={variableDetail}
+        isLoading={isLoadingDetail}
       />
+
+      {/* Edit Variable Modal */}
+      {currentWorkspace && editingVariableId && (
+        <EditVariableModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingVariableId(null);
+          }}
+          workspaceId={currentWorkspace.id}
+          variableId={editingVariableId}
+          onSuccess={() => {
+            loadVariables();
+          }}
+        />
+      )}
+
+      {/* Create Variable Modal */}
+      {currentWorkspace && (
+        <CreateVariableModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          workspaceId={currentWorkspace.id}
+          onSuccess={handleCreateSuccess}
+        />
+      )}
     </>
   );
 };

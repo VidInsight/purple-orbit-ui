@@ -481,3 +481,4 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     </div>
   );
 };
+

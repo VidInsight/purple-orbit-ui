@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/context/AuthContext';
-import { LogIn } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
+import { login as loginApi } from '@/services/authApi';
 
 export const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     usernameOrEmail: '',
     password: '',
@@ -35,14 +35,27 @@ export const Login = () => {
       loginSchema.parse(formData);
       setLoading(true);
 
-      await login(formData.usernameOrEmail, formData.password);
-      
-      toast({
-        title: t('common:messages.success'),
-        description: 'Logged in successfully',
+      const response = await loginApi({
+        email_or_username: formData.usernameOrEmail,
+        password: formData.password,
+        device_type: 'web',
       });
 
-      navigate('/workspace-selection');
+      console.log('Login successful:', response);
+
+      // Sadece token'ları localStorage'a kaydet
+      if (response.data.access_token && response.data.refresh_token) {
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('refresh_token', response.data.refresh_token);
+        // User bilgileri token'dan decode edilecek veya API'den çekilecek
+      }
+
+      toast({
+        title: t('common:messages.success'),
+        description: response.message || 'Logged in successfully',
+      });
+
+      navigate('/workspaces');
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
@@ -55,7 +68,7 @@ export const Login = () => {
       } else {
         toast({
           title: t('common:messages.error'),
-          description: (error as Error)?.message || t('auth:login.errors.invalidCredentials'),
+          description: error instanceof Error ? error.message : t('auth:login.errors.invalidCredentials'),
           variant: 'destructive',
         });
       }
@@ -98,13 +111,27 @@ export const Login = () => {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="transition-colors duration-200">{t('auth:login.password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.password}</p>
             )}
@@ -121,7 +148,7 @@ export const Login = () => {
 
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
             loading={loading}
           >

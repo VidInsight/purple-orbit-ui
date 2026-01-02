@@ -57,7 +57,7 @@ export const DeleteConfirmModal = ({
           Cancel
         </Button>
         <Button
-          variant="danger"
+          variant="destructive"
           onClick={onConfirm}
           loading={isDeleting}
           disabled={isDeleting}

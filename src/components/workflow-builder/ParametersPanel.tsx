@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { X, Link, LucideIcon } from 'lucide-react';
+import { X, Link, LucideIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PathChip } from './PathChip';
 import { usePathContext } from './PathContext';
+import { getNodeFormSchema, updateNodeInputParams, FormSchemaResponse } from '@/services/workflowApi';
+import { toast } from '@/hooks/use-toast';
 
 interface Parameter {
   id: string;
   label: string;
-  type: 'text' | 'dropdown' | 'number' | 'toggle' | 'textarea' | 'credential';
+  type: 'text' | 'dropdown' | 'number' | 'toggle' | 'textarea' | 'credential'|'input';
+  inputType?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color' | 'file' | 'image' | 'audio' | 'video' | 'textarea';
   placeholder?: string;
   options?: string[];
-  min?: number;
+  min?: number;  
   max?: number;
   value?: any;
   isDynamic?: boolean;
-  dynamicPath?: string;
+  dynamicPath?: string; 
 }
 
 interface ParametersPanelProps {
@@ -28,11 +31,97 @@ interface ParametersPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onParameterChange: (parameterId: string, value: any, isDynamic?: boolean) => void;
+  workspaceId?: string;
+  workflowId?: string;
 }
 
-export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: ParametersPanelProps) => {
+export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, workspaceId, workflowId }: ParametersPanelProps) => {
   const [waitingForDrop, setWaitingForDrop] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiParameters, setApiParameters] = useState<Parameter[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
   const { activePath, setActivePath } = usePathContext();
+
+  // Load form schema from API when panel opens
+  useEffect(() => {
+    if (isOpen && workspaceId && workflowId && node.id) {
+      loadFormSchema();
+    } else if (isOpen && node.parameters) {
+      // Fallback to node.parameters if API is not available
+      setApiParameters(node.parameters);
+    }
+  }, [isOpen, workspaceId, workflowId, node.id]);
+
+  const loadFormSchema = async () => {
+    if (!workspaceId || !workflowId || !node.id) return;
+
+    setIsLoading(true);
+    try {
+      const response = await getNodeFormSchema(workspaceId, workflowId, node.id);
+      
+      if (response.status === 'success' && response.data?.form_schema) {
+        const formSchema = response.data.form_schema as FormSchemaResponse['form_schema'];
+        
+        // Map API form schema to Parameter interface
+        const mappedParameters: Parameter[] = Object.entries(formSchema)
+          .sort(([, a], [, b]) => (a.front?.order || 0) - (b.front?.order || 0))
+          .map(([key, schemaItem]) => {
+            const front = schemaItem.front;
+            const isReference = schemaItem.is_reference || false;
+            
+            // Determine input type based on front.type and schemaItem.type
+            let paramType: Parameter['type'] = 'text';
+            let inputType: Parameter['inputType'] = 'text';
+            
+            if (front.type === 'number' || schemaItem.type === 'integer' || schemaItem.type === 'number') {
+              paramType = 'number';
+              inputType = 'number';
+            } else if (front.type === 'textarea' || schemaItem.type === 'string') {
+              paramType = 'textarea';
+              inputType = 'textarea';
+            } else if (front.type === 'boolean' || schemaItem.type === 'boolean') {
+              paramType = 'toggle';
+            } else if (front.values && front.values.length > 0) {
+              paramType = 'dropdown';
+            } else if (front.type === 'credential') {
+              paramType = 'credential';
+            } else {
+              paramType = 'input';
+              inputType = front.type as Parameter['inputType'] || 'text';
+            }
+
+            return {
+              id: key,
+              label: schemaItem.description || front.placeholder || key,
+              type: paramType,
+              inputType: inputType,
+              placeholder: front.placeholder || undefined,
+              options: front.values || undefined,
+              min: schemaItem.type === 'integer' || schemaItem.type === 'number' ? undefined : undefined,
+              max: undefined,
+              value: schemaItem.value ?? schemaItem.default_value ?? undefined,
+              isDynamic: isReference,
+              dynamicPath: isReference && typeof schemaItem.value === 'string' ? schemaItem.value : undefined,
+            };
+          });
+        
+        setApiParameters(mappedParameters);
+      }
+    } catch (error) {
+      console.error('Error loading form schema:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load node parameters',
+        variant: 'destructive',
+      });
+      // Fallback to node.parameters if API fails
+      if (node.parameters) {
+        setApiParameters(node.parameters);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     // When a path is active and we're waiting for drop, apply it
@@ -51,6 +140,20 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
       isDynamic,
       type: isDynamic ? 'dynamic' : 'static' 
     });
+
+    // Update local state
+    setApiParameters(prev => prev.map(param => 
+      param.id === parameterId 
+        ? { 
+            ...param, 
+            value, 
+            isDynamic,
+            dynamicPath: isDynamic ? value : undefined 
+          } 
+        : param
+    ));
+
+    // Call parent callback
     onParameterChange(parameterId, value, isDynamic);
   };
 
@@ -67,6 +170,46 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
   const handleRemoveDynamicPath = (parameterId: string) => {
     handleValueChange(parameterId, '', false);
   };
+
+  const handleSaveAll = async () => {
+    if (!workspaceId || !workflowId || !node.id) {
+      onClose();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const inputParams: Record<string, any> = {};
+      
+      apiParameters.forEach(param => {
+        // Use dynamic path if it's a dynamic value, otherwise use the static value
+        inputParams[param.id] = param.isDynamic && param.dynamicPath 
+          ? param.dynamicPath 
+          : param.value;
+      });
+
+      await updateNodeInputParams(workspaceId, workflowId, node.id, inputParams);
+      
+      toast({
+        title: 'Success',
+        description: 'All parameters saved successfully',
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error('Error saving parameters:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to save parameters',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Use API parameters if available, otherwise fallback to node.parameters
+  const parameters = apiParameters.length > 0 ? apiParameters : (node.parameters || []);
 
   if (!isOpen) return null;
 
@@ -98,8 +241,13 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="space-y-4">
-            {node.parameters?.map((param) => (
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {parameters.map((param) => (
               <div key={param.id} className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center justify-between">
                   {param.label}
@@ -137,6 +285,22 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                       <Input
                         value={param.value || ''}
                         onChange={(e) => handleValueChange(param.id, e.target.value)}
+                        placeholder={param.placeholder}
+                        className="w-full"
+                      />
+                    )}
+
+                    {/* Input with specific type */}
+                    {param.type === 'input' && (
+                      <Input
+                        type={param.inputType || 'text'}
+                        value={param.value || ''}
+                        onChange={(e) => {
+                          const value = param.inputType === 'number' 
+                            ? (e.target.value === '' ? '' : parseFloat(e.target.value))
+                            : e.target.value;
+                          handleValueChange(param.id, value);
+                        }}
                         placeholder={param.placeholder}
                         className="w-full"
                       />
@@ -223,18 +387,27 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange }: Pa
                   </>
                 )}
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-border">
           <Button
-            variant="primary"
+            variant="default"
             className="w-full"
-            onClick={onClose}
+            onClick={handleSaveAll}
+            disabled={isSaving || isLoading}
           >
-            Save Changes
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </div>
       </div>

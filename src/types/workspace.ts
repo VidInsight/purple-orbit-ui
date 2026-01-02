@@ -8,7 +8,6 @@ export interface Workspace {
   lastAccessed: string;
   createdAt: string;
   role?: 'owner' | 'admin' | 'editor' | 'viewer';
-  plan_name?: string;
   
   // Quota limits
   member_limit: number;

@@ -37,7 +37,8 @@ import {
   Bell,
   Search,
   Clock,
-  LucideIcon
+  LucideIcon,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -48,6 +49,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { getScripts, Script } from '@/services/scriptsApi';
 
 interface NodeType {
   name: string;
@@ -67,140 +69,99 @@ interface Category {
   subcategories: Subcategory[];
 }
 
-const categories: Category[] = [
-  {
-    name: 'AI Models',
-    icon: Brain,
-    subcategories: [
-      {
-        name: 'OpenAI',
-        icon: Circle,
-        nodes: [
-          { name: 'GPT-4 Completion', icon: MessageSquare, description: 'Generate text using GPT-4' },
-          { name: 'DALL-E Image', icon: Image, description: 'Create AI-generated images' },
-          { name: 'Embeddings', icon: Hash, description: 'Convert text to vector embeddings' },
-        ],
-      },
-      {
-        name: 'Anthropic',
-        icon: Circle,
-        nodes: [
-          { name: 'Claude', icon: MessageSquare, description: 'Chat with Claude AI model' },
-          { name: 'Claude Instant', icon: Zap, description: 'Fast Claude responses' },
-        ],
-      },
-      {
-        name: 'Google AI',
-        icon: Circle,
-        nodes: [
-          { name: 'Gemini', icon: Sparkles, description: 'Google\'s multimodal AI' },
-          { name: 'PaLM', icon: Brain, description: 'Google\'s language model' },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Data Processing',
-    icon: Settings,
-    subcategories: [
-      {
-        name: 'Transform',
-        icon: RotateCw,
-        nodes: [
-          { name: 'JSON Parse', icon: FileJson, description: 'Parse JSON strings to objects' },
-          { name: 'Text Replace', icon: Type, description: 'Find and replace text' },
-          { name: 'Date Format', icon: Calendar, description: 'Format dates and times' },
-        ],
-      },
-      {
-        name: 'Filter',
-        icon: Filter,
-        nodes: [
-          { name: 'Filter Array', icon: Filter, description: 'Filter array items by condition' },
-          { name: 'Remove Duplicates', icon: Trash2, description: 'Remove duplicate values' },
-          { name: 'Conditional Filter', icon: Target, description: 'Advanced filtering logic' },
-        ],
-      },
-      {
-        name: 'Aggregate',
-        icon: TrendingUp,
-        nodes: [
-          { name: 'Sum', icon: PlusCircle, description: 'Calculate sum of numbers' },
-          { name: 'Average', icon: BarChart3, description: 'Calculate average value' },
-          { name: 'Count', icon: Hash, description: 'Count array items' },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Logic & Flow',
-    icon: GitBranch,
-    subcategories: [
-      {
-        name: 'Conditions',
-        icon: HelpCircle,
-        nodes: [
-          { name: 'If/Else', icon: GitBranch, description: 'Branch workflow based on condition' },
-          { name: 'Switch', icon: Shuffle, description: 'Multiple conditional branches' },
-          { name: 'Compare', icon: Target, description: 'Compare values' },
-        ],
-      },
-      {
-        name: 'Loops',
-        icon: Repeat,
-        nodes: [
-          { name: 'For Each', icon: Repeat, description: 'Loop through array items' },
-          { name: 'While', icon: RotateCw, description: 'Loop while condition is true' },
-          { name: 'Repeat', icon: Repeat, description: 'Repeat action N times' },
-        ],
-      },
-      {
-        name: 'Branches',
-        icon: Split,
-        nodes: [
-          { name: 'Split', icon: Split, description: 'Split workflow into branches' },
-          { name: 'Merge', icon: Merge, description: 'Merge multiple branches' },
-          { name: 'Parallel', icon: Layers, description: 'Execute actions in parallel' },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Integrations',
-    icon: Plug,
-    subcategories: [
-      {
-        name: 'HTTP',
-        icon: Globe,
-        nodes: [
-          { name: 'GET Request', icon: Download, description: 'Fetch data from API' },
-          { name: 'POST Request', icon: Upload, description: 'Send data to API' },
-          { name: 'Webhook', icon: Bell, description: 'Receive webhook triggers' },
-        ],
-      },
-      {
-        name: 'Database',
-        icon: Database,
-        nodes: [
-          { name: 'Query', icon: Filter, description: 'Query database records' },
-          { name: 'Insert', icon: PlusCircle, description: 'Insert new records' },
-          { name: 'Update', icon: Type, description: 'Update existing records' },
-        ],
-      },
-      {
-        name: 'Email',
-        icon: Mail,
-        nodes: [
-          { name: 'Send Email', icon: Upload, description: 'Send email messages' },
-          { name: 'Parse Email', icon: FileJson, description: 'Parse email content' },
-        ],
-      },
-    ],
-  },
-];
+// Icon mapping for categories and subcategories
+const getCategoryIcon = (categoryName: string): LucideIcon => {
+  const iconMap: Record<string, LucideIcon> = {
+    'math': Settings,
+    'ai': Brain,
+    'data': Settings,
+    'logic': GitBranch,
+    'integration': Plug,
+    'default': Settings,
+  };
+  
+  const lowerName = categoryName.toLowerCase();
+  if (lowerName.includes('math')) return Settings;
+  if (lowerName.includes('ai')) return Brain;
+  if (lowerName.includes('data')) return Settings;
+  if (lowerName.includes('logic')) return GitBranch;
+  if (lowerName.includes('integration')) return Plug;
+  
+  return iconMap[categoryName.toLowerCase()] || Settings;
+};
+
+const getSubcategoryIcon = (subcategoryName: string): LucideIcon => {
+  const iconMap: Record<string, LucideIcon> = {
+    'arithmetic': Circle,
+    'default': Circle,
+  };
+  
+  return iconMap[subcategoryName.toLowerCase()] || Circle;
+};
+
+const getNodeIcon = (nodeName: string, tags: string[]): LucideIcon => {
+  const lowerName = nodeName.toLowerCase();
+  const lowerTags = tags.map(t => t.toLowerCase());
+  
+  if (lowerName.includes('add') || lowerTags.includes('addition')) return PlusCircle;
+  if (lowerName.includes('subtract') || lowerTags.includes('subtraction')) return TrendingUp;
+  if (lowerName.includes('multiply') || lowerTags.includes('multiplication')) return Hash;
+  if (lowerName.includes('divide') || lowerTags.includes('division')) return Split;
+  if (lowerName.includes('power') || lowerTags.includes('power')) return Zap;
+  if (lowerName.includes('modulo') || lowerTags.includes('modulo')) return RotateCw;
+  
+  return Settings;
+};
+
+// Transform scripts from API into Category structure
+const transformScriptsToCategories = (scripts: Script[]): Category[] => {
+  const categoryMap = new Map<string, Map<string, NodeType[]>>();
+  
+  scripts.forEach(script => {
+    const categoryName = script.category || 'Other';
+    const subcategoryName = script.subcategory || 'General';
+    
+    if (!categoryMap.has(categoryName)) {
+      categoryMap.set(categoryName, new Map());
+    }
+    
+    const subcategoryMap = categoryMap.get(categoryName)!;
+    if (!subcategoryMap.has(subcategoryName)) {
+      subcategoryMap.set(subcategoryName, []);
+    }
+    
+    const nodes = subcategoryMap.get(subcategoryName)!;
+    nodes.push({
+      name: script.name,
+      icon: getNodeIcon(script.name, script.tags),
+      description: script.description,
+    });
+  });
+  
+  // Convert maps to Category array
+  const categories: Category[] = [];
+  categoryMap.forEach((subcategoryMap, categoryName) => {
+    const subcategories: Subcategory[] = [];
+    subcategoryMap.forEach((nodes, subcategoryName) => {
+      subcategories.push({
+        name: subcategoryName,
+        icon: getSubcategoryIcon(subcategoryName),
+        nodes,
+      });
+    });
+    
+    categories.push({
+      name: categoryName,
+      icon: getCategoryIcon(categoryName),
+      subcategories,
+    });
+  });
+  
+  return categories;
+};
 
 interface AddNodeButtonProps {
-  onAddNode: (category: string, subcategory: string, node: string) => void;
+  onAddNode: (category: string, subcategory: string, node: string, scriptId: string) => void;
   onMenuOpen?: () => void;
 }
 
@@ -216,6 +177,33 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     nodeName: string;
     nodeDescription: string;
   }>>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [scripts, setScripts] = useState<Script[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch scripts from API
+  useEffect(() => {
+    const fetchScripts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await getScripts();
+        setScripts(response.data.scripts);
+        const transformedCategories = transformScriptsToCategories(response.data.scripts);
+        setCategories(transformedCategories);
+      } catch (err) {
+        console.error('Failed to fetch scripts:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load scripts');
+        // Fallback to empty categories on error
+        setCategories([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchScripts();
+  }, []);
 
   // Load recently used nodes from localStorage
   useEffect(() => {
@@ -261,6 +249,10 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     const subcategory = category?.subcategories.find(sc => sc.name === subcategoryName);
     const node = subcategory?.nodes.find(n => n.name === nodeName);
 
+    // Find the script by name
+    const script = scripts.find(s => s.name === nodeName);
+    const scriptId = script?.id || '';
+
     if (node) {
       // Update recently used (don't store icon, we'll look it up when rendering)
       const newRecentlyUsed = [
@@ -272,7 +264,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
       localStorage.setItem('recentlyUsedNodes', JSON.stringify(newRecentlyUsed));
     }
 
-    onAddNode(categoryName, subcategoryName, nodeName);
+    onAddNode(categoryName, subcategoryName, nodeName, scriptId);
     handleClose();
   };
 
@@ -331,8 +323,24 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
 
           {/* Content - Accordion Style */}
           <div className="max-h-[calc(85vh-180px)] overflow-y-auto bg-surface">
+            {/* Loading State */}
+            {isLoading && (
+              <div className="px-4 py-8 text-center">
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Loading scripts...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {!isLoading && error && (
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-destructive mb-2">{error}</p>
+                <p className="text-xs text-muted-foreground">Please try again later.</p>
+              </div>
+            )}
+
             {/* Recently Used Section */}
-            {!searchTerm && recentlyUsed.length > 0 && (
+            {!isLoading && !error && !searchTerm && recentlyUsed.length > 0 && (
               <div className="border-b border-border">
                 <button
                   onClick={() => setIsRecentlyUsedOpen(!isRecentlyUsedOpen)}
@@ -381,12 +389,13 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
             )}
 
             {/* Categories */}
-            {filteredCategories.length === 0 ? (
-              <div className="px-4 py-8 text-center text-muted-foreground text-sm">
-                No nodes found matching "{searchTerm}"
-              </div>
-            ) : (
-              filteredCategories.map((category) => {
+            {!isLoading && !error && (
+              filteredCategories.length === 0 ? (
+                <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+                  {searchTerm ? `No nodes found matching "${searchTerm}"` : 'No scripts available'}
+                </div>
+              ) : (
+                filteredCategories.map((category) => {
                 const CategoryIcon = category.icon;
                 return (
                   <div key={category.name} className="border-b border-border last:border-b-0">
@@ -462,6 +471,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                   </div>
                 );
               })
+              )
             )}
           </div>
         </DialogContent>
@@ -469,3 +479,5 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
     </>
   );
 };
+
+
