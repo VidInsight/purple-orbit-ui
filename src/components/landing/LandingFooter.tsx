@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Workflow, Github, Twitter, Linkedin, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export const LandingFooter = () => {

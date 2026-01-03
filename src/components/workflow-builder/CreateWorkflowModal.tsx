@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createWorkflow, CreateWorkflowData } from '@/services/workflowApi';

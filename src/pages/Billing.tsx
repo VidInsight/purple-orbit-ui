@@ -9,9 +9,9 @@ import { UpdatePaymentModal } from '@/components/billing/UpdatePaymentModal';
 import { QuotasTab } from '@/components/billing/QuotasTab';
 import { PaymentTab } from '@/components/billing/PaymentTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import {
   CurrentSubscription,
   BillingCycle,

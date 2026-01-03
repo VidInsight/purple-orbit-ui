@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Settings, LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Repeat, Edit2, CheckCircle2, Trash2, Eye, LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface LoopNodeProps {

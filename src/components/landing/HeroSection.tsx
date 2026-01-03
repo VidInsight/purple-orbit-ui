@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import { HeroWorkflowPreview } from './HeroWorkflowPreview';
 import { TypewriterText } from './TypewriterText';

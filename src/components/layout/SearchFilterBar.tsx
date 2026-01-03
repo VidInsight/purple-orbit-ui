@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Dropdown, DropdownOption } from '@/components/ui/Dropdown';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Search, Plus } from 'lucide-react';
 
 interface SearchFilterBarProps {

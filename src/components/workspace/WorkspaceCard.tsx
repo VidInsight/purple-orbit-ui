@@ -1,7 +1,7 @@
 import { Workspace } from '@/types/workspace';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface WorkspaceCardProps {
   workspace: Workspace;

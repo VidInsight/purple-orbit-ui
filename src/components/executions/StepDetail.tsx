@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ExecutionStep } from '@/types/execution';
 import { CheckCircle2, XCircle, Clock, AlertCircle, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
 interface StepDetailProps {

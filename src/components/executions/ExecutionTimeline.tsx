@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ExecutionStep } from '@/types/execution';
 import { StepDetail } from './StepDetail';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ExecutionTimelineProps {

@@ -7,7 +7,7 @@ import { ExecutionTimeline } from '@/components/executions/ExecutionTimeline';
 import { ExecutionLogs } from '@/components/executions/ExecutionLogs';
 import { ExecutionDetails as ExecutionDetailsType } from '@/types/execution';
 import { generateMockExecutionDetails } from '@/utils/mockExecutionData';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, Download, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

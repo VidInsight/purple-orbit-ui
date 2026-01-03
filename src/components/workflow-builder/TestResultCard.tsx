@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { LucideIcon, Copy, Check, ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface TestResultCardProps {

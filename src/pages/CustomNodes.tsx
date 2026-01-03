@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { NodeGrid, NodeItem } from '@/components/nodes/NodeGrid';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { 
   Package,
   FileText,
