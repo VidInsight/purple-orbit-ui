@@ -84,6 +84,12 @@ export default function ZapierWorkflowEditor() {
   // Load workflow from API when editing existing workflow
   useEffect(() => {
     const loadWorkflowFromAPI = async () => {
+      // Check if user is authenticated before making API call
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        return;
+      }
+
       if (!id || id === 'new' || !currentWorkspace?.id) {
         // Fallback to localStorage for new workflows or if workspace not available
         if (id && id !== 'new') {
