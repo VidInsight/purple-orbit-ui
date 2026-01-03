@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GitBranch, Edit2, CheckCircle2, Plus, Eye, Trash2, LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface ConditionalNodeProps {

@@ -1,5 +1,5 @@
 import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Key, Calendar, Tag, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { CredentialDetail } from '@/services/credentialsApi';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Key, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CredentialItem } from '@/types/common';

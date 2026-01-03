@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Eye, Edit, Trash2, Share2 } from 'lucide-react';
 
 interface ListTableProps<T> {

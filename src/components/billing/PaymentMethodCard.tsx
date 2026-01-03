@@ -1,5 +1,5 @@
 import { PaymentMethod } from '@/types/billing';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { CreditCard, Edit } from 'lucide-react';
 
 interface PaymentMethodCardProps {

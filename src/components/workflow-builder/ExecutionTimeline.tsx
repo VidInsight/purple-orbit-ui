@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Clock, Check, X, Loader2, LucideIcon, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface TimelineNode {

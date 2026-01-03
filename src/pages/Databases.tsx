@@ -141,7 +141,7 @@ const Databases = () => {
     }
   };
 
-  const handleDelete = (item: DatabaseItem) => {
+  const handleDelete = async (item: DatabaseItem) => {
     if (!currentWorkspace?.id) {
       toast({
         title: 'Error',

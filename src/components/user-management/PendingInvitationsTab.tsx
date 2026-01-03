@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PendingInvitation, ROLE_COLORS, ROLE_LABELS } from '@/types/user';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { DeleteConfirmModal } from '@/components/shared/DeleteConfirmModal';
 import { Send, Trash2, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';

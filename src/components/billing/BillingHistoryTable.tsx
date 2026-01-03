@@ -1,5 +1,5 @@
 import { Invoice, InvoiceStatus } from '@/types/billing';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';

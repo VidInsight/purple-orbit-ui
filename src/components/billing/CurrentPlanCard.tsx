@@ -1,5 +1,5 @@
 import { CurrentSubscription, BillingCycle, PLANS } from '@/types/billing';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { UsageBar } from './UsageBar';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp } from 'lucide-react';

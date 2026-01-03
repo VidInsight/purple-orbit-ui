@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Settings, Trash2, Edit2, CheckCircle2, Eye, ChevronDown, ChevronUp, LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface ActionNodeProps {

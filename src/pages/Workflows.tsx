@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { WorkflowItem } from '@/types/common';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';

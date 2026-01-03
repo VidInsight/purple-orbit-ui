@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActiveUsersTab } from '@/components/user-management/ActiveUsersTab';
 import { PendingInvitationsTab } from '@/components/user-management/PendingInvitationsTab';

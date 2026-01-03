@@ -5,7 +5,7 @@ import { UserCard } from '@/components/workspace/UserCard';
 import { CreateWorkspaceModal } from '@/components/workspace/CreateWorkspaceModal';
 import { Workspace, CreateWorkspaceData } from '@/types/workspace';
 import { getWorkspaces, createWorkspace as createWorkspaceUtil, setCurrentWorkspace, saveWorkspaces } from '@/utils/workspaceStorage';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
