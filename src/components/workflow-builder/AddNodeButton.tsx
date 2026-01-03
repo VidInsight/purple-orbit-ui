@@ -185,6 +185,14 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
   // Fetch scripts from API
   useEffect(() => {
     const fetchScripts = async () => {
+      // Check if user is authenticated before making API call
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        setIsLoading(false);
+        setCategories([]);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
