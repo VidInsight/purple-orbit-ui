@@ -14,18 +14,14 @@ services:
 
   # Uygulama - Dışarıya port açmaz, sadece iç ağda 8080'den dinler
   purple-orbit-ui:
-    image: ghcr.io/${{ github.repository }}:latest
+    image: ghcr.io/vidinsight/purple-orbit-ui:latest
     restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/" ]
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 15s
     networks:
       - app-network
 
