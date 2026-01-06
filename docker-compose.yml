@@ -1,18 +1,21 @@
 services:
-  # Kapıcı (Reverse Proxy) - Port 80'i sadece bu tutar
+  # Gateway (Reverse Proxy with SSL Termination) - Ports 80 & 443
   gateway:
     image: nginx:alpine
     container_name: ui-gateway
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./gateway.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - purple-orbit-ui
     networks:
       - app-network
+    restart: always
 
-  # Uygulama - Dışarıya port açmaz, sadece iç ağda 8080'den dinler
+  # Application - Internal only, listens on 8080
   purple-orbit-ui:
     image: ghcr.io/vidinsight/purple-orbit-ui:latest
     restart: always
