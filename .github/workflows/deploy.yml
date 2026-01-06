@@ -1,26 +1,20 @@
-name: Continuous Deployment (Optimized)
+name: EC2'ye Otomatik Deploy
 
 on:
   push:
     branches: [ main ]
 
-# Permissions needed to push to GitHub Container Registry
 permissions:
   contents: read
   packages: write
 
 jobs:
   build:
-    name: Build & Push Image
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -29,68 +23,58 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=sha,format=long
-            type=ref,event=branch
-            latest
-
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/vidinsight/purple-orbit-ui:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Zero Downtime Deploy
+    name: Deploy to EC2 with Zero Downtime
     needs: build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Rolling Deployment
-        run: |
-          # Pull the latest image first
-          docker compose pull purple-orbit-ui
-          
-          # 1. Scale up to 2 instances (New image will be used for the new one)
-          docker compose up -d --scale purple-orbit-ui=2 --no-recreate
-          
-          echo "Waiting for new instance healthcheck..."
-          sleep 15 # Give it a head start
-          
-          # 2. Verify health
-          MAX_RETRIES=10
-          COUNT=0
-          while [ $COUNT -lt $MAX_RETRIES ]; do
-            HEALTHY_COUNT=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "name=purple-orbit-ui") | grep -c "healthy" || true)
-            if [ "$HEALTHY_COUNT" -ge "2" ]; then
-              echo "Success: New version is healthy."
-              break
-            fi
-            echo "Waiting... ($COUNT/$MAX_RETRIES)"
-            sleep 5
-            COUNT=$((COUNT+1))
-          done
-
-          # 3. Scale back to 1 (Docker stops the oldest container)
-          docker compose up -d --scale purple-orbit-ui=1 --no-recreate
-          
-          # 4. Cleanup old images to save disk space
-          docker image prune -af --filter "until=24h"
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            
+            # Docker login
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Pull latest image
+            docker compose pull purple-orbit-ui
+            
+            # Rolling deployment (scale up)
+            docker compose up -d --scale purple-orbit-ui=2 --no-recreate
+            
+            # Health check
+            echo "Waiting for new instance..."
+            sleep 15
+            
+            MAX_RETRIES=10
+            COUNT=0
+            while [ $COUNT -lt $MAX_RETRIES ]; do
+              HEALTHY_COUNT=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "name=purple-orbit-ui") 2>/dev/null | grep -c "healthy" || echo "0")
+              if [ "$HEALTHY_COUNT" -ge "2" ]; then
+                echo "✅ New version is healthy"
+                break
+              fi
+              echo "Waiting... ($COUNT/$MAX_RETRIES)"
+              sleep 5
+              COUNT=$((COUNT+1))
+            done
+            
+            # Scale down (remove old container)
+            docker compose up -d --scale purple-orbit-ui=1 --no-recreate
+            
+            # Cleanup
+            docker image prune -af --filter "until=24h"
+            docker system prune -f --volumes
