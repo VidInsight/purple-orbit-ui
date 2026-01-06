@@ -47,6 +47,16 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Setup SSL Certificates
+        run: |
+          echo "🔐 Setting up SSL certificates..."
+          mkdir -p ssl
+          echo "${{ secrets.FULLCHAIN }}" > ssl/fullchain.pem
+          echo "${{ secrets.PRIVKEY }}" > ssl/privkey.pem
+          chmod 600 ssl/privkey.pem
+          chmod 644 ssl/fullchain.pem
+          echo "✅ SSL certificates ready!"
+
       - name: Deploy & Rolling Update
         run: |
           set -e
@@ -54,8 +64,10 @@ jobs:
           echo "🚀 Pulling latest image..."
           docker compose pull purple-orbit-ui
           
+          echo "🔄 Restarting gateway with SSL..."
+          docker compose up -d gateway
+          
           echo "📈 Scaling up to 2 instances..."
-          # Bu komut eski container'a dokunmadan yanına yenisini açar
           docker compose up -d --scale purple-orbit-ui=2 --no-recreate
           
           echo "⏳ Waiting for healthcheck..."
