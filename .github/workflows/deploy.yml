@@ -1,4 +1,4 @@
-name: EC2'ye Otomatik Deploy
+name: EC2'ye Otomatik Deploy (Mimari Dahil)
 
 on:
   push:
@@ -19,9 +19,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          driver: docker-container  # ✅ Cache için gerekli
+          driver: docker-container  # Cache için gerekli
 
-      - name: Login to GHCR
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -38,10 +38,23 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to EC2 with Zero Downtime
+    name: Deploy to EC2
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ✅ MİMARİ: docker-compose.yml dosyasını EC2'ye kopyala
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml"
+          target: "/home/${{ secrets.EC2_USER }}/app"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -49,19 +62,23 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/app
+            set -e  # ✅ Hata alınca dur
+            set -x  # ✅ Komutları logla
+            
+            cd /home/${{ secrets.EC2_USER }}/app
+            
+            # Directory ve file check
+            ls -la docker-compose.yml
             
             # Docker login
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Pull latest image
+            # Pull and deploy
             docker compose pull purple-orbit-ui
-            
-            # Rolling deployment (scale up)
             docker compose up -d --scale purple-orbit-ui=2 --no-recreate
             
-            # Health check
-            echo "Waiting for new instance..."
+            # Health check with timeout
+            echo "Waiting for healthcheck..."
             sleep 15
             
             MAX_RETRIES=10
@@ -69,7 +86,7 @@ jobs:
             while [ $COUNT -lt $MAX_RETRIES ]; do
               HEALTHY_COUNT=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "name=purple-orbit-ui") 2>/dev/null | grep -c "healthy" || echo "0")
               if [ "$HEALTHY_COUNT" -ge "2" ]; then
-                echo "✅ New version is healthy"
+                echo "✅ Success: New version is healthy"
                 break
               fi
               echo "Waiting... ($COUNT/$MAX_RETRIES)"
@@ -77,7 +94,12 @@ jobs:
               COUNT=$((COUNT+1))
             done
             
-            # Scale down (remove old container)
+            if [ $COUNT -eq $MAX_RETRIES ]; then
+              echo "❌ Healthcheck failed"
+              exit 1
+            fi
+            
+            # Scale down
             docker compose up -d --scale purple-orbit-ui=1 --no-recreate
             
             # Cleanup
