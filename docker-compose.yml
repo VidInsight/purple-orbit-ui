@@ -1,5 +1,5 @@
 services:
-  # Kapıcı (Reverse Proxy) - Hiç kapanmaz, trafiği yönetir
+  # Kapıcı (Reverse Proxy) - Port 80'i sadece bu tutar
   gateway:
     image: nginx:alpine
     container_name: ui-gateway
@@ -12,7 +12,7 @@ services:
     networks:
       - app-network
 
-  # Uygulama
+  # Uygulama - Dışarıya port açmaz, sadece iç ağda 8080'den dinler
   purple-orbit-ui:
     image: ghcr.io/${{ github.repository }}:latest
     restart: always
