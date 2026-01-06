@@ -38,70 +38,61 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to EC2
+    name: Zero Downtime Deploy
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # ✅ MİMARİ: docker-compose.yml dosyasını EC2'ye kopyala
-      - name: Copy docker-compose.yml to EC2
-        uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml"
-          target: "/home/${{ secrets.EC2_USER }}/app"
+          path: ./app  
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e  # ✅ Hata alınca dur
-            set -x  # ✅ Komutları logla
-            
-            cd /home/${{ secrets.EC2_USER }}/app
-            
-            # Directory ve file check
-            ls -la docker-compose.yml
-            
-            # Docker login
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Pull and deploy
-            docker compose pull purple-orbit-ui
-            docker compose up -d --scale purple-orbit-ui=2 --no-recreate
-            
-            # Health check with timeout
-            echo "Waiting for healthcheck..."
-            sleep 15
-            
-            MAX_RETRIES=10
-            COUNT=0
-            while [ $COUNT -lt $MAX_RETRIES ]; do
-              HEALTHY_COUNT=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "name=purple-orbit-ui") 2>/dev/null | grep -c "healthy" || echo "0")
-              if [ "$HEALTHY_COUNT" -ge "2" ]; then
-                echo "✅ Success: New version is healthy"
-                break
-              fi
-              echo "Waiting... ($COUNT/$MAX_RETRIES)"
-              sleep 5
-              COUNT=$((COUNT+1))
-            done
-            
-            if [ $COUNT -eq $MAX_RETRIES ]; then
-              echo "❌ Healthcheck failed"
-              exit 1
+      - name: Setup Docker Permissions
+        run: |
+          # Docker socket izinleri
+          sudo chmod 666 /var/run/docker.sock
+          
+      - name: Docker Login
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Deploy
+        working-directory: /home/ubuntu/app 
+        run: |
+          set -e  
+          set -x  
+
+          
+          docker compose pull purple-orbit-ui
+
+         
+          docker compose up -d --scale purple-orbit-ui=2 --no-recreate
+
+          
+          echo "Waiting for new instance..."
+          sleep 15
+
+          MAX_RETRIES=10
+          COUNT=0
+          while [ $COUNT -lt $MAX_RETRIES ]; do
+            HEALTHY_COUNT=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "name=purple-orbit-ui") 2>/dev/null | grep -c "healthy" || echo "0")
+            if [ "$HEALTHY_COUNT" -ge "2" ]; then
+              echo "✅ Success: New version is healthy"
+              break
             fi
-            
-            # Scale down
-            docker compose up -d --scale purple-orbit-ui=1 --no-recreate
-            
-            # Cleanup
-            docker image prune -af --filter "until=24h"
-            docker system prune -f --volumes
+            echo "Waiting... ($COUNT/$MAX_RETRIES)"
+            sleep 5
+            COUNT=$((COUNT+1))
+          done
+
+          if [ $COUNT -eq $MAX_RETRIES ]; then
+            echo "❌ Healthcheck failed"
+            exit 1
+          fi
+
+          # Scale down to 1
+          docker compose up -d --scale purple-orbit-ui=1 --no-recreate
+
+          # Cleanup
+          docker image prune -af --filter "until=24h"
+          docker system prune -f --volumes
