@@ -40,30 +40,48 @@ jobs:
   deploy:
     name: Zero Downtime Deploy
     needs: build
-    runs-on: self-hosted 
+    runs-on: self-hosted
+    steps:
+      - name: Setup Environment (Dizin & Config)
+        run: |
+          
+          sudo mkdir -p /home/ubuntu/app
+          sudo chown -R $USER:$USER /home/ubuntu/app
+          
+          if [ ! -f /home/ubuntu/app/docker-compose.yml ]; then
+            cat > /home/ubuntu/app/docker-compose.yml << 'EOF'
+          services:
+            purple-orbit-ui:
+              image: ghcr.io/vidinsight/purple-orbit-ui:latest
+              ports:
+                - "80:3000"
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+                interval: 10s
+                timeout: 5s
+                retries: 3
+                start_period: 30s
+              restart: unless-stopped
+          EOF
+          fi
 
       - name: Setup Docker Permissions
         run: |
-          # Docker socket izinleri
           sudo chmod 666 /var/run/docker.sock
-          
+
       - name: Docker Login
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Deploy
-        working-directory: /home/ubuntu/app 
+        working-directory: /home/ubuntu/app
         run: |
-          set -e  
-          set -x  
+          set -e
+          set -x
 
-          
           docker compose pull purple-orbit-ui
-
-         
           docker compose up -d --scale purple-orbit-ui=2 --no-recreate
 
-          
           echo "Waiting for new instance..."
           sleep 15
 
@@ -85,9 +103,6 @@ jobs:
             exit 1
           fi
 
-          # Scale down to 1
           docker compose up -d --scale purple-orbit-ui=1 --no-recreate
-
-          # Cleanup
           docker image prune -af --filter "until=24h"
           docker system prune -f --volumes
