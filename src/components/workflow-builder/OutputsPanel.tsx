@@ -46,10 +46,22 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     });
   };
 
-  const handleDragClick = (path: string) => {
-    console.log('Path selected:', path);
-    setActivePath(path);
-    setCopiedPath(path);
+  const handleDragClick = (nodeIdOrPath: string, path?: string) => {
+    let formattedPath: string;
+    
+    if (path !== undefined) {
+      // Node output path: format as ${node:nodeId.path}
+      // Remove leading dot if path starts with dot
+      const cleanPath = path.startsWith('.') ? path.substring(1) : path;
+      formattedPath = `\${node:${nodeIdOrPath}.${cleanPath}}`;
+    } else {
+      // Workspace resource path: use as is (already formatted)
+      formattedPath = nodeIdOrPath;
+    }
+    
+    console.log('Path selected:', formattedPath);
+    setActivePath(formattedPath);
+    setCopiedPath(formattedPath);
     setTimeout(() => setCopiedPath(null), 3000);
   };
 
@@ -58,7 +70,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     console.log('Copied output to clipboard');
   };
 
-  const renderValue = (value: any, parentPath: string = '', depth: number = 0): JSX.Element => {
+  const renderValue = (value: any, parentPath: string = '', depth: number = 0, nodeId: string = ''): JSX.Element => {
     const indent = Math.min(depth, 2) * 6;
     const isCollapsed = collapsedPaths.has(parentPath);
     const shouldAutoCollapse = depth > 1;
@@ -112,16 +124,16 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                 <div key={index} style={{ paddingLeft: `${indent + 6}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
-                      onClick={() => handleDragClick(`${parentPath}[${index}]`)}
+                      onClick={() => handleDragClick(nodeId, `${parentPath}[${index}]`)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      title={`Path: ${parentPath}[${index}]`}
+                      title={`Path: \${node:${nodeId}.${parentPath}[${index}]}`}
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
                     </button>
                     <div className="flex-1 min-w-0">
                       <span className="text-warning">{index}</span>
                       <span className="text-muted-foreground">: </span>
-                      <span className="inline-block">{renderValue(item, `${parentPath}[${index}]`, depth + 1)}</span>
+                      <span className="inline-block">{renderValue(item, `${parentPath}[${index}]`, depth + 1, nodeId)}</span>
                       {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
                     </div>
                   </div>
@@ -168,16 +180,16 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
                 <div key={key} style={{ paddingLeft: `${indent + 6}px` }} className="group">
                   <div className="flex items-start gap-1">
                     <button
-                      onClick={() => handleDragClick(`${parentPath}.${key}`)}
+                      onClick={() => handleDragClick(nodeId, parentPath ? `${parentPath}.${key}` : key)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      title={`Path: ${parentPath}.${key}`}
+                      title={`Path: \${node:${nodeId}.${parentPath ? `${parentPath}.${key}` : key}}`}
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
                     </button>
                     <div className="flex-1 min-w-0">
                       <span className="text-accent-foreground">"{key}"</span>
                       <span className="text-muted-foreground">: </span>
-                      <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1)}</span>
+                      <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1, nodeId)}</span>
                       {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
                     </div>
                   </div>
@@ -342,7 +354,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
 
                         <div className="bg-background/50 p-3 border border-border/50 overflow-x-auto">
                           <pre className="text-[11px] font-mono leading-tight">
-                            {renderValue(output.output, output.nodeId)}
+                            {renderValue(output.output, '', 0, output.nodeId)}
                           </pre>
                         </div>
 

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow } from '@/services/workflowApi';
+import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema } from '@/services/workflowApi';
 import { toast } from '@/hooks/use-toast';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -80,6 +80,15 @@ export default function ZapierWorkflowEditor() {
   // Load workflow from localStorage if editing existing workflow
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [isLoadingWorkflow, setIsLoadingWorkflow] = useState(false);
+  
+  // Node output data from API
+  const [nodeOutputs, setNodeOutputs] = useState<Record<string, {
+    nodeId: string;
+    nodeName: string;
+    icon: LucideIcon;
+    output: any;
+  }>>({});
+  const [isLoadingOutputs, setIsLoadingOutputs] = useState(false);
 
   // Load workflow from API when editing existing workflow
   useEffect(() => {
@@ -580,84 +589,141 @@ export default function ZapierWorkflowEditor() {
     }));
   }, [selectedNode]);
 
-  // Generate mock outputs for demonstration (memoized)
-  const mockOutputs = useMemo(() => {
+  // Helper function to generate example output from output_schema
+  const generateExampleOutputFromSchema = (outputSchema: any): any => {
+    if (!outputSchema) {
+      return { message: 'No output schema available' };
+    }
+
+    // If output_schema is a JSON Schema object
+    if (outputSchema.type === 'object' && outputSchema.properties) {
+      const example: any = {};
+      Object.entries(outputSchema.properties).forEach(([key, prop]: [string, any]) => {
+        if (prop.type === 'string') {
+          example[key] = prop.description || `example_${key}`;
+        } else if (prop.type === 'integer' || prop.type === 'number') {
+          example[key] = prop.default || 0;
+        } else if (prop.type === 'boolean') {
+          example[key] = prop.default || false;
+        } else if (prop.type === 'array') {
+          example[key] = [];
+        } else if (prop.type === 'object') {
+          example[key] = generateExampleOutputFromSchema(prop);
+        } else {
+          example[key] = null;
+        }
+      });
+      return example;
+    }
+
+    // If output_schema is already an object (direct output structure)
+    if (typeof outputSchema === 'object' && !outputSchema.type) {
+      const example: any = {};
+      Object.keys(outputSchema).forEach(key => {
+        const value = outputSchema[key];
+        if (typeof value === 'string') {
+          example[key] = `example_${key}`;
+        } else if (typeof value === 'number') {
+          example[key] = value;
+        } else if (typeof value === 'boolean') {
+          example[key] = value;
+        } else if (Array.isArray(value)) {
+          example[key] = [];
+        } else if (typeof value === 'object') {
+          example[key] = generateExampleOutputFromSchema(value);
+        } else {
+          example[key] = null;
+        }
+      });
+      return example;
+    }
+
+    return { message: 'Output schema format not recognized' };
+  };
+
+  // Fetch node outputs from API
+  useEffect(() => {
+    const fetchNodeOutputs = async () => {
+      if (!currentWorkspace?.id || !id || id === 'new' || nodes.length === 0) {
+        return;
+      }
+
+      setIsLoadingOutputs(true);
+      const outputs: Record<string, {
+        nodeId: string;
+        nodeName: string;
+        icon: LucideIcon;
+        output: any;
+      }> = {};
+
+      try {
+        // Fetch form-schema for each node to get output_schema
+        await Promise.all(
+          nodes.map(async (node) => {
+            try {
+              const response = await getNodeFormSchema(
+                currentWorkspace.id,
+                id,
+                node.id
+              );
+
+              if (response.status === 'success' && response.data) {
+                const outputSchema = response.data.output_schema;
+                const exampleOutput = generateExampleOutputFromSchema(outputSchema);
+                
+                outputs[node.id] = {
+                  nodeId: node.id,
+                  nodeName: response.data.node_name || node.title,
+                  icon: node.icon || Settings,
+                  output: exampleOutput,
+                };
+              }
+            } catch (error) {
+              console.error(`Failed to fetch output for node ${node.id}:`, error);
+              // Fallback to empty output if API fails
+              outputs[node.id] = {
+                nodeId: node.id,
+                nodeName: node.title,
+                icon: node.icon || Settings,
+                output: { error: 'Failed to load output schema' },
+              };
+            }
+          })
+        );
+
+        setNodeOutputs(outputs);
+      } catch (error) {
+        console.error('Error fetching node outputs:', error);
+        toast({
+          title: 'Warning',
+          description: 'Failed to load some node outputs. Using fallback data.',
+          variant: 'default',
+        });
+      } finally {
+        setIsLoadingOutputs(false);
+      }
+    };
+
+    fetchNodeOutputs();
+  }, [nodes, currentWorkspace?.id, id]);
+
+  // Generate outputs from API data (memoized)
+  const dynamicOutputs = useMemo(() => {
     return nodes.map(node => {
-      if (node.type === 'trigger') {
-        return {
-          nodeId: node.id,
-          nodeName: node.title,
-          icon: Zap,
-          output: {
-            user_id: '12345',
-            email: 'user@example.com',
-            timestamp: '2025-01-15T10:30:00Z',
-            data: {
-              name: 'John Doe',
-              age: 30,
-            },
-          },
-        };
+      // Use API data if available, otherwise fallback to empty
+      if (nodeOutputs[node.id]) {
+        return nodeOutputs[node.id];
       }
-
-      if (node.title === 'GPT-4 Completion') {
-        return {
-          nodeId: node.id,
-          nodeName: node.title,
-          icon: MessageSquare,
-          output: {
-            id: 'resp_abc123',
-            object: 'response',
-            created_at: 1741476542,
-            output: [
-              {
-                type: 'message',
-                content: [
-                  {
-                    type: 'text',
-                    text: 'Generated response here...',
-                  },
-                ],
-              },
-            ],
-            usage: {
-              input_tokens: 36,
-              output_tokens: 87,
-            },
-          },
-        };
-      }
-
-      if (node.title === 'JSON Parse') {
-        return {
-          nodeId: node.id,
-          nodeName: node.title,
-          icon: FileJson,
-          output: {
-            parsed_data: {
-              field1: 'value1',
-              field2: 123,
-              nested: {
-                field3: true,
-              },
-            },
-          },
-        };
-      }
-
+      
+      // Fallback for nodes without API data
       return {
         nodeId: node.id,
         nodeName: node.title,
-        icon: Settings,
-        output: {
-          status: 'success',
-          data: {
-            result: 'processed',
-          },
-        },
+        icon: node.icon || Settings,
+        output: { message: 'Output schema not loaded yet' },
       };
     });
-  }, [nodes]);
+  }, [nodes, nodeOutputs]);
 
   const handleDeleteNode = (nodeId: string) => {
     setNodes(nodes.filter(node => node.id !== nodeId));
@@ -1089,7 +1155,7 @@ export default function ZapierWorkflowEditor() {
 
             {/* Outputs Panel */}
             <OutputsPanel
-              outputs={mockOutputs}
+              outputs={dynamicOutputs}
               isOpen={showOutputsPanel}
               currentNodeId={selectedNode?.id}
             />
