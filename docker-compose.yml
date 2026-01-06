@@ -1,9 +1,9 @@
 services:
-  # Gateway (Reverse Proxy with SSL Termination) - Ports 80 & 443
   gateway:
     image: nginx:alpine
     container_name: ui-gateway
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - ./gateway.conf:/etc/nginx/conf.d/default.conf:ro
