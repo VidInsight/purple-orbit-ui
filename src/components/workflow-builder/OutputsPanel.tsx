@@ -1,7 +1,12 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon, Variable, Key, Database as DatabaseIcon, File } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon, Variable, Key, Database as DatabaseIcon, File, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathContext } from './PathContext';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { getVariables, VariableDetail } from '@/services/variablesApi';
+import { getCredentials, CredentialDetail } from '@/services/credentialsApi';
+import { getDatabases, DatabaseDetail } from '@/services/databasesApi';
+import { getFiles, FileDetail } from '@/services/filesApi';
 import {
   Select,
   SelectContent,
@@ -29,6 +34,69 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
   const [selectedTab, setSelectedTab] = useState<string>('outputs');
   const { setActivePath } = usePathContext();
+  const { currentWorkspace } = useWorkspace();
+
+  // Real data states
+  const [variables, setVariables] = useState<VariableDetail[]>([]);
+  const [credentials, setCredentials] = useState<CredentialDetail[]>([]);
+  const [databases, setDatabases] = useState<DatabaseDetail[]>([]);
+  const [files, setFiles] = useState<FileDetail[]>([]);
+  const [isLoadingVariables, setIsLoadingVariables] = useState(false);
+  const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
+  const [isLoadingDatabases, setIsLoadingDatabases] = useState(false);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+
+  // Load data when tab changes or workspace changes
+  useEffect(() => {
+    if (!isOpen || !currentWorkspace?.id) return;
+
+    const loadData = async () => {
+      try {
+        if (selectedTab === 'variables') {
+          setIsLoadingVariables(true);
+          const response = await getVariables(currentWorkspace.id);
+          // Handle different response formats
+          const variablesData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data?.items || response.data?.variables || [];
+          setVariables(variablesData);
+        } else if (selectedTab === 'credentials') {
+          setIsLoadingCredentials(true);
+          const response = await getCredentials(currentWorkspace.id);
+          // Handle different response formats
+          const credentialsData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data?.items || response.data?.credentials || [];
+          setCredentials(credentialsData);
+        } else if (selectedTab === 'databases') {
+          setIsLoadingDatabases(true);
+          const response = await getDatabases(currentWorkspace.id);
+          // Handle different response formats
+          const databasesData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data?.items || response.data?.databases || [];
+          setDatabases(databasesData);
+        } else if (selectedTab === 'files') {
+          setIsLoadingFiles(true);
+          const response = await getFiles(currentWorkspace.id);
+          // Handle different response formats
+          const filesData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data?.items || response.data?.files || [];
+          setFiles(filesData);
+        }
+      } catch (error) {
+        console.error(`Error loading ${selectedTab}:`, error);
+      } finally {
+        setIsLoadingVariables(false);
+        setIsLoadingCredentials(false);
+        setIsLoadingDatabases(false);
+        setIsLoadingFiles(false);
+      }
+    };
+
+    loadData();
+  }, [selectedTab, isOpen, currentWorkspace?.id]);
 
   const handleToggleNode = (nodeId: string) => {
     setExpandedNode(expandedNode === nodeId ? null : nodeId);
@@ -46,7 +114,12 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
     });
   };
 
-  const handleDragClick = (nodeIdOrPath: string, path?: string) => {
+  const handleDragClick = (
+    nodeIdOrPath: string, 
+    path?: string, 
+    resourceType?: 'variable' | 'credential' | 'database' | 'file',
+    fieldName?: string
+  ) => {
     let formattedPath: string;
     
     if (path !== undefined) {
@@ -54,6 +127,22 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       // Remove leading dot if path starts with dot
       const cleanPath = path.startsWith('.') ? path.substring(1) : path;
       formattedPath = `\${node:${nodeIdOrPath}.${cleanPath}}`;
+    } else if (resourceType === 'variable') {
+      // Variable path: format as ${value:ENV-xyz789}
+      formattedPath = `\${value:${nodeIdOrPath}}`;
+    } else if (resourceType === 'credential') {
+      // Credential path: format as ${credential:CRD-xyz789} or ${credential:CRD-xyz789.field}
+      if (fieldName) {
+        formattedPath = `\${credential:${nodeIdOrPath}.${fieldName}}`;
+      } else {
+        formattedPath = `\${credential:${nodeIdOrPath}}`;
+      }
+    } else if (resourceType === 'database') {
+      // Database path: format as ${database:DBS-xyz789.field}
+      formattedPath = `\${database:${nodeIdOrPath}.${fieldName}}`;
+    } else if (resourceType === 'file') {
+      // File path: format as ${file:FLE-xyz789.field}
+      formattedPath = `\${file:${nodeIdOrPath}.${fieldName}}`;
     } else {
       // Workspace resource path: use as is (already formatted)
       formattedPath = nodeIdOrPath;
@@ -217,48 +306,21 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
       })
     : [];
 
-  // Dummy data for workspace resources
-  const dummyVariables = [
-    { key: 'API_KEY', value: 'sk_test_1234567890', type: 'string' },
-    { key: 'DATABASE_URL', value: 'postgresql://localhost:5432/mydb', type: 'string' },
-    { key: 'MAX_RETRIES', value: '3', type: 'number' },
-    { key: 'ENABLE_CACHE', value: 'true', type: 'boolean' },
-  ];
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
 
-  const dummyCredentials = [
-    { id: 'cred_1', name: 'Stripe API', type: 'API Key', data: 'credentials.stripe_api_key' },
-    { id: 'cred_2', name: 'OpenAI', type: 'Bearer Token', data: 'credentials.openai_token' },
-    { id: 'cred_3', name: 'AWS S3', type: 'Access Key', data: 'credentials.aws_access_key' },
-  ];
-
-  const dummyDatabases = [
-    { 
-      id: 'db_1', 
-      name: 'Production PostgreSQL', 
-      type: 'PostgreSQL',
-      host: 'db.example.com',
-      port: '5432',
-      db_name: 'prod_db',
-      username: 'admin',
-      password: 'databases.postgres_prod.password'
-    },
-    { 
-      id: 'db_2', 
-      name: 'MongoDB Cluster', 
-      type: 'MongoDB',
-      host: 'cluster0.mongodb.net',
-      port: '27017',
-      db_name: 'analytics',
-      username: 'mongo_user',
-      password: 'databases.mongodb_cluster.password'
-    },
-  ];
-
-  const dummyFiles = [
-    { id: 'file_1', name: 'logo.png', path: 'files/assets/logo.png', size: '24 KB' },
-    { id: 'file_2', name: 'template.json', path: 'files/templates/template.json', size: '12 KB' },
-    { id: 'file_3', name: 'report.pdf', path: 'files/documents/report.pdf', size: '156 KB' },
-  ];
+  // Helper function to get variable type
+  const getVariableType = (value: string): string => {
+    if (value === 'true' || value === 'false') return 'boolean';
+    if (!isNaN(Number(value)) && value.trim() !== '') return 'number';
+    return 'string';
+  };
 
   return (
     <div className="fixed left-0 top-0 h-full w-[420px] bg-surface border-r border-border z-40 flex flex-col">
@@ -375,118 +437,201 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
         {/* Environment Variables */}
         {selectedTab === 'variables' && (
           <div className="divide-y divide-border">
-            {dummyVariables.map((variable) => (
-              <div 
-                key={variable.key}
-                className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
-                onClick={() => handleDragClick(`variables.${variable.key}`)}
-              >
-                <div className="flex items-center gap-3">
-                  <Variable className="h-4 w-4 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{variable.key}</span>
-                      <span className="text-xs text-muted-foreground">{variable.type}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {variable.value}
-                    </p>
-                  </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                </div>
+            {isLoadingVariables ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            ) : variables.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">
+                No variables found
+              </div>
+            ) : (
+              variables.map((variable) => (
+                <div 
+                  key={variable.id}
+                  className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
+                  onClick={() => handleDragClick(variable.id, undefined, 'variable')}
+                >
+                  <div className="flex items-center gap-3">
+                    <Variable className="h-4 w-4 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">{variable.key}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {getVariableType(variable.value)}
+                        </span>
+                        {variable.is_secret && (
+                          <span className="text-xs text-warning">Secret</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {variable.is_secret ? '••••••••' : variable.value}
+                      </p>
+                    </div>
+                    <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
         {/* Credentials */}
         {selectedTab === 'credentials' && (
-          <div className="divide-y divide-border">
-            {dummyCredentials.map((credential) => (
-              <div 
-                key={credential.id}
-                className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
-                onClick={() => handleDragClick(credential.data)}
-              >
-                <div className="flex items-center gap-3">
-                  <Key className="h-4 w-4 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">{credential.name}</span>
-                      <span className="text-xs text-muted-foreground">{credential.type}</span>
-                    </div>
-                    <code className="text-xs text-muted-foreground truncate block">
-                      {credential.data}
-                    </code>
-                  </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                </div>
+          <div className="p-4 space-y-3">
+            {isLoadingCredentials ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            ) : credentials.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">
+                No credentials found
+              </div>
+            ) : (
+              credentials.map((credential) => {
+                // Extract fields from credential_data if it's an object
+                const credentialData = credential.credential_data || {};
+                const credentialFields = typeof credentialData === 'object' && credentialData !== null && !Array.isArray(credentialData)
+                  ? Object.keys(credentialData)
+                  : [];
+                
+                return (
+                  <div key={credential.id} className="border-b border-border pb-3 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-2 px-1">
+                      <Key className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium text-foreground">{credential.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {credential.credential_type || credential.credential_provider}
+                      </span>
+                    </div>
+                    
+                    {/* Full credential_data option */}
+                    <div 
+                      className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group mb-1"
+                      onClick={() => handleDragClick(credential.id, undefined, 'credential')}
+                    >
+                      <div className="flex-1">
+                        <span className="text-xs text-muted-foreground mr-2">All Data:</span>
+                        <code className="text-xs text-primary">{`\${credential:${credential.id}}`}</code>
+                      </div>
+                      <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    
+                    {/* Individual fields */}
+                    {credentialFields.length > 0 && (
+                      <div className="space-y-0.5">
+                        {credentialFields.map((field) => (
+                          <div 
+                            key={field}
+                            className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group"
+                            onClick={() => handleDragClick(credential.id, undefined, 'credential', field)}
+                          >
+                            <div className="flex-1">
+                              <span className="text-xs text-muted-foreground mr-2">{field}:</span>
+                              <code className="text-xs text-primary">{`\${credential:${credential.id}.${field}}`}</code>
+                            </div>
+                            <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         )}
 
         {/* Databases */}
         {selectedTab === 'databases' && (
           <div className="p-4 space-y-3">
-            {dummyDatabases.map((database) => (
-              <div key={database.id} className="border-b border-border pb-3 last:border-b-0">
-                <div className="flex items-center gap-2 mb-2 px-1">
-                  <DatabaseIcon className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">{database.name}</span>
-                  <span className="text-xs text-muted-foreground">{database.type}</span>
-                </div>
-                
-                <div className="space-y-0.5">
-                  {[
-                    { label: 'Host', value: database.host, path: `databases.${database.id}.host` },
-                    { label: 'Port', value: database.port, path: `databases.${database.id}.port` },
-                    { label: 'Database', value: database.db_name, path: `databases.${database.id}.db_name` },
-                    { label: 'Username', value: database.username, path: `databases.${database.id}.username` },
-                    { label: 'Password', value: '••••••••', path: database.password },
-                  ].map((field) => (
-                    <div 
-                      key={field.label}
-                      className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group"
-                      onClick={() => handleDragClick(field.path)}
-                    >
-                      <div className="flex-1">
-                        <span className="text-xs text-muted-foreground mr-2">{field.label}:</span>
-                        <span className="text-xs text-foreground">{field.value}</span>
-                      </div>
-                      <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                  ))}
-                </div>
+            {isLoadingDatabases ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            ) : databases.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">
+                No databases found
+              </div>
+            ) : (
+              databases.map((database) => (
+                <div key={database.id} className="border-b border-border pb-3 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <DatabaseIcon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">{database.name}</span>
+                    <span className="text-xs text-muted-foreground">{database.database_type}</span>
+                  </div>
+                  
+                  <div className="space-y-0.5">
+                    {[
+                      { label: 'Host', value: database.host, fieldName: 'host' },
+                      { label: 'Port', value: String(database.port), fieldName: 'port' },
+                      { label: 'Username', value: database.username, fieldName: 'username' },
+                      { label: 'Password', value: '••••••••', fieldName: 'password' },
+                      ...(database.connection_string ? [{ label: 'Connection String', value: '••••••••', fieldName: 'connection_string' }] : []),
+                    ].map((field) => (
+                      <div 
+                        key={field.label}
+                        className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group"
+                        onClick={() => handleDragClick(database.id, undefined, 'database', field.fieldName)}
+                      >
+                        <div className="flex-1">
+                          <span className="text-xs text-muted-foreground mr-2">{field.label}:</span>
+                          <code className="text-xs text-primary">{`\${database:${database.id}.${field.fieldName}}`}</code>
+                        </div>
+                        <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
         {/* Files */}
         {selectedTab === 'files' && (
-          <div className="divide-y divide-border">
-            {dummyFiles.map((file) => (
-              <div 
-                key={file.id}
-                className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
-                onClick={() => handleDragClick(file.path)}
-              >
-                <div className="flex items-center gap-3">
-                  <File className="h-4 w-4 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">{file.name}</span>
-                      <span className="text-xs text-muted-foreground">{file.size}</span>
-                    </div>
-                    <code className="text-xs text-muted-foreground truncate block">
-                      {file.path}
-                    </code>
-                  </div>
-                  <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                </div>
+          <div className="p-4 space-y-3">
+            {isLoadingFiles ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ))}
+            ) : files.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">
+                No files found
+              </div>
+            ) : (
+              files.map((file) => (
+                <div key={file.id} className="border-b border-border pb-3 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <File className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground truncate">{file.name}</span>
+                    <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                  </div>
+                  
+                  <div className="space-y-0.5">
+                    {[
+                      { label: 'Content', fieldName: 'content' },
+                      { label: 'Name', fieldName: 'name' },
+                      { label: 'MIME Type', fieldName: 'mime_type' },
+                      { label: 'File Size', fieldName: 'file_size' },
+                    ].map((field) => (
+                      <div 
+                        key={field.label}
+                        className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group"
+                        onClick={() => handleDragClick(file.id, undefined, 'file', field.fieldName)}
+                      >
+                        <div className="flex-1">
+                          <span className="text-xs text-muted-foreground mr-2">{field.label}:</span>
+                          <code className="text-xs text-primary">{`\${file:${file.id}.${field.fieldName}}`}</code>
+                        </div>
+                        <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>

@@ -81,6 +81,10 @@ export const login = async (credentials: LoginRequest): Promise<LoginResponse> =
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    // 401 veya 403 durumunda kullanıcı adı/şifre hatası
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('INVALID_CREDENTIALS');
+    }
     throw new Error(errorData.message || `Login failed: ${response.status} ${response.statusText}`);
   }
 

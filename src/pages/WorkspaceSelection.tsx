@@ -31,16 +31,20 @@ const WorkspaceSelection = () => {
     }
   }, [navigate]);
 
-  // Map User type to UserCard format
-  const userCardData = currentUser ? {
-    name: currentUser.name,
-    email: currentUser.email,
-    role: currentUser.role,
-  } : {
-    name: 'User',
-    email: '',
-    role: 'User',
-  };
+  // Log user information for debugging
+  useEffect(() => {
+    if (currentUser) {
+      console.log('Current logged-in user:', {
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
+        lastActive: currentUser.lastActive,
+        createdAt: currentUser.createdAt,
+      });
+    }
+  }, [currentUser]);
+
 
   // Separate workspaces into owned and joined
   const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
@@ -245,7 +249,6 @@ const WorkspaceSelection = () => {
         {/* User Card at Top - Enhanced spacing */}
         <div className="mb-12 sm:mb-16">
           <UserCard
-            user={userCardData}
             onSettings={handleSettings}
             onLogout={handleLogout}
           />

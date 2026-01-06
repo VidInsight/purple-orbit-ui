@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types/user';
-import { decodeToken, getAccessToken } from '@/utils/tokenUtils';
+import { decodeToken, getAccessToken, getUserData } from '@/utils/tokenUtils';
 
 interface UserContextType {
   currentUser: User | null;
@@ -25,27 +25,43 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        // Decode token to get user info
-        const decoded = decodeToken(accessToken);
+        // Önce localStorage'dan kullanıcı bilgilerini yükle
+        const savedUserData = getUserData();
         
-        if (decoded) {
-          // Map token payload to User type
-          // Token'dan gelen field'lara göre mapping yapılabilir
+        if (savedUserData) {
+          // localStorage'dan gelen bilgileri kullan
+          const decoded = decodeToken(accessToken);
           const user: User = {
-            id: decoded.user_id || decoded.sub || '',
-            name: decoded.username || decoded.name || 'User',
-            email: decoded.email || '',
-            role: decoded.role || 'viewer',
+            id: savedUserData.id,
+            name: savedUserData.username,
+            email: savedUserData.email,
+            role: decoded?.role || 'viewer',
             lastActive: new Date().toISOString(),
-            createdAt: decoded.iat ? new Date(decoded.iat * 1000).toISOString() : new Date().toISOString(),
+            createdAt: decoded?.iat ? new Date(decoded.iat * 1000).toISOString() : new Date().toISOString(),
           };
           
           setCurrentUser(user);
         } else {
-          setCurrentUser(null);
+          // Fallback: Token'dan decode et
+          const decoded = decodeToken(accessToken);
+          
+          if (decoded) {
+            const user: User = {
+              id: decoded.user_id || decoded.sub || '',
+              name: decoded.username || decoded.name || 'User',
+              email: decoded.email || '',
+              role: decoded.role || 'viewer',
+              lastActive: new Date().toISOString(),
+              createdAt: decoded.iat ? new Date(decoded.iat * 1000).toISOString() : new Date().toISOString(),
+            };
+            
+            setCurrentUser(user);
+          } else {
+            setCurrentUser(null);
+          }
         }
       } catch (error) {
-        console.error('Error loading user from token:', error);
+        console.error('Error loading user:', error);
         setCurrentUser(null);
       } finally {
         setIsLoading(false);

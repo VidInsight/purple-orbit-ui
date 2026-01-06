@@ -511,5 +511,166 @@ export const getWorkflowDetail = async (
   return data;
 };
 
+/**
+ * Delete a node from a workflow
+ */
+export const deleteNodeFromWorkflow = async (
+  workspaceId: string,
+  workflowId: string,
+  nodeId: string
+): Promise<WorkflowApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  if (!nodeId || nodeId.trim() === '') {
+    throw new Error('Node ID is required.');
+  }
+
+  console.log('Deleting node from workflow:', { workspaceId, workflowId, nodeId });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to delete node: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Delete node API response:', data);
+  return data;
+};
+
+export interface TestExecutionData {
+  input_data: Record<string, any>;
+}
+
+/**
+ * Test workflow execution
+ */
+export const testWorkflowExecution = async (
+  workspaceId: string,
+  workflowId: string,
+  testData: TestExecutionData
+): Promise<WorkflowApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  console.log('Testing workflow execution:', { workspaceId, workflowId, testData });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(testData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to test workflow execution: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Test workflow execution API response:', data);
+  return data;
+};
+
+/**
+ * Get execution details by ID
+ */
+export const getExecution = async (
+  workspaceId: string,
+  executionId: string
+): Promise<WorkflowApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!executionId || executionId.trim() === '') {
+    throw new Error('Execution ID is required.');
+  }
+
+  console.log('Fetching execution details:', { workspaceId, executionId });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to fetch execution details: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Get execution API response:', data);
+  return data;
+};
+
 
 

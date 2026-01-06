@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import { login as loginApi } from '@/services/authApi';
+import { saveUserData } from '@/utils/tokenUtils';
 
 export const Login = () => {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ export const Login = () => {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string>('');
 
   const loginSchema = z.object({
     usernameOrEmail: z.string().min(1, t('auth:login.errors.required')),
@@ -30,6 +32,7 @@ export const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setGeneralError('');
 
     try {
       loginSchema.parse(formData);
@@ -43,11 +46,19 @@ export const Login = () => {
 
       console.log('Login successful:', response);
 
-      // Sadece token'ları localStorage'a kaydet
+      // Token'ları ve kullanıcı bilgilerini localStorage'a kaydet
       if (response.data.access_token && response.data.refresh_token) {
         localStorage.setItem('access_token', response.data.access_token);
         localStorage.setItem('refresh_token', response.data.refresh_token);
-        // User bilgileri token'dan decode edilecek veya API'den çekilecek
+        
+        // Kullanıcı bilgilerini kaydet
+        if (response.data.id && response.data.username && response.data.email) {
+          saveUserData({
+            id: response.data.id,
+            username: response.data.username,
+            email: response.data.email,
+          });
+        }
       }
 
       toast({
@@ -66,9 +77,17 @@ export const Login = () => {
         });
         setErrors(fieldErrors);
       } else {
+        // API hatası - kullanıcı adı veya şifre hatalı
+        const isInvalidCredentials = error instanceof Error && error.message === 'INVALID_CREDENTIALS';
+        const errorMessage = isInvalidCredentials 
+          ? t('auth:login.errors.invalidCredentials')
+          : (error instanceof Error ? error.message : t('auth:login.errors.invalidCredentials'));
+        
+        setGeneralError(t('auth:login.errors.invalidCredentials'));
+        
         toast({
           title: t('common:messages.error'),
-          description: error instanceof Error ? error.message : t('auth:login.errors.invalidCredentials'),
+          description: errorMessage,
           variant: 'destructive',
         });
       }
@@ -95,6 +114,11 @@ export const Login = () => {
 
         <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-6">
+          {generalError && (
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm animate-fade-in">
+              {generalError}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="usernameOrEmail" className="transition-colors duration-200">{t('auth:login.usernameOrEmail')}</Label>
             <Input

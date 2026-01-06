@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon } from 'lucide-react';
+import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema } from '@/services/workflowApi';
+import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution } from '@/services/workflowApi';
 import { toast } from '@/hooks/use-toast';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -89,6 +89,10 @@ export default function ZapierWorkflowEditor() {
     output: any;
   }>>({});
   const [isLoadingOutputs, setIsLoadingOutputs] = useState(false);
+  const [isRunningTest, setIsRunningTest] = useState(false);
+  const [executionId, setExecutionId] = useState<string | null>(null);
+  const [executionData, setExecutionData] = useState<any>(null);
+  const [isLoadingExecution, setIsLoadingExecution] = useState(false);
 
   // Load workflow from API when editing existing workflow
   useEffect(() => {
@@ -725,9 +729,40 @@ export default function ZapierWorkflowEditor() {
     });
   }, [nodes, nodeOutputs]);
 
-  const handleDeleteNode = (nodeId: string) => {
-    setNodes(nodes.filter(node => node.id !== nodeId));
-  };
+  const handleDeleteNode = useCallback(async (nodeId: string) => {
+    // Check if we have workspace and workflow IDs for API call
+    if (!currentWorkspace?.id || !id || id === 'new') {
+      // Fallback to local state if workspace/workflow not available
+      setNodes(nodes.filter(node => node.id !== nodeId));
+      return;
+    }
+
+    try {
+      // Call API to delete node
+      await deleteNodeFromWorkflow(currentWorkspace.id, id, nodeId);
+      
+      // Remove node from local state
+      setNodes(nodes.filter(node => node.id !== nodeId));
+      
+      // If deleted node was selected, clear selection
+      if (selectedNode?.id === nodeId) {
+        setSelectedNode(null);
+        setShowOutputsPanel(false);
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Node deleted successfully',
+      });
+    } catch (error) {
+      console.error('Failed to delete node:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete node from workflow',
+        variant: 'destructive',
+      });
+    }
+  }, [nodes, currentWorkspace?.id, id, selectedNode]);
 
   const handleSave = () => {
     const workflowId = id === 'new' ? `workflow-${Date.now()}` : id;
@@ -758,7 +793,49 @@ export default function ZapierWorkflowEditor() {
     }
   };
 
-  // Mock test results (memoized)
+  // Transform execution data to test results format
+  const executionTestResults = useMemo(() => {
+    if (!executionData || !executionData.results) return null;
+
+    // Map execution data to test results format
+    const nodeResults: Record<string, any> = {};
+    
+    // executionData.results is an object with node IDs as keys
+    Object.entries(executionData.results).forEach(([nodeId, result]: [string, any]) => {
+      nodeResults[nodeId] = {
+        node_id: nodeId,
+        node_name: result.node_name || nodes.find(n => n.id === nodeId)?.title || 'Unknown Node',
+        status: result.status || 'SUCCESS',
+        result_data: result.result_data || {},
+        duration_seconds: result.duration_seconds || 0,
+        completed_at: executionData.ended_at || executionData.started_at,
+        error_message: result.error_message || null,
+      };
+    });
+
+    const successfulNodes = Object.values(nodeResults).filter((r: any) => r.status === 'SUCCESS' || r.status === 'success').length;
+    const failedNodes = Object.values(nodeResults).filter((r: any) => r.status === 'FAILED' || r.status === 'failed' || r.status === 'FAILURE').length;
+
+    return {
+      summary: {
+        total_nodes: Object.keys(nodeResults).length || nodes.length,
+        completed_nodes: Object.keys(nodeResults).length || nodes.length,
+        successful_nodes: successfulNodes,
+        failed_nodes: failedNodes,
+        skipped_nodes: 0,
+      },
+      node_results: nodeResults,
+      final_output: executionData.results ? (Object.values(executionData.results) as any[])[Object.values(executionData.results).length - 1]?.result_data : null,
+      metadata: {
+        workflow_version: '1.0.0',
+        execution_mode: 'test',
+        completed_at: executionData.ended_at || executionData.started_at,
+        duration: executionData.duration || 0,
+      },
+    };
+  }, [executionData, nodes]);
+
+  // Mock test results (memoized) - fallback when no execution data
   const mockTestResults = useMemo(() => {
     const nodeResults: Record<string, any> = {};
     
@@ -847,9 +924,99 @@ export default function ZapierWorkflowEditor() {
     };
   }, [nodes]);
 
-  const handleTest = useCallback(() => {
-    // Implement test logic
-  }, [workflowName, nodes]);
+  // Fetch execution details
+  const fetchExecutionDetails = useCallback(async (execId: string) => {
+    if (!currentWorkspace?.id) return;
+
+    setIsLoadingExecution(true);
+    try {
+      const response = await getExecution(currentWorkspace.id, execId);
+      
+      if (response.status === 'success' && response.data) {
+        setExecutionData(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch execution details:', error);
+      toast({
+        title: 'Warning',
+        description: 'Failed to load execution details. Using mock data.',
+        variant: 'default',
+      });
+    } finally {
+      setIsLoadingExecution(false);
+    }
+  }, [currentWorkspace?.id]);
+
+  const handleTest = useCallback(async () => {
+    // Check if we have workspace and workflow IDs for API call
+    if (!currentWorkspace?.id || !id || id === 'new') {
+      toast({
+        title: 'Error',
+        description: 'Please save the workflow before testing',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsRunningTest(true);
+    try {
+      const testData = {
+        input_data: {
+          test: 'data'
+        }
+      };
+
+      const response = await testWorkflowExecution(currentWorkspace.id, id, testData);
+      
+      // Extract execution_id from response
+      const executionIdFromResponse = response.data?.execution_id || response.data?.id || response.data?.executionId;
+      
+      if (executionIdFromResponse) {
+        setExecutionId(executionIdFromResponse);
+        // Fetch execution details immediately
+        await fetchExecutionDetails(executionIdFromResponse);
+      } else {
+        toast({
+          title: 'Warning',
+          description: 'Execution started but execution ID not found in response',
+          variant: 'default',
+        });
+      }
+      
+      toast({
+        title: 'Success',
+        description: 'Workflow test execution started successfully',
+      });
+
+      // Switch to test tab to show results
+      setActiveTab('test');
+    } catch (error) {
+      console.error('Failed to test workflow:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to test workflow execution',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRunningTest(false);
+    }
+  }, [currentWorkspace?.id, id, fetchExecutionDetails]);
+
+  // Poll execution details if execution is running
+  useEffect(() => {
+    if (!executionId || !currentWorkspace?.id) return;
+
+    // Poll every 2 seconds if execution is still running
+    const pollInterval = setInterval(() => {
+      if (executionData?.status === 'RUNNING' || executionData?.status === 'running' || executionData?.status === 'PENDING' || executionData?.status === 'pending') {
+        fetchExecutionDetails(executionId);
+      } else {
+        clearInterval(pollInterval);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [executionId, currentWorkspace?.id, fetchExecutionDetails, executionData?.status]);
 
   // Zoom and Pan handlers
   const handleWheel = (e: React.WheelEvent) => {
@@ -949,6 +1116,17 @@ export default function ZapierWorkflowEditor() {
 
               {/* Right Side */}
               <div className="flex items-center gap-3">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleTest}
+                  disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
+                  loading={isRunningTest}
+                  className="gap-2"
+                >
+                  <Play className="h-4 w-4" />
+                  Run
+                </Button>
                 <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-lg">
                   <Label htmlFor="workflow-active" className="text-sm font-medium cursor-pointer">
                     {isActive ? 'Active' : 'Inactive'}
@@ -1165,102 +1343,183 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-6">
-                {/* Test Summary Card */}
-                <TestSummaryCard
-                  totalNodes={mockTestResults.summary.total_nodes}
-                  successfulNodes={mockTestResults.summary.successful_nodes}
-                  failedNodes={mockTestResults.summary.failed_nodes}
-                  totalDuration={nodes.reduce((total, node) => {
-                    return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                  }, 0)}
-                  averageNodeTime={
-                    nodes.length > 0
-                      ? nodes.reduce((total, node) => {
-                          return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
-                        }, 0) / nodes.length
-                      : 0
-                  }
-                />
-
-                {/* Timeline and Logs - Side by Side */}
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Execution Timeline */}
-                  <div className="min-h-[600px] flex flex-col">
-                    <ExecutionTimeline
-                      nodes={nodes.map((node, index) => {
-                        const nodeResult = mockTestResults.node_results[node.id];
-                        const NodeIcon = node.icon || Settings;
-                        
-                        // Get input data from previous nodes (simplified)
-                        const firstNode = nodes[0];
-                        const inputData = node.type === 'trigger' ? undefined : {
-                          trigger_data: firstNode ? mockTestResults.node_results[firstNode.id]?.result_data : undefined,
-                        };
-
-                        return {
-                          nodeId: node.id,
-                          nodeName: node.title,
-                          nodeIcon: NodeIcon,
-                          status: nodeResult.status,
-                          inputData,
-                          outputData: nodeResult.result_data,
-                          metadata: {
-                            duration_seconds: nodeResult.duration_seconds,
-                            completed_at: nodeResult.completed_at,
-                          },
-                          errorMessage: nodeResult.error_message,
-                          order: index + 1,
-                        };
-                      })}
-                      totalDuration={nodes.reduce((total, node) => {
-                        return total + (mockTestResults.node_results[node.id]?.duration_seconds || 0);
+                {isLoadingExecution ? (
+                  <div className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
+                      <p className="text-sm text-muted-foreground">Loading execution details...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Test Summary Card */}
+                    <TestSummaryCard
+                      totalNodes={executionTestResults?.summary.total_nodes || mockTestResults.summary.total_nodes}
+                      successfulNodes={executionTestResults?.summary.successful_nodes || mockTestResults.summary.successful_nodes}
+                      failedNodes={executionTestResults?.summary.failed_nodes || mockTestResults.summary.failed_nodes}
+                      totalDuration={executionTestResults?.metadata.duration || nodes.reduce((total, node) => {
+                        const testResults = executionTestResults || mockTestResults;
+                        return total + (testResults.node_results[node.id]?.duration_seconds || 0);
                       }, 0)}
+                      averageNodeTime={
+                        nodes.length > 0
+                          ? nodes.reduce((total, node) => {
+                              const testResults = executionTestResults || mockTestResults;
+                              return total + (testResults.node_results[node.id]?.duration_seconds || 0);
+                            }, 0) / nodes.length
+                          : 0
+                      }
                     />
-                  </div>
 
-                  {/* Execution Logs */}
-                  <div className="bg-surface border border-border rounded-lg min-h-[600px] flex flex-col">
-                    <div className="px-6 py-4 border-b border-border flex-shrink-0">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                          <MessageSquare className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold">Execution Logs</h3>
-                          <p className="text-xs text-muted-foreground">Detailed execution logs and debug information</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-6 flex-1 overflow-hidden">
-                      <div className="bg-background rounded-md p-4 font-mono text-xs h-full overflow-auto border border-border">
-                        <div className="space-y-1">
-                          <p className="text-success">[INFO] Workflow test started</p>
-                          <p className="text-muted-foreground">[INFO] {nodes.length} nodes loaded</p>
-                          <p className="text-success">[INFO] Executing workflow...</p>
-                          {nodes.map((node) => {
-                            const result = mockTestResults.node_results[node.id];
-                            return (
-                              <p 
-                                key={node.id}
-                                className={result?.status === 'SUCCESS' ? 'text-success' : 'text-destructive'}
-                              >
-                                [{result?.status}] {node.title} - completed in {result?.duration_seconds.toFixed(2)}s
-                                {result?.error_message && (
-                                  <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
-                                )}
-                              </p>
-                            );
+                    {/* Timeline and Logs - Side by Side */}
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Execution Timeline */}
+                      <div className="min-h-[600px] flex flex-col">
+                        <ExecutionTimeline
+                          nodes={nodes.map((node, index) => {
+                            const testResults = executionTestResults || mockTestResults;
+                            const nodeResult = testResults.node_results[node.id];
+                            const NodeIcon = node.icon || Settings;
+                            
+                            // Get input data from previous nodes (simplified)
+                            const firstNode = nodes[0];
+                            const inputData = node.type === 'trigger' ? undefined : {
+                              trigger_data: firstNode ? testResults.node_results[firstNode.id]?.result_data : undefined,
+                            };
+
+                            return {
+                              nodeId: node.id,
+                              nodeName: node.title,
+                              nodeIcon: NodeIcon,
+                              status: nodeResult?.status || 'PENDING',
+                              inputData,
+                              outputData: nodeResult?.result_data,
+                              metadata: {
+                                duration_seconds: nodeResult?.duration_seconds || 0,
+                                completed_at: nodeResult?.completed_at,
+                              },
+                              errorMessage: nodeResult?.error_message,
+                              order: index + 1,
+                            };
                           })}
-                          <p className="text-success">[INFO] Test execution completed</p>
-                          <p className="text-muted-foreground">
-                            [SUMMARY] Success: {mockTestResults.summary.successful_nodes}, Failed: {mockTestResults.summary.failed_nodes}
-                          </p>
+                          totalDuration={executionTestResults?.metadata.duration || nodes.reduce((total, node) => {
+                            const testResults = executionTestResults || mockTestResults;
+                            return total + (testResults.node_results[node.id]?.duration_seconds || 0);
+                          }, 0)}
+                        />
+                      </div>
+
+                      {/* Execution Logs */}
+                      <div className="bg-surface border border-border rounded-lg min-h-[600px] flex flex-col">
+                        <div className="px-6 py-4 border-b border-border flex-shrink-0">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                              <MessageSquare className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold">Execution Logs</h3>
+                              <p className="text-xs text-muted-foreground">Detailed execution logs and debug information</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-6 flex-1 overflow-hidden">
+                          <div className="bg-background rounded-md p-4 font-mono text-xs h-full overflow-auto border border-border">
+                            <div className="space-y-1">
+                              {executionData ? (
+                                <>
+                                  <p className="text-success">[INFO] Workflow test started</p>
+                                  <p className="text-muted-foreground">[INFO] Execution ID: {executionData.id}</p>
+                                  <p className="text-muted-foreground">[INFO] Status: {executionData.status}</p>
+                                  <p className="text-muted-foreground">[INFO] Started at: {new Date(executionData.started_at).toLocaleString()}</p>
+                                  {executionData.ended_at && (
+                                    <p className="text-muted-foreground">[INFO] Ended at: {new Date(executionData.ended_at).toLocaleString()}</p>
+                                  )}
+                                  <p className="text-muted-foreground">[INFO] Duration: {executionData.duration?.toFixed(3)}s</p>
+                                  <p className="text-success">[INFO] Executing workflow...</p>
+                                  {nodes.map((node) => {
+                                    const testResults = executionTestResults || mockTestResults;
+                                    const result = testResults.node_results[node.id];
+                                    const statusClass = result?.status === 'SUCCESS' || result?.status === 'success' 
+                                      ? 'text-success' 
+                                      : result?.status === 'FAILED' || result?.status === 'failed' 
+                                      ? 'text-destructive' 
+                                      : 'text-muted-foreground';
+                                    return (
+                                      <p 
+                                        key={node.id}
+                                        className={statusClass}
+                                      >
+                                        [{result?.status || 'PENDING'}] {node.title} - {result?.duration_seconds ? `completed in ${result.duration_seconds.toFixed(3)}s` : 'pending'}
+                                        {result?.error_message && (
+                                          <span className="block ml-4 text-destructive">↳ Error: {result.error_message}</span>
+                                        )}
+                                      </p>
+                                    );
+                                  })}
+                                  <p className={executionData.status === 'COMPLETED' ? 'text-success' : executionData.status === 'FAILED' ? 'text-destructive' : 'text-muted-foreground'}>
+                                    [INFO] Test execution {executionData.status?.toLowerCase() || 'completed'}
+                                  </p>
+                                  <p className="text-muted-foreground">
+                                    [SUMMARY] Success: {executionTestResults?.summary.successful_nodes || 0}, Failed: {executionTestResults?.summary.failed_nodes || 0}
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-muted-foreground">[INFO] No execution data available</p>
+                                  <p className="text-muted-foreground">[INFO] Click "Run" button to start a test execution</p>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+
+                    {/* Final Result */}
+                    {(() => {
+                      const testResults = executionTestResults || mockTestResults;
+                      
+                      // Get the last node's result data
+                      let finalResult = null;
+                      
+                      if (executionData && executionData.results) {
+                        // If we have execution data, get the last node's result
+                        const lastNode = nodes[nodes.length - 1];
+                        if (lastNode && executionData.results[lastNode.id]) {
+                          finalResult = executionData.results[lastNode.id].result_data;
+                        } else {
+                          // If last node not found, get the last result from results object
+                          const resultEntries = Object.entries(executionData.results);
+                          if (resultEntries.length > 0) {
+                            const lastResult = resultEntries[resultEntries.length - 1][1] as any;
+                            finalResult = lastResult?.result_data || null;
+                          }
+                        }
+                      } else if (nodes.length > 0) {
+                        // Fallback to test results
+                        const lastNode = nodes[nodes.length - 1];
+                        finalResult = testResults.node_results[lastNode.id]?.result_data || null;
+                      }
+                      
+                      if (!finalResult) return null;
+
+                      return (
+                        <div className="bg-surface/50 border border-border rounded-md p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle className="h-4 w-4 text-success" />
+                            <span className="text-sm font-medium">Final Result</span>
+                          </div>
+                          <div className="bg-background rounded p-3 font-mono text-xs overflow-auto max-h-[300px]">
+                            <pre className="whitespace-pre-wrap break-words m-0">
+                              {JSON.stringify(finalResult, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
             </div>
           </TabsContent>

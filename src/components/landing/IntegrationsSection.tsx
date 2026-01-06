@@ -46,7 +46,8 @@ export const IntegrationsSection = () => {
   return (
     <section ref={ref} className="py-24 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Section Header */}
+
+        {/* Header */}
         <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -61,37 +62,43 @@ export const IntegrationsSection = () => {
           </p>
         </div>
 
-        {/* Scrolling Integration Rows */}
-        <div className="space-y-4">
-          {/* Row 1 - Scrolling Left */}
-          <div className="relative">
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
-            <div className="flex gap-4 animate-scroll-left">
-              {[...integrations, ...integrations].map((integration, index) => (
-                <IntegrationCard key={`${integration.name}-${index}`} {...integration} />
-              ))}
-            </div>
-          </div>
+        {/* Scrolling Rows */}
+        <div className="space-y-6">
 
-          {/* Row 2 - Scrolling Right */}
-          <div className="relative">
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
-            <div className="flex gap-4 animate-scroll-right">
-              {[...integrations.slice().reverse(), ...integrations.slice().reverse()].map((integration, index) => (
-                <IntegrationCard key={`${integration.name}-rev-${index}`} {...integration} />
-              ))}
-            </div>
-          </div>
+         {/* Row 1 */}
+<div className="relative overflow-hidden">
+  <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10" />
+  <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
+
+  <div className="flex gap-4 w-max animate-scroll-left">
+    {[...integrations, ...integrations].map((integration, index) => (
+      <IntegrationCard key={`${integration.name}-${index}`} {...integration} />
+    ))}
+  </div>
+</div>
+
+{/* Row 2 */}
+<div className="relative overflow-hidden">
+  <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10" />
+  <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
+
+  <div className="flex gap-4 w-max animate-scroll-right">
+    {[...integrations.slice().reverse(), ...integrations.slice().reverse()].map((integration, index) => (
+      <IntegrationCard key={`${integration.name}-rev-${index}`} {...integration} />
+    ))}
+  </div>
+</div>
+
+
         </div>
 
-        {/* View All Button */}
+        {/* Button */}
         <div className={`text-center mt-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '300ms' }}>
           <button className="text-primary hover:text-primary/80 font-medium transition-colors">
             Tüm Entegrasyonları Gör →
           </button>
         </div>
+
       </div>
     </section>
   );

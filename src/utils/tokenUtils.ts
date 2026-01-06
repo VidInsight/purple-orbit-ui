@@ -63,12 +63,39 @@ export const clearTokens = (): void => {
 };
 
 /**
+ * Save user data to localStorage
+ */
+export const saveUserData = (userData: { id: string; username: string; email: string }): void => {
+  localStorage.setItem('user_data', JSON.stringify(userData));
+  // Trigger custom event to notify UserContext
+  window.dispatchEvent(new Event('tokenChange'));
+};
+
+/**
+ * Get user data from localStorage
+ */
+export const getUserData = (): { id: string; username: string; email: string } | null => {
+  const userDataStr = localStorage.getItem('user_data');
+  if (!userDataStr) return null;
+  
+  try {
+    return JSON.parse(userDataStr);
+  } catch (error) {
+    console.error('Error parsing user data:', error);
+    return null;
+  }
+};
+
+/**
  * Clear all localStorage data (used on logout)
  */
 export const clearAllLocalStorage = (): void => {
   // Clear tokens
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
+  
+  // Clear user data
+  localStorage.removeItem('user_data');
   
   // Clear workspace data
   localStorage.removeItem('automation_workspaces');

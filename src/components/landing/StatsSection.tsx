@@ -33,7 +33,7 @@ const StatCard = ({ icon: Icon, value, suffix = '', prefix = '', label, descript
       style={{ transitionDelay: `${delay * 100}ms` }}
     >
       {/* Glow */}
-      <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${color} blur-xl -z-10`} />
+      <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-30 transition-opacity duration-500 bg-gradient-to-br ${color} blur-xl -z-10`} />
       
       <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${color} mb-4`}>
         <Icon className="h-6 w-6 text-white" />
@@ -123,7 +123,7 @@ export const StatsSection = () => {
               Rakamlarla
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              FlowMaster
+              Qbitra
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">

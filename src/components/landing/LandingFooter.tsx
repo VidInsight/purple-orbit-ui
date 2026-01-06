@@ -83,7 +83,7 @@ export const LandingFooter = () => {
               <div className="bg-gradient-to-br from-primary to-primary/80 p-2 rounded-xl">
                 <Workflow className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold text-foreground">FlowMaster</span>
+              <span className="text-lg font-bold text-foreground">Qbitra</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
               İş süreçlerinizi otomatikleştirmek için modern, güçlü ve kullanımı kolay workflow platformu.
@@ -159,7 +159,7 @@ export const LandingFooter = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} FlowMaster. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Qbitra. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">

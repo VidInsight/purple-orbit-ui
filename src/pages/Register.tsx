@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import i18n from '@/i18n/config';
 import { register as registerApi, fetchAgreement as fetchAgreementApi } from '@/services/authApi';
@@ -35,6 +35,18 @@ export const Register = () => {
     privacyPolicy: false,
     terms: false,
   });
+
+  // Şifre kurallarını kontrol et
+  const passwordRules = useMemo(() => {
+    const password = formData.password;
+    return {
+      minLength: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    };
+  }, [formData.password]);
   const [agreementVersions, setAgreementVersions] = useState<{
     privacyPolicy: string | null;
     terms: string | null;
@@ -109,7 +121,13 @@ export const Register = () => {
     name: z.string().min(1, t('auth:register.errors.nameRequired')),
     surname: z.string().min(1, t('auth:register.errors.surnameRequired')),
     email: z.string().email(t('auth:register.errors.emailInvalid')),
-    password: z.string().min(8, t('auth:register.errors.passwordMin')),
+    password: z
+      .string()
+      .min(8, t('auth:register.errors.passwordMin'))
+      .regex(/[A-Z]/, t('auth:register.errors.passwordUppercase'))
+      .regex(/[a-z]/, t('auth:register.errors.passwordLowercase'))
+      .regex(/[0-9]/, t('auth:register.errors.passwordNumber'))
+      .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, t('auth:register.errors.passwordSpecial')),
     confirmPassword: z.string().min(1, t('auth:register.errors.passwordMatch')),
     privacyPolicy: z.boolean().refine(val => val === true, {
       message: t('auth:register.errors.privacyRequired'),
@@ -283,6 +301,63 @@ export const Register = () => {
                 )}
               </button>
             </div>
+            {formData.password && (
+              <div className="mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+                <p className="text-xs font-medium text-foreground mb-2">{t('auth:register.passwordRules.title')}</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs">
+                    {passwordRules.minLength ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className={passwordRules.minLength ? 'text-green-500' : 'text-muted-foreground'}>
+                      {t('auth:register.passwordRules.minLength')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {passwordRules.uppercase ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className={passwordRules.uppercase ? 'text-green-500' : 'text-muted-foreground'}>
+                      {t('auth:register.passwordRules.uppercase')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {passwordRules.lowercase ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className={passwordRules.lowercase ? 'text-green-500' : 'text-muted-foreground'}>
+                      {t('auth:register.passwordRules.lowercase')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {passwordRules.number ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className={passwordRules.number ? 'text-green-500' : 'text-muted-foreground'}>
+                      {t('auth:register.passwordRules.number')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {passwordRules.special ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <X className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    <span className={passwordRules.special ? 'text-green-500' : 'text-muted-foreground'}>
+                      {t('auth:register.passwordRules.special')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
             {errors.password && (
               <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.password}</p>
             )}

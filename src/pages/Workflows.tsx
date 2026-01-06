@@ -68,6 +68,27 @@ const Workflows = () => {
     loadWorkflows();
   }, [currentWorkspace]);
 
+  // Normalize status from API to match filter options
+  const normalizeStatus = (status: string | undefined | null): 'active' | 'inactive' | 'draft' => {
+    if (!status) return 'draft';
+    
+    const normalized = status.toLowerCase().trim();
+    
+    // Map common status variations to standard values
+    if (normalized === 'active' || normalized === 'enabled' || normalized === 'running') {
+      return 'active';
+    }
+    if (normalized === 'inactive' || normalized === 'disabled' || normalized === 'stopped') {
+      return 'inactive';
+    }
+    if (normalized === 'draft' || normalized === 'pending' || normalized === 'new') {
+      return 'draft';
+    }
+    
+    // Default to draft if status doesn't match known values
+    return 'draft';
+  };
+
   const loadWorkflows = async () => {
     if (!currentWorkspace?.id) {
       setIsLoading(false);
@@ -92,7 +113,7 @@ const Workflows = () => {
           id: wf.id || wf.workflow_id || `workflow-${Date.now()}`,
           name: wf.name || wf.workflow_name || 'Unnamed Workflow',
           description: wf.description || wf.workflow_description,
-          status: wf.status || 'draft',
+          status: normalizeStatus(wf.status),
           createdAt: wf.created_at || wf.createdAt || new Date().toISOString(),
           updatedAt: wf.updated_at || wf.updatedAt || new Date().toISOString(),
           lastExecuted: wf.last_executed || wf.lastExecuted,
