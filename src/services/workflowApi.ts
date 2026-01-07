@@ -672,5 +672,135 @@ export const getExecution = async (
   return data;
 };
 
+export interface Trigger {
+  id: string;
+  name: string;
+  description: string;
+  trigger_type: string;
+  config: Record<string, any>;
+  is_enabled: boolean;
+}
+
+export interface WorkflowTriggersResponse {
+  workflow_id: string;
+  triggers: Trigger[];
+  count: number;
+}
+
+/**
+ * Get workflow triggers
+ */
+export const getWorkflowTriggers = async (
+  workspaceId: string,
+  workflowId: string
+): Promise<WorkflowApiResponse & { data: WorkflowTriggersResponse }> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  console.log('Fetching workflow triggers:', { workspaceId, workflowId });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to fetch workflow triggers: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Get workflow triggers API response:', data);
+  return data;
+};
+
+export interface UpdateTriggerData {
+  name?: string;
+  description?: string;
+  trigger_type?: string;
+  config?: Record<string, any>;
+  input_mapping?: Record<string, any>;
+}
+
+/**
+ * Update workflow trigger
+ */
+export const updateWorkflowTrigger = async (
+  workspaceId: string,
+  workflowId: string,
+  triggerId: string,
+  triggerData: UpdateTriggerData
+): Promise<WorkflowApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  if (!triggerId || triggerId.trim() === '') {
+    throw new Error('Trigger ID is required.');
+  }
+
+  console.log('Updating workflow trigger:', { workspaceId, workflowId, triggerId, triggerData });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(triggerData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to update workflow trigger: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Update workflow trigger API response:', data);
+  return data;
+};
+
 
 

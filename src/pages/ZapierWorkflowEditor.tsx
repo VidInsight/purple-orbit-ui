@@ -16,6 +16,7 @@ import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
 import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
+import { DefaultTriggerCard } from '@/components/workflow-builder/DefaultTriggerCard';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
@@ -1217,6 +1218,11 @@ export default function ZapierWorkflowEditor() {
               >
                 <div className="max-w-3xl w-full px-6">
                   <div className="space-y-0">
+                    {/* Default Trigger Card */}
+                    <div className="mb-6">
+                      <DefaultTriggerCard workspaceId={currentWorkspace?.id} workflowId={id} />
+                    </div>
+
                     {nodes.length === 0 ? (
                       // Empty state - show Add Node button for first node
                       <div className="flex flex-col items-center justify-center py-16">

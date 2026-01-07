@@ -3,18 +3,25 @@ import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { ApiKeyItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { getApiKeys, createApiKey } from '@/services/apiKeysApi';
+import { getApiKeys, createApiKey, getApiKey, updateApiKey, deleteApiKey, ApiKeyDetail } from '@/services/apiKeysApi';
 import { CreateApiKeyModal, CreateApiKeyData } from '@/components/api-keys/CreateApiKeyModal';
 import { ApiKeyRevealModal } from '@/components/api-keys/ApiKeyRevealModal';
+import { ApiKeyDetailModal } from '@/components/api-keys/ApiKeyDetailModal';
 
 const ApiKeys = () => {
   const { currentWorkspace } = useWorkspace();
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [revealModalOpen, setRevealModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [newApiKey, setNewApiKey] = useState({ key: '', name: '' });
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [apiKeyDetail, setApiKeyDetail] = useState<ApiKeyDetail | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [editingApiKey, setEditingApiKey] = useState<ApiKeyDetail | null>(null);
 
   const handleCreate = () => {
     if (!currentWorkspace?.id) {
@@ -121,30 +128,182 @@ const ApiKeys = () => {
     }
   };
 
-  const handleView = (item: ApiKeyItem) => {
-    toast({
-      title: 'View API Key',
-      description: `Viewing: ${item.name}`,
-    });
+  const handleView = async (item: ApiKeyItem) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsLoadingDetail(true);
+      setDetailModalOpen(true);
+      const response = await getApiKey(currentWorkspace.id, item.id);
+      setApiKeyDetail(response.data);
+    } catch (error) {
+      console.error('Error fetching API key details:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to fetch API key details',
+        variant: 'destructive',
+      });
+      setDetailModalOpen(false);
+    } finally {
+      setIsLoadingDetail(false);
+    }
   };
 
-  const handleEdit = (item: ApiKeyItem) => {
-    toast({
-      title: 'Edit API Key',
-      description: `Editing: ${item.name}`,
-    });
+  const handleEdit = async (item: ApiKeyItem) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsLoadingDetail(true);
+      setEditModalOpen(true);
+      const response = await getApiKey(currentWorkspace.id, item.id);
+      setEditingApiKey(response.data);
+    } catch (error) {
+      console.error('Error fetching API key for edit:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load API key details',
+        variant: 'destructive',
+      });
+      setEditModalOpen(false);
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  const handleEditSubmit = async (data: CreateApiKeyData) => {
+    if (!currentWorkspace?.id || !editingApiKey) {
+      toast({
+        title: 'Error',
+        description: 'Workspace or API key not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+
+      // Convert expiration to ISO date string
+      const expiresAt =
+        data.expiration === 'never'
+          ? undefined
+          : new Date(Date.now() + parseInt(data.expiration) * 24 * 60 * 60 * 1000).toISOString();
+
+      // Convert permissions array to object format
+      const permissionsObject: { [key: string]: boolean } = {};
+      
+      // Map permission IDs to API format
+      const permissionMap: { [key: string]: string } = {
+        'workflows.read': 'workflow.read',
+        'workflows.write': 'workflow.write',
+        'executions.read': 'execution.read',
+        'executions.write': 'workflow.execute',
+        'credentials.read': 'credential.read',
+        'credentials.write': 'credential.write',
+        'databases.read': 'database.read',
+        'databases.write': 'database.write',
+        'variables.read': 'variable.read',
+        'variables.write': 'variable.write',
+        'files.read': 'file.read',
+        'files.write': 'file.write',
+      };
+
+      // Set selected permissions to true
+      data.permissions.forEach((perm) => {
+        const apiPerm = permissionMap[perm] || perm;
+        permissionsObject[apiPerm] = true;
+      });
+
+      // Prepare request body
+      const requestBody: any = {
+        name: data.name,
+        description: data.description || undefined,
+        permissions: permissionsObject,
+      };
+
+      if (expiresAt) {
+        requestBody.expires_at = expiresAt;
+      }
+
+      if (data.tags && data.tags.length > 0) {
+        requestBody.tags = data.tags;
+      } else {
+        requestBody.tags = [];
+      }
+
+      if (data.allowed_ips && data.allowed_ips.length > 0) {
+        requestBody.allowed_ips = data.allowed_ips;
+      } else {
+        requestBody.allowed_ips = [];
+      }
+
+      // Call API
+      await updateApiKey(currentWorkspace.id, editingApiKey.id, requestBody);
+
+      toast({
+        title: 'API Key Updated',
+        description: `${data.name} has been successfully updated.`,
+      });
+
+      setEditModalOpen(false);
+      setEditingApiKey(null);
+
+      // Reload API keys after update
+      await loadApiKeys();
+    } catch (error) {
+      console.error('Error updating API key:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update API key',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDelete = async (item: ApiKeyItem) => {
-    // TODO: Implement delete API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setApiKeys((prev) => prev.filter((k) => k.id !== item.id));
-    toast({
-      title: 'API Key Revoked',
-      description: `${item.name} has been permanently revoked.`,
-    });
-    // Reload API keys after deletion
-    await loadApiKeys();
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await deleteApiKey(currentWorkspace.id, item.id);
+      
+      toast({
+        title: 'API Key Revoked',
+        description: `${item.name} has been permanently revoked.`,
+      });
+
+      // Reload API keys after deletion
+      await loadApiKeys();
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete API key',
+        variant: 'destructive',
+      });
+    }
   };
 
   useEffect(() => {
@@ -235,6 +394,21 @@ const ApiKeys = () => {
         }}
         onSubmit={handleCreateSubmit}
         isLoading={isCreating}
+        isEditMode={false}
+      />
+
+      <CreateApiKeyModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          if (!isUpdating) {
+            setEditModalOpen(false);
+            setEditingApiKey(null);
+          }
+        }}
+        onSubmit={handleEditSubmit}
+        isLoading={isUpdating}
+        initialData={editingApiKey}
+        isEditMode={true}
       />
 
       <ApiKeyRevealModal
@@ -244,6 +418,16 @@ const ApiKeys = () => {
         onClose={() => {
           setRevealModalOpen(false);
           setNewApiKey({ key: '', name: '' });
+        }}
+      />
+
+      <ApiKeyDetailModal
+        isOpen={detailModalOpen}
+        apiKeyDetail={apiKeyDetail}
+        isLoading={isLoadingDetail}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setApiKeyDetail(null);
         }}
       />
     </>

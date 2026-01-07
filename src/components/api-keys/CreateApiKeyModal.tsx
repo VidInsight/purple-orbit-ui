@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +13,15 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
+import { ApiKeyDetail } from '@/services/apiKeysApi';
 
 interface CreateApiKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateApiKeyData) => void;
   isLoading?: boolean;
+  initialData?: ApiKeyDetail | null;
+  isEditMode?: boolean;
 }
 
 export interface CreateApiKeyData {
@@ -51,6 +54,8 @@ export const CreateApiKeyModal = ({
   onClose,
   onSubmit,
   isLoading = false,
+  initialData = null,
+  isEditMode = false,
 }: CreateApiKeyModalProps) => {
   const [formData, setFormData] = useState<CreateApiKeyData>({
     name: '',
@@ -64,6 +69,70 @@ export const CreateApiKeyModal = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState('');
   const [ipInput, setIpInput] = useState('');
+
+  // Load initial data when modal opens in edit mode
+  useEffect(() => {
+    if (isOpen && isEditMode && initialData) {
+      // Map API permissions to form permissions
+      const permissionMap: { [key: string]: string } = {
+        'workflow.read': 'workflows.read',
+        'workflow.write': 'workflows.write',
+        'workflow.execute': 'executions.write',
+        'execution.read': 'executions.read',
+        'credential.read': 'credentials.read',
+        'credential.write': 'credentials.write',
+        'database.read': 'databases.read',
+        'database.write': 'databases.write',
+        'variable.read': 'variables.read',
+        'variable.write': 'variables.write',
+        'file.read': 'files.read',
+        'file.write': 'files.write',
+      };
+
+      const selectedPermissions: string[] = [];
+      Object.entries(initialData.permissions || {}).forEach(([key, value]) => {
+        if (value && permissionMap[key]) {
+          selectedPermissions.push(permissionMap[key]);
+        }
+      });
+
+      // Calculate expiration days from expires_at
+      let expiration = 'never';
+      if (initialData.expires_at) {
+        const expiresDate = new Date(initialData.expires_at);
+        const now = new Date();
+        const diffTime = expiresDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) {
+          if (diffDays <= 30) expiration = '30';
+          else if (diffDays <= 60) expiration = '60';
+          else if (diffDays <= 90) expiration = '90';
+          else expiration = 'never';
+        }
+      }
+
+      setFormData({
+        name: initialData.name || '',
+        description: initialData.description || '',
+        expiration,
+        permissions: selectedPermissions,
+        tags: initialData.tags || [],
+        allowed_ips: initialData.allowed_ips || [],
+        key_prefix: 'sk_live_', // Not editable in edit mode
+      });
+    } else if (isOpen && !isEditMode) {
+      // Reset form for create mode
+      setFormData({
+        name: '',
+        description: '',
+        expiration: '90',
+        permissions: [],
+        tags: [],
+        allowed_ips: [],
+        key_prefix: 'sk_live_',
+      });
+    }
+  }, [isOpen, isEditMode, initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +222,7 @@ export const CreateApiKeyModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Generate API Key"
+      title={isEditMode ? "Edit API Key" : "Generate API Key"}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -240,21 +309,23 @@ export const CreateApiKeyModal = ({
           )}
         </div>
 
-        <div>
-          <Label className="block text-sm font-medium text-foreground mb-2">
-            Key Prefix
-          </Label>
-          <Input
-            placeholder="sk_live_"
-            value={formData.key_prefix || 'sk_live_'}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, key_prefix: e.target.value }))
-            }
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Prefix for the API key (e.g., sk_live_, sk_test_)
-          </p>
-        </div>
+        {!isEditMode && (
+          <div>
+            <Label className="block text-sm font-medium text-foreground mb-2">
+              Key Prefix
+            </Label>
+            <Input
+              placeholder="sk_live_"
+              value={formData.key_prefix || 'sk_live_'}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, key_prefix: e.target.value }))
+              }
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Prefix for the API key (e.g., sk_live_, sk_test_)
+            </p>
+          </div>
+        )}
 
         <div>
           <Label className="block text-sm font-medium text-foreground mb-2">
@@ -346,7 +417,7 @@ export const CreateApiKeyModal = ({
             Cancel
           </Button>
           <Button type="submit" variant="primary" loading={isLoading} disabled={isLoading}>
-            Generate Key
+            {isEditMode ? 'Update Key' : 'Generate Key'}
           </Button>
         </div>
       </form>

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +9,6 @@ import { UserProvider } from "@/context/UserContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
-import { seedDemoData } from "@/utils/seedData";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import WorkspaceSettings from "@/pages/WorkspaceSettings";
 import Dashboard from "@/pages/Dashboard";
@@ -76,10 +74,6 @@ const AppRoutes = () => {
 };
 
 const App = () => {
-  useEffect(() => {
-    seedDemoData();
-  }, []);
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

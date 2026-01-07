@@ -5,52 +5,157 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { ExecutionOverview } from '@/components/executions/ExecutionOverview';
 import { ExecutionTimeline } from '@/components/executions/ExecutionTimeline';
 import { ExecutionLogs } from '@/components/executions/ExecutionLogs';
-import { ExecutionDetails as ExecutionDetailsType } from '@/types/execution';
-import { generateMockExecutionDetails } from '@/utils/mockExecutionData';
+import { ExecutionDetails as ExecutionDetailsType, ExecutionStep } from '@/types/execution';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, Download, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { getExecution } from '@/services/workflowApi';
 
 const ExecutionDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentWorkspace } = useWorkspace();
   const [execution, setExecution] = useState<ExecutionDetailsType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadExecution = () => {
-      setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        if (!id) {
-          navigate('/executions');
-          return;
-        }
-
-        // Generate mock data based on ID pattern
-        let status: 'success' | 'failed' | 'running' = 'success';
-        if (id.includes('fail')) status = 'failed';
-        if (id.includes('run')) status = 'running';
-
-        const executionData = generateMockExecutionDetails(id, status);
-        setExecution(executionData);
-        setIsLoading(false);
-      }, 800);
-    };
-
-    loadExecution();
-
-    // Simulate real-time updates for running executions
-    if (execution?.status === 'running') {
-      const interval = setInterval(() => {
-        // In a real app, this would fetch latest status from API
-        console.log('Checking for execution updates...');
-      }, 5000);
-
-      return () => clearInterval(interval);
+  const loadExecution = async () => {
+    if (!id) {
+      navigate('/executions');
+      return;
     }
-  }, [id, navigate]);
+
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      navigate('/executions');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await getExecution(currentWorkspace.id, id);
+
+      // Map API response to ExecutionDetails type
+      const apiData = response.data;
+
+      // Map status from API format to ExecutionDetails format
+      const statusMap: Record<string, 'success' | 'failed' | 'running' | 'cancelled'> = {
+        'COMPLETED': 'success',
+        'FAILED': 'failed',
+        'RUNNING': 'running',
+        'CANCELLED': 'cancelled',
+      };
+
+      const mappedStatus = statusMap[apiData.status] || 'failed';
+
+      // Map results to steps
+      const steps: ExecutionStep[] = [];
+      
+      if (apiData.results) {
+        Object.entries(apiData.results).forEach(([nodeId, result]: [string, any]) => {
+          const stepStatusMap: Record<string, 'pending' | 'running' | 'success' | 'failed' | 'skipped'> = {
+            'SUCCESS': 'success',
+            'FAILED': 'failed',
+            'RUNNING': 'running',
+            'PENDING': 'pending',
+            'SKIPPED': 'skipped',
+          };
+
+          const stepStatus = stepStatusMap[result.status] || 'failed';
+
+          steps.push({
+            id: nodeId,
+            name: `Node ${nodeId.substring(0, 8)}`,
+            type: 'action', // Default to action, could be determined from workflow definition
+            status: stepStatus,
+            duration: result.duration_seconds,
+            input: result.result_data?.inputs || {},
+            output: result.result_data || {},
+            error: result.error_message
+              ? {
+                  message: result.error_message,
+                  stack: JSON.stringify(result.error_details || {}),
+                }
+              : undefined,
+          });
+        });
+      }
+
+      const executionData: ExecutionDetailsType = {
+        id: apiData.id,
+        workflowId: apiData.workflow_id,
+        workflowName: apiData.workflow_id, // TODO: Fetch workflow name if needed
+        status: mappedStatus,
+        startedAt: apiData.started_at,
+        completedAt: apiData.ended_at || undefined,
+        duration: apiData.duration,
+        triggeredBy: apiData.triggered_by || 'Unknown',
+        steps: steps,
+        logs: [], // API doesn't provide logs in this response
+        metadata: {
+          trigger_id: apiData.trigger_id,
+          trigger_data: apiData.trigger_data,
+          retry_count: apiData.retry_count,
+          max_retries: apiData.max_retries,
+          is_retry: apiData.is_retry,
+          created_at: apiData.created_at,
+        },
+      };
+
+      setExecution(executionData);
+    } catch (error) {
+      console.error('Error loading execution details:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load execution details',
+        variant: 'destructive',
+      });
+      navigate('/executions');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadExecution();
+  }, [id, currentWorkspace?.id]);
+
+  // Real-time updates for running executions
+  useEffect(() => {
+    if (!execution || execution.status !== 'running' || !id || !currentWorkspace?.id) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await getExecution(currentWorkspace.id, id);
+        const apiData = response.data;
+        
+        const statusMap: Record<string, 'success' | 'failed' | 'running' | 'cancelled'> = {
+          'COMPLETED': 'success',
+          'FAILED': 'failed',
+          'RUNNING': 'running',
+          'CANCELLED': 'cancelled',
+        };
+        
+        const mappedStatus = statusMap[apiData.status] || 'failed';
+        
+        // Reload if status changed or still running
+        if (mappedStatus !== execution.status) {
+          loadExecution();
+        }
+      } catch (error) {
+        console.error('Error checking execution status:', error);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [execution?.status, id, currentWorkspace?.id]);
 
   const handleRerun = () => {
     toast({
