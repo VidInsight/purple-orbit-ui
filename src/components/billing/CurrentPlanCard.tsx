@@ -1,4 +1,4 @@
-import { CurrentSubscription, BillingCycle, PLANS } from '@/types/billing';
+import { CurrentSubscription, BillingCycle, Plan } from '@/types/billing';
 import { Button } from '@/components/ui/button';
 import { UsageBar } from './UsageBar';
 import { Badge } from '@/components/ui/badge';
@@ -8,18 +8,35 @@ interface CurrentPlanCardProps {
   subscription: CurrentSubscription;
   onUpgrade: () => void;
   onChangeCycle: (cycle: BillingCycle) => void;
+  plans?: Plan[];
 }
 
 export const CurrentPlanCard = ({
   subscription,
   onUpgrade,
   onChangeCycle,
+  plans = [],
 }: CurrentPlanCardProps) => {
-  const plan = PLANS.find((p) => p.id === subscription.planId);
-  if (!plan) return null;
+  // Try to find plan from provided plans array, otherwise use subscription data
+  const plan = plans.find((p) => p.id === subscription.planId);
+  
+  // If plan not found in plans array, create a basic plan object from subscription
+  const planData: Plan = plan || {
+    id: subscription.planId,
+    name: subscription.planId,
+    description: 'Current plan',
+    monthlyPrice: 0,
+    annualPrice: 0,
+    features: [],
+    limits: {
+      workflows: subscription.usage.workflows.limit,
+      executions: subscription.usage.executions.limit,
+      storage: subscription.usage.storage.limit,
+    },
+  };
 
   const price =
-    subscription.billingCycle === 'monthly' ? plan.monthlyPrice : plan.annualPrice;
+    subscription.billingCycle === 'monthly' ? planData.monthlyPrice : planData.annualPrice;
   const isAnnual = subscription.billingCycle === 'annual';
 
   const formatDate = (date: string) => {
@@ -35,14 +52,12 @@ export const CurrentPlanCard = ({
       <div className="flex items-start justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-2xl font-semibold text-foreground">{plan.name} Plan</h3>
-            {subscription.planId === 'pro' && (
-              <Badge className="bg-primary/10 text-primary border-primary/20">
-                Current
-              </Badge>
-            )}
+            <h3 className="text-2xl font-semibold text-foreground">{planData.name} Plan</h3>
+            <Badge className="bg-primary/10 text-primary border-primary/20">
+              Current
+            </Badge>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">{plan.description}</p>
+          <p className="text-sm text-muted-foreground mb-3">{planData.description}</p>
           <div className="flex items-baseline gap-1">
             {price > 0 ? (
               <>
@@ -50,9 +65,9 @@ export const CurrentPlanCard = ({
                 <span className="text-muted-foreground">
                   /{isAnnual ? 'year' : 'month'}
                 </span>
-                {isAnnual && (
+                {isAnnual && planData.monthlyPrice > 0 && (
                   <Badge variant="secondary" className="ml-2">
-                    Save ${(plan.monthlyPrice * 12 - plan.annualPrice).toFixed(0)}
+                    Save ${(planData.monthlyPrice * 12 - planData.annualPrice).toFixed(0)}
                   </Badge>
                 )}
               </>
@@ -62,7 +77,7 @@ export const CurrentPlanCard = ({
           </div>
         </div>
 
-        {subscription.planId !== 'enterprise' && (
+        {price === 0 && planData.monthlyPrice === 0 && planData.annualPrice === 0 ? null : (
           <Button variant="primary" onClick={onUpgrade}>
             <TrendingUp className="h-4 w-4 mr-2" />
             Upgrade Plan
@@ -79,6 +94,12 @@ export const CurrentPlanCard = ({
 
       <div className="space-y-4">
         <h4 className="text-sm font-semibold text-foreground">Usage this period</h4>
+        
+        <UsageBar
+          label="Members"
+          used={subscription.usage.members.used}
+          limit={subscription.usage.members.limit}
+        />
         
         <UsageBar
           label="Workflows"

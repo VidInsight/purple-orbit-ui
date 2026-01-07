@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { getWorkflows, getWorkflowDetail, WorkflowDetail } from '@/services/workflowApi';
+import { getWorkflows, getWorkflowDetail, deleteWorkflow, WorkflowDetail } from '@/services/workflowApi';
 import { CreateWorkflowModal } from '@/components/workflow-builder/CreateWorkflowModal';
 import { WorkflowDetailModal } from '@/components/workflow-builder/WorkflowDetailModal';
 
@@ -136,13 +136,31 @@ const Workflows = () => {
   };
 
   const handleDelete = async (item: WorkflowItem) => {
-    // TODO: Implement delete API call
-    toast({
-      title: 'Workflow Deleted',
-      description: `${item.name} has been deleted.`,
-    });
-    // Reload workflows after deletion
-    await loadWorkflows();
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'Workspace not selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await deleteWorkflow(currentWorkspace.id, item.id);
+      toast({
+        title: 'Workflow Deleted',
+        description: `${item.name} has been deleted.`,
+      });
+      // Reload workflows after deletion
+      await loadWorkflows();
+    } catch (error) {
+      console.error('Error deleting workflow:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete workflow',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (!currentWorkspace) {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { CurrentPlanCard } from '@/components/billing/CurrentPlanCard';
@@ -10,17 +10,17 @@ import { QuotasTab } from '@/components/billing/QuotasTab';
 import { PaymentTab } from '@/components/billing/PaymentTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import {
   CurrentSubscription,
   BillingCycle,
   Invoice,
   PaymentMethod,
   BillingInfo,
-  PLANS,
+  Plan,
 } from '@/types/billing';
 import { toast } from '@/hooks/use-toast';
+import { getWorkspacePlans, getCurrentWorkspacePlan, WorkspacePlan } from '@/services/billingApi';
+import { useWorkspace } from '@/context/WorkspaceContext';
 
 // Mock data
 const mockSubscription: CurrentSubscription = {
@@ -29,6 +29,7 @@ const mockSubscription: CurrentSubscription = {
   startDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   endDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
   usage: {
+    members: { used: 3, limit: 5 },
     workflows: { used: 8, limit: 'unlimited' },
     executions: { used: 42350, limit: 50000 },
     storage: { used: 32.5, limit: 50 },
@@ -76,11 +77,168 @@ const mockBillingInfo: BillingInfo = {
   taxId: 'US123456789',
 };
 
+// Helper function to convert API plan to Plan format
+const convertApiPlanToPlan = (apiPlan: WorkspacePlan): Plan => {
+  const storageGB = apiPlan.storage_limit_mb_per_workspace / 1024;
+  const workflowsLimit = apiPlan.max_workflows_per_workspace === -1 || apiPlan.max_workflows_per_workspace > 1000 
+    ? 'unlimited' 
+    : apiPlan.max_workflows_per_workspace;
+  
+  const features: string[] = [];
+  
+  // Add basic limits
+  if (workflowsLimit === 'unlimited') {
+    features.push('Unlimited workflows');
+  } else {
+    features.push(`${workflowsLimit} workflows`);
+  }
+  
+  features.push(`${apiPlan.monthly_execution_limit.toLocaleString()} executions/month`);
+  features.push(`${storageGB.toFixed(storageGB >= 1 ? 0 : 1)}GB storage`);
+  
+  // Add feature flags
+  if (apiPlan.can_use_custom_scripts) {
+    features.push(`${apiPlan.max_custom_scripts_per_workspace} custom scripts`);
+  }
+  
+  if (apiPlan.can_use_api_access) {
+    features.push('API access');
+    features.push(`${apiPlan.max_api_keys_per_workspace} API keys`);
+  }
+  
+  if (apiPlan.can_use_webhooks) {
+    features.push('Webhooks');
+  }
+  
+  if (apiPlan.can_use_scheduling) {
+    features.push('Scheduling');
+  }
+  
+  if (apiPlan.can_export_data) {
+    features.push('Data export');
+  }
+  
+  features.push(`${apiPlan.max_members_per_workspace} team member${apiPlan.max_members_per_workspace !== 1 ? 's' : ''}`);
+  
+  // Determine if plan is popular (usually the middle tier)
+  const isPopular = apiPlan.display_order === 1 || apiPlan.display_order === 2;
+
+  return {
+    id: apiPlan.id,
+    name: apiPlan.name,
+    description: apiPlan.description,
+    monthlyPrice: apiPlan.monthly_price_usd,
+    annualPrice: apiPlan.yearly_price_usd,
+    features,
+    limits: {
+      workflows: workflowsLimit,
+      executions: apiPlan.monthly_execution_limit,
+      storage: storageGB,
+    },
+    popular: isPopular,
+  };
+};
+
 const Billing = () => {
+  const { currentWorkspace } = useWorkspace();
   const [subscription, setSubscription] = useState(mockSubscription);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [billingInfo, setBillingInfo] = useState(mockBillingInfo);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  // Fetch current workspace plan
+  useEffect(() => {
+    const fetchCurrentPlan = async () => {
+      if (!currentWorkspace?.id) {
+        setSubscriptionLoading(false);
+        return;
+      }
+
+      try {
+        setSubscriptionLoading(true);
+        const response = await getCurrentWorkspacePlan(currentWorkspace.id);
+        
+        // Convert API response to CurrentSubscription format
+        const storageGB = response.data.usage.storage_mb.limit / 1024;
+        const storageUsedGB = response.data.usage.storage_mb.current / 1024;
+        const workflowsLimit = response.data.usage.workflows.limit === -1 || response.data.usage.workflows.limit > 1000 
+          ? 'unlimited' 
+          : response.data.usage.workflows.limit;
+
+        // Determine billing cycle from period dates (if period is ~30 days, it's monthly, if ~365 days, it's annual)
+        const periodStart = new Date(response.data.billing.period_start);
+        const periodEnd = new Date(response.data.billing.period_end);
+        const daysDiff = Math.round((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24));
+        const detectedCycle: BillingCycle = daysDiff > 300 ? 'annual' : 'monthly';
+
+        setSubscription({
+          planId: response.data.plan.id,
+          billingCycle: detectedCycle,
+          startDate: response.data.billing.period_start,
+          endDate: response.data.billing.period_end,
+          usage: {
+            members: {
+              used: response.data.usage.members.current,
+              limit: response.data.usage.members.limit,
+            },
+            workflows: {
+              used: response.data.usage.workflows.current,
+              limit: workflowsLimit,
+            },
+            executions: {
+              used: response.data.usage.monthly_executions.current,
+              limit: response.data.usage.monthly_executions.limit,
+            },
+            storage: {
+              used: storageUsedGB,
+              limit: storageGB,
+            },
+          },
+        });
+
+        setBillingCycle(detectedCycle);
+      } catch (error) {
+        console.error('Error fetching current plan:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load current plan',
+          variant: 'destructive',
+        });
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    fetchCurrentPlan();
+  }, [currentWorkspace?.id]);
+
+  // Fetch all available plans
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const response = await getWorkspacePlans();
+        const convertedPlans = response.data.items
+          .sort((a, b) => a.display_order - b.display_order)
+          .map(convertApiPlanToPlan);
+        setPlans(convertedPlans);
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load plans',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   const handlePlanSelect = (planId: string) => {
     if (planId === 'enterprise') {
@@ -133,11 +291,18 @@ const Billing = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <CurrentPlanCard
-              subscription={subscription}
-              onUpgrade={handleUpgrade}
-              onChangeCycle={(cycle) => setBillingCycle(cycle)}
-            />
+            {subscriptionLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading subscription...</p>
+              </div>
+            ) : (
+              <CurrentPlanCard
+                subscription={subscription}
+                onUpgrade={handleUpgrade}
+                onChangeCycle={(cycle) => setBillingCycle(cycle)}
+                plans={plans}
+              />
+            )}
           </TabsContent>
 
           {/* Payment Tab */}
@@ -152,37 +317,55 @@ const Billing = () => {
 
           {/* Quotas Tab */}
           <TabsContent value="quotas">
-            <QuotasTab subscription={subscription} />
+            {subscriptionLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading quotas...</p>
+              </div>
+            ) : (
+              <QuotasTab subscription={subscription} />
+            )}
           </TabsContent>
 
           {/* Plans Tab */}
-          <TabsContent value="plans" className="space-y-6">
-            <div className="flex items-center justify-center gap-4 mb-6">
+          <TabsContent value="plans" className="space-y-6 mt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 sm:mb-10">
               <Button
                 variant={billingCycle === 'monthly' ? 'primary' : 'ghost'}
                 onClick={() => setBillingCycle('monthly')}
+                className="w-full sm:w-auto min-w-[120px]"
               >
                 Monthly
               </Button>
               <Button
                 variant={billingCycle === 'annual' ? 'primary' : 'ghost'}
                 onClick={() => setBillingCycle('annual')}
+                className="w-full sm:w-auto min-w-[120px]"
               >
                 Annual (Save 17%)
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {PLANS.map((plan) => (
-                <PlanCard
-                  key={plan.id}
-                  plan={plan}
-                  billingCycle={billingCycle}
-                  currentPlanId={subscription.planId}
-                  onSelect={handlePlanSelect}
-                />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading plans...</p>
+              </div>
+            ) : plans.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">No plans available</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+                {plans.map((plan) => (
+                  <PlanCard
+                    key={plan.id}
+                    plan={plan}
+                    billingCycle={billingCycle}
+                    currentPlanId={subscription.planId}
+                    onSelect={handlePlanSelect}
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* History Tab */}

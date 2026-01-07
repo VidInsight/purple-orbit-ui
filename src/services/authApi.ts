@@ -67,6 +67,24 @@ export interface AgreementResponse {
   };
 }
 
+export interface VerifyEmailRequest {
+  verification_token: string;
+}
+
+export interface VerifyEmailResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: {
+    id: string;
+    username: string;
+    email: string;
+    is_verified: boolean;
+  };
+}
+
 /**
  * Login API çağrısı
  */
@@ -125,6 +143,26 @@ export const fetchAgreement = async (locale: string): Promise<AgreementResponse>
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Agreement fetch failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Verify Email API çağrısı
+ */
+export const verifyEmail = async (data: VerifyEmailRequest): Promise<VerifyEmailResponse> => {
+  const response = await fetch(`${BASE_URL}/frontend/auth/verify-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Email verification failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json();

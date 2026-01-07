@@ -20,6 +20,7 @@ interface NodeGridProps {
   onDelete?: (node: NodeItem) => void;
   readOnly?: boolean;
   columns?: number;
+  buttonLabel?: string;
 }
 
 export const NodeGrid = ({ 
@@ -28,7 +29,8 @@ export const NodeGrid = ({
   onEdit, 
   onDelete,
   readOnly = false,
-  columns = 2
+  columns = 2,
+  buttonLabel = 'Docs'
 }: NodeGridProps) => {
   // Group nodes by category and subcategory
   const groupedNodes = nodes.reduce((acc, node) => {
@@ -127,7 +129,7 @@ export const NodeGrid = ({
                         className="w-full h-7 text-xs"
                       >
                         <FileText className="h-3 w-3 mr-1" />
-                        Docs
+                        {buttonLabel}
                       </Button>
                     )}
                   </div>

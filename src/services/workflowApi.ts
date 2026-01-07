@@ -802,5 +802,55 @@ export const updateWorkflowTrigger = async (
   return data;
 };
 
+/**
+ * Delete a workflow
+ */
+export const deleteWorkflow = async (
+  workspaceId: string,
+  workflowId: string
+): Promise<WorkflowApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  console.log('Deleting workflow:', { workspaceId, workflowId });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to delete workflow: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Delete workflow API response:', data);
+  return data;
+};
+
 
 

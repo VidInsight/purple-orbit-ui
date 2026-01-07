@@ -1,9 +1,9 @@
-export type PlanType = 'free' | 'pro' | 'enterprise';
+export type PlanType = 'free' | 'pro' | 'enterprise' | string; // Allow string for API plan IDs
 export type BillingCycle = 'monthly' | 'annual';
 export type InvoiceStatus = 'paid' | 'pending' | 'failed';
 
 export interface Plan {
-  id: PlanType;
+  id: string; // Changed from PlanType to string to support API plan IDs
   name: string;
   description: string;
   monthlyPrice: number;
@@ -23,6 +23,7 @@ export interface CurrentSubscription {
   startDate: string;
   endDate: string;
   usage: {
+    members: { used: number; limit: number };
     workflows: { used: number; limit: number | 'unlimited' };
     executions: { used: number; limit: number };
     storage: { used: number; limit: number }; // in GB

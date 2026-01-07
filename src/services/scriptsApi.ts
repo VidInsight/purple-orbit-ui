@@ -26,6 +26,26 @@ export interface ScriptsApiResponse {
   };
 }
 
+export interface ScriptContentApiResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: {
+    content: string;
+    input_schema: {
+      type: string;
+      properties: Record<string, any>;
+      required?: string[];
+    };
+    output_schema: {
+      type: string;
+      properties: Record<string, any>;
+    };
+  };
+}
+
 /**
  * Get all scripts
  */
@@ -53,6 +73,38 @@ export const getScripts = async (): Promise<ScriptsApiResponse> => {
       errorData = { message: errorText };
     }
     throw new Error(errorData.message || errorData.error || `Failed to fetch scripts: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Get script content by ID
+ */
+export const getScriptContent = async (scriptId: string): Promise<ScriptContentApiResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/admin/scripts/${scriptId}/content`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    throw new Error(errorData.message || errorData.error || `Failed to fetch script content: ${response.status} ${response.statusText}`);
   }
 
   return response.json();

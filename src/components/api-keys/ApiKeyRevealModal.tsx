@@ -23,6 +23,15 @@ export const ApiKeyRevealModal = ({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
+    if (!apiKey || apiKey === 'undefined' || apiKey.trim() === '') {
+      toast({
+        title: 'Error',
+        description: 'API key is not available. Please check the console for details.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(apiKey);
       setCopied(true);
@@ -87,21 +96,31 @@ export const ApiKeyRevealModal = ({
             Your API Key
           </Label>
           <div className="relative">
-            <code className="block w-full px-4 py-3 pr-12 rounded-lg bg-muted border border-border text-foreground font-mono text-sm break-all">
-              {apiKey}
-            </code>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-background/50 transition-colors"
-              title="Copy to clipboard"
-            >
-              <Copy
-                className={`h-4 w-4 ${
-                  copied ? 'text-green-500' : 'text-muted-foreground'
-                }`}
-              />
-            </button>
+            {!apiKey || apiKey === 'undefined' || apiKey.trim() === '' ? (
+              <div className="w-full px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-sm text-red-500 font-medium">
+                  API key could not be retrieved. Please check the browser console for details.
+                </p>
+              </div>
+            ) : (
+              <>
+                <code className="block w-full px-4 py-3 pr-12 rounded-lg bg-muted border border-border text-foreground font-mono text-sm break-all">
+                  {apiKey}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-background/50 transition-colors"
+                  title="Copy to clipboard"
+                >
+                  <Copy
+                    className={`h-4 w-4 ${
+                      copied ? 'text-green-500' : 'text-muted-foreground'
+                    }`}
+                  />
+                </button>
+              </>
+            )}
           </div>
         </div>
 

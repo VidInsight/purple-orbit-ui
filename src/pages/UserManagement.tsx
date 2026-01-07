@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -9,79 +9,84 @@ import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
 import { UserPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useWorkspace } from '@/context/WorkspaceContext';
+import { getWorkspaceMembers, WorkspaceMember } from '@/services/membersApi';
+import { getUserIdFromToken } from '@/utils/tokenUtils';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
-// Mock current user ID
-const CURRENT_USER_ID = 'user-1';
+// Map API role names to UserRole
+const mapRoleNameToUserRole = (roleName: string): UserRole => {
+  const normalized = roleName.toLowerCase();
+  if (normalized === 'owner' || normalized === 'admin') {
+    return 'admin';
+  }
+  if (normalized === 'editor') {
+    return 'editor';
+  }
+  if (normalized === 'viewer') {
+    return 'viewer';
+  }
+  // Default to viewer if role is unknown
+  return 'viewer';
+};
 
-// Mock data
-const generateMockUsers = (): User[] => [
-  {
-    id: 'user-1',
-    name: 'Sarah Johnson',
-    email: 'sarah@company.com',
+// Map API member to User type
+const mapMemberToUser = (member: WorkspaceMember): User => {
+  return {
+    id: member.user_id,
+    name: member.user_name,
+    email: member.user_email,
     avatar: undefined,
-    role: 'admin',
-    lastActive: new Date(Date.now() - 5 * 60000).toISOString(), // 5 mins ago
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-2',
-    name: 'Michael Chen',
-    email: 'michael@company.com',
-    avatar: undefined,
-    role: 'editor',
-    lastActive: new Date(Date.now() - 2 * 60 * 60000).toISOString(), // 2 hours ago
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-3',
-    name: 'Emily Rodriguez',
-    email: 'emily@company.com',
-    avatar: undefined,
-    role: 'editor',
-    lastActive: new Date(Date.now() - 24 * 60 * 60000).toISOString(), // 1 day ago
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60000).toISOString(),
-  },
-  {
-    id: 'user-4',
-    name: 'David Kim',
-    email: 'david@company.com',
-    avatar: undefined,
-    role: 'viewer',
-    lastActive: new Date(Date.now() - 3 * 24 * 60 * 60000).toISOString(), // 3 days ago
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60000).toISOString(),
-  },
-];
-
-const generateMockInvitations = (): PendingInvitation[] => [
-  {
-    id: 'inv-1',
-    email: 'john@newcompany.com',
-    role: 'editor',
-    invitedBy: 'Sarah Johnson',
-    sentAt: new Date(Date.now() - 2 * 24 * 60 * 60000).toISOString(), // 2 days ago
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60000).toISOString(), // 5 days from now
-  },
-  {
-    id: 'inv-2',
-    email: 'alice@partner.com',
-    role: 'viewer',
-    invitedBy: 'Sarah Johnson',
-    sentAt: new Date(Date.now() - 5 * 24 * 60 * 60000).toISOString(), // 5 days ago
-    expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60000).toISOString(), // 2 days from now
-  },
-];
+    role: mapRoleNameToUserRole(member.role_name),
+    lastActive: member.last_accessed_at,
+    createdAt: member.joined_at,
+  };
+};
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>(generateMockUsers());
-  const [invitations, setInvitations] = useState<PendingInvitation[]>(
-    generateMockInvitations()
-  );
+  const { currentWorkspace } = useWorkspace();
+  const [users, setUsers] = useState<User[]>([]);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
+  const currentUserId = getUserIdFromToken();
+  const currentUser = users.find((u) => u.id === currentUserId);
   const isAdmin = currentUser?.role === 'admin';
+
+  // Fetch workspace members from API
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (!currentWorkspace?.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await getWorkspaceMembers(currentWorkspace.id);
+        
+        if (response.status === 'success' && response.data.members) {
+          const mappedUsers = response.data.members.map(mapMemberToUser);
+          setUsers(mappedUsers);
+        } else {
+          throw new Error(response.message || 'Failed to fetch members');
+        }
+      } catch (error) {
+        console.error('Error fetching workspace members:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load workspace members',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [currentWorkspace?.id]);
 
   const handleRoleChange = (userId: string, newRole: UserRole) => {
     setUsers((prev) =>
@@ -163,6 +168,22 @@ const UserManagement = () => {
     ...invitations.map((inv) => inv.email),
   ];
 
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!currentWorkspace) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto max-w-[1400px] px-6 py-8">
+          <div className="text-center py-12">
+            <p className="text-sm text-muted-foreground">Please select a workspace first</p>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout>
       <div className="container mx-auto max-w-[1400px] px-6 py-8">
@@ -193,7 +214,7 @@ const UserManagement = () => {
             <div className="rounded-lg border border-border overflow-hidden bg-card">
               <ActiveUsersTab
                 users={users}
-                currentUserId={CURRENT_USER_ID}
+                currentUserId={currentUserId || ''}
                 onRoleChange={handleRoleChange}
                 onRemoveUser={handleRemoveUser}
               />

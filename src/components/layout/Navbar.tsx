@@ -306,10 +306,9 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               </button>
               
               <button
-                onClick={() => {/* Add user preferences handler */}}
                 className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground hover:scale-110 transition-all duration-200"
                 title="User Preferences"
-              >
+                onClick={() => navigate('/workspace/settings')}              >
                 <Settings className="h-5 w-5" />
               </button>
             </div>

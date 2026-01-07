@@ -104,8 +104,38 @@ const ApiKeys = () => {
       // Call API
       const response = await createApiKey(currentWorkspace.id, requestBody);
 
+      // Log the response to debug
+      console.log('Create API key full response:', response);
+      console.log('Response data:', response.data);
+
+      // Try multiple possible field names for the API key
+      // Use type assertion to allow checking alternative field names
+      const responseData = response.data as any;
+      const apiKeyValue = 
+        responseData?.key || 
+        responseData?.api_key || 
+        responseData?.key_value || 
+        responseData?.secret_key ||
+        responseData?.secret ||
+        (response as any)?.key ||
+        '';
+
+      const apiKeyName = 
+        responseData?.name || 
+        responseData?.api_key_name || 
+        '';
+
+      if (!apiKeyValue) {
+        console.error('API key not found in response:', response);
+        toast({
+          title: 'Warning',
+          description: 'API key was created but could not be retrieved. Please check the console for details.',
+          variant: 'destructive',
+        });
+      }
+
       // Show the generated key in reveal modal
-      setNewApiKey({ key: response.data.key, name: response.data.name });
+      setNewApiKey({ key: apiKeyValue, name: apiKeyName });
       setRevealModalOpen(true);
       setCreateModalOpen(false);
 

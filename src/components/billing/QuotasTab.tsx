@@ -25,6 +25,12 @@ export const QuotasTab = ({ subscription }: QuotasTabProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         <UsageBar
+          label="Members"
+          used={subscription.usage.members.used}
+          limit={subscription.usage.members.limit}
+        />
+        
+        <UsageBar
           label="Workflows"
           used={subscription.usage.workflows.used}
           limit={subscription.usage.workflows.limit}
