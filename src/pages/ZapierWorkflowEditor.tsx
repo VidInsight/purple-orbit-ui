@@ -94,6 +94,9 @@ export default function ZapierWorkflowEditor() {
   const [executionId, setExecutionId] = useState<string | null>(null);
   const [executionData, setExecutionData] = useState<any>(null);
   const [isLoadingExecution, setIsLoadingExecution] = useState(false);
+  
+  // Trigger data for OutputsPanel
+  const [triggerData, setTriggerData] = useState<{ input_mapping: Record<string, { type: string; value: any }> } | null>(null);
 
   // Load workflow from API when editing existing workflow
   useEffect(() => {
@@ -961,10 +964,24 @@ export default function ZapierWorkflowEditor() {
 
     setIsRunningTest(true);
     try {
+      // Build input_data from trigger's input_mapping parameters
+      const inputData: Record<string, any> = {};
+      
+      if (triggerData && triggerData.input_mapping) {
+        // Extract values from input_mapping format: { paramKey: { type: string, value: any } }
+        Object.entries(triggerData.input_mapping).forEach(([paramKey, mappingValue]) => {
+          // Use the value from the mapping
+          inputData[paramKey] = mappingValue.value;
+        });
+      }
+      
+      // If no trigger data or empty input_mapping, use default test data
+      if (Object.keys(inputData).length === 0) {
+        inputData.test = 'data';
+      }
+
       const testData = {
-        input_data: {
-          test: 'data'
-        }
+        input_data: inputData
       };
 
       const response = await testWorkflowExecution(currentWorkspace.id, id, testData);
@@ -1001,7 +1018,7 @@ export default function ZapierWorkflowEditor() {
     } finally {
       setIsRunningTest(false);
     }
-  }, [currentWorkspace?.id, id, fetchExecutionDetails]);
+  }, [currentWorkspace?.id, id, fetchExecutionDetails, triggerData]);
 
   // Poll execution details if execution is running
   useEffect(() => {
@@ -1220,7 +1237,11 @@ export default function ZapierWorkflowEditor() {
                   <div className="space-y-0">
                     {/* Default Trigger Card */}
                     <div className="mb-6">
-                      <DefaultTriggerCard workspaceId={currentWorkspace?.id} workflowId={id} />
+                      <DefaultTriggerCard 
+                        workspaceId={currentWorkspace?.id} 
+                        workflowId={id}
+                        onTriggerDataChange={setTriggerData}
+                      />
                     </div>
 
                     {nodes.length === 0 ? (
@@ -1342,6 +1363,7 @@ export default function ZapierWorkflowEditor() {
               outputs={dynamicOutputs}
               isOpen={showOutputsPanel}
               currentNodeId={selectedNode?.id}
+              triggerData={triggerData}
             />
           </TabsContent>
 

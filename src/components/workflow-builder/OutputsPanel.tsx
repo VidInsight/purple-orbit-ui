@@ -26,9 +26,10 @@ interface OutputsPanelProps {
   outputs: OutputData[];
   isOpen: boolean;
   currentNodeId?: string;
+  triggerData?: { input_mapping: Record<string, { type: string; value: any }> } | null;
 }
 
-export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelProps) => {
+export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: OutputsPanelProps) => {
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
@@ -117,12 +118,25 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
   const handleDragClick = (
     nodeIdOrPath: string, 
     path?: string, 
-    resourceType?: 'variable' | 'credential' | 'database' | 'file',
+    resourceType?: 'variable' | 'credential' | 'database' | 'file' | 'trigger',
     fieldName?: string
   ) => {
     let formattedPath: string;
     
-    if (path !== undefined) {
+    if (nodeIdOrPath === 'trigger' && path !== undefined) {
+      // Trigger path: format as ${trigger:path}
+      // If path starts with "data.", remove it to use direct parameter name
+      // Keep "data" as is for full data access
+      if (path === 'data') {
+        formattedPath = `\${trigger:data}`;
+      } else if (path.startsWith('data.')) {
+        // Remove "data." prefix to use direct parameter name
+        const paramPath = path.substring(5); // Remove "data." (5 characters)
+        formattedPath = `\${trigger:${paramPath}}`;
+      } else {
+        formattedPath = `\${trigger:${path}}`;
+      }
+    } else if (path !== undefined) {
       // Node output path: format as ${node:nodeId.path}
       // Remove leading dot if path starts with dot
       const cleanPath = path.startsWith('.') ? path.substring(1) : path;
@@ -370,14 +384,127 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
         {/* Previous Outputs */}
         {selectedTab === 'outputs' && (
           <div className="p-4">
-            {availableOutputs.length === 0 ? (
+            {/* Trigger Data Section */}
+            {triggerData && triggerData.input_mapping && Object.keys(triggerData.input_mapping).length > 0 && (
+              <div className="mb-4 pb-4 border-b border-border">
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Trigger Data</span>
+                </div>
+                
+                {/* Full trigger data option */}
+                <div 
+                  className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group mb-1"
+                  onClick={() => handleDragClick('trigger', 'data', undefined)}
+                >
+                  <div className="flex-1">
+                    <span className="text-xs text-muted-foreground mr-2">All Data:</span>
+                    <code className="text-xs text-primary">{`\${trigger:data}`}</code>
+                  </div>
+                  <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                
+                {/* Individual input mapping parameters */}
+                <div className="space-y-0.5">
+                  {Object.entries(triggerData.input_mapping).map(([key, mappingValue]) => {
+                    const value = mappingValue.value;
+                    const type = mappingValue.type;
+                    
+                    // Render based on type
+                    if (type === 'object' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                      // Object type - show nested fields
+                      return (
+                        <div key={key} className="border-l-2 border-primary/20 pl-2 ml-2">
+                          <div className="flex items-center gap-2 mb-1 px-1">
+                            <span className="text-xs font-medium text-foreground">{key}</span>
+                            <span className="text-xs text-muted-foreground">(object)</span>
+                          </div>
+                          <div 
+                            className="flex items-center justify-between px-2 py-1.5 hover:bg-accent/50 transition-colors cursor-pointer group mb-0.5"
+                            onClick={() => handleDragClick('trigger', `data.${key}`, undefined)}
+                          >
+                            <div className="flex-1">
+                              <span className="text-xs text-muted-foreground mr-2">All:</span>
+                              <code className="text-xs text-primary">{`\${trigger:${key}}`}</code>
+                            </div>
+                            <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          {Object.keys(value).map((nestedKey) => (
+                            <div 
+                              key={nestedKey}
+                              className="flex items-center justify-between px-2 py-1.5 hover:bg-accent/50 transition-colors cursor-pointer group"
+                              onClick={() => handleDragClick('trigger', `data.${key}.${nestedKey}`, undefined)}
+                            >
+                              <div className="flex-1">
+                                <span className="text-xs text-muted-foreground mr-2">{nestedKey}:</span>
+                                <code className="text-xs text-primary">{`\${trigger:${key}.${nestedKey}}`}</code>
+                              </div>
+                              <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    } else if (type === 'array' && Array.isArray(value)) {
+                      // Array type - show array access
+                      return (
+                        <div key={key} className="border-l-2 border-primary/20 pl-2 ml-2">
+                          <div className="flex items-center gap-2 mb-1 px-1">
+                            <span className="text-xs font-medium text-foreground">{key}</span>
+                            <span className="text-xs text-muted-foreground">(array)</span>
+                          </div>
+                          <div 
+                            className="flex items-center justify-between px-2 py-1.5 hover:bg-accent/50 transition-colors cursor-pointer group mb-0.5"
+                            onClick={() => handleDragClick('trigger', `data.${key}`, undefined)}
+                          >
+                            <div className="flex-1">
+                              <span className="text-xs text-muted-foreground mr-2">All:</span>
+                              <code className="text-xs text-primary">{`\${trigger:${key}}`}</code>
+                            </div>
+                            <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <div 
+                            className="flex items-center justify-between px-2 py-1.5 hover:bg-accent/50 transition-colors cursor-pointer group"
+                            onClick={() => handleDragClick('trigger', `data.${key}[0]`, undefined)}
+                          >
+                            <div className="flex-1">
+                              <span className="text-xs text-muted-foreground mr-2">First Item:</span>
+                              <code className="text-xs text-primary">{`\${trigger:${key}[0]}`}</code>
+                            </div>
+                            <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      // Simple type (string, number, boolean)
+                      return (
+                        <div 
+                          key={key}
+                          className="flex items-center justify-between px-2 py-2 hover:bg-accent/50 transition-colors cursor-pointer group"
+                          onClick={() => handleDragClick('trigger', `data.${key}`, undefined)}
+                        >
+                          <div className="flex-1">
+                            <span className="text-xs text-muted-foreground mr-2">{key}:</span>
+                            <code className="text-xs text-primary">{`\${trigger:${key}}`}</code>
+                          </div>
+                          <GripVertical className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {availableOutputs.length === 0 && (!triggerData || !triggerData.input_mapping || Object.keys(triggerData.input_mapping).length === 0) && (
               <div className="py-8 text-center text-muted-foreground text-sm">
                 {currentNodeId 
                   ? "Öncesinde düğüm olmadığı için değer yok"
                   : "No node selected"
                 }
               </div>
-            ) : (
+            )}
+            
+            {availableOutputs.length > 0 && (
               <div className="space-y-1">
                 {availableOutputs.map((output) => (
                   <div key={output.nodeId} className="border-b border-border last:border-b-0">
@@ -432,7 +559,7 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId }: OutputsPanelPro
               </div>
             )}
           </div>
-        )}
+        )}  
 
         {/* Environment Variables */}
         {selectedTab === 'variables' && (

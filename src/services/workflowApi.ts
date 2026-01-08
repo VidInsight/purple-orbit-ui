@@ -737,6 +737,76 @@ export const getWorkflowTriggers = async (
   return data;
 };
 
+export interface TriggerDetail {
+  id: string;
+  workspace_id: string;
+  workflow_id: string;
+  name: string;
+  description: string;
+  trigger_type: string;
+  config: Record<string, any>;
+  input_mapping: Record<string, { type: string; value: any }>;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
+/**
+ * Get workflow trigger detail by ID
+ */
+export const getWorkflowTrigger = async (
+  workspaceId: string,
+  workflowId: string,
+  triggerId: string
+): Promise<WorkflowApiResponse & { data: TriggerDetail }> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  if (!triggerId || triggerId.trim() === '') {
+    throw new Error('Trigger ID is required.');
+  }
+
+  console.log('Fetching workflow trigger detail:', { workspaceId, workflowId, triggerId });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to fetch workflow trigger: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Get workflow trigger API response:', data);
+  return data;
+};
+
 export interface UpdateTriggerData {
   name?: string;
   description?: string;

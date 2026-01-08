@@ -9,6 +9,7 @@ import { CredentialsList } from '@/components/dashboard/CredentialsList';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { getCredentials } from '@/services/credentialsApi';
 import { getExecutions } from '@/services/executionsApi';
+import { getWorkspaceUsageQuotas, WorkspaceUsageQuotas } from '@/services/billingApi';
 import { CredentialItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
 
@@ -24,10 +25,13 @@ const Dashboard = () => {
   const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
   const [executionStats, setExecutionStats] = useState<ExecutionStats>({ success: 0, failed: 0, running: 0 });
   const [isLoadingExecutions, setIsLoadingExecutions] = useState(false);
+  const [usageQuotas, setUsageQuotas] = useState<WorkspaceUsageQuotas | null>(null);
+  const [isLoadingUsageQuotas, setIsLoadingUsageQuotas] = useState(false);
 
   useEffect(() => {
     loadCredentials();
     loadExecutions();
+    loadUsageQuotas();
   }, [currentWorkspace]);
 
   const loadCredentials = async () => {
@@ -136,6 +140,29 @@ const Dashboard = () => {
     }
   };
 
+  const loadUsageQuotas = async () => {
+    if (!currentWorkspace?.id) {
+      setUsageQuotas(null);
+      return;
+    }
+
+    try {
+      setIsLoadingUsageQuotas(true);
+      const response = await getWorkspaceUsageQuotas(currentWorkspace.id);
+      setUsageQuotas(response.data);
+    } catch (error) {
+      console.error('Error loading usage and quotas:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load usage and quotas',
+        variant: 'destructive',
+      });
+      setUsageQuotas(null);
+    } finally {
+      setIsLoadingUsageQuotas(false);
+    }
+  };
+
   return (
     <PageLayout>
       <div className="container mx-auto max-w-[1400px]">
@@ -177,7 +204,7 @@ const Dashboard = () => {
 
           {/* Right Side - Quotas & Updates (Sticky) */}
           <div className="w-64 space-y-6 sticky top-6 self-start flex-shrink-0">
-            <QuotasWidget />
+            <QuotasWidget usageQuotas={usageQuotas} isLoading={isLoadingUsageQuotas} />
             <UpdatesFeed />
           </div>
         </div>
