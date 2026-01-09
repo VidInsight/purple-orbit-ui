@@ -21,7 +21,7 @@ export interface PendingInvitation {
 
 export interface InviteUserData {
   emails: string[];
-  role: UserRole;
+  roleId: string;
   message?: string;
 }
 

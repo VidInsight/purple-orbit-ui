@@ -5,31 +5,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { UserRole, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/types/user';
+import { UserRole } from '@/services/membersApi';
 
 interface RoleSelectorProps {
-  value: UserRole;
-  onChange: (role: UserRole) => void;
+  roles: UserRole[];
+  value: string;
+  onChange: (roleId: string) => void;
   disabled?: boolean;
+  error?: string;
 }
 
-export const RoleSelector = ({ value, onChange, disabled }: RoleSelectorProps) => {
+export const RoleSelector = ({ roles, value, onChange, disabled, error }: RoleSelectorProps) => {
+  const selectedRole = roles.find(r => r.id === value);
+
   return (
-    <Select value={value} onValueChange={(val) => onChange(val as UserRole)} disabled={disabled}>
-      <SelectTrigger className="h-7 w-24 text-xs border-border/50">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="admin" className="text-xs">
-          {ROLE_LABELS.admin}
-        </SelectItem>
-        <SelectItem value="editor" className="text-xs">
-          {ROLE_LABELS.editor}
-        </SelectItem>
-        <SelectItem value="viewer" className="text-xs">
-          {ROLE_LABELS.viewer}
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <div>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
+        <SelectTrigger className={`h-10 w-full text-sm border-border/50 ${error ? 'border-red-500' : ''}`}>
+          <SelectValue placeholder="Select a role">
+            {selectedRole ? selectedRole.name : 'Select a role'}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((role) => (
+            <SelectItem key={role.id} value={role.id} className="text-sm">
+              <div className="flex flex-col">
+                <span className="font-medium">{role.name}</span>
+                {role.description && (
+                  <span className="text-xs text-muted-foreground">{role.description}</span>
+                )}
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </div>
   );
 };

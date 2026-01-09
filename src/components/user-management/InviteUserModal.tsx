@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RoleSelector } from './RoleSelector';
-import { UserRole, InviteUserData } from '@/types/user';
+import { InviteUserData } from '@/types/user';
 import { Mail } from 'lucide-react';
+import { getUserRoles, UserRole } from '@/services/membersApi';
+import { toast } from '@/hooks/use-toast';
 
 interface InviteUserModalProps {
   isOpen: boolean;
@@ -22,9 +24,42 @@ export const InviteUserModal = ({
   existingEmails,
 }: InviteUserModalProps) => {
   const [emailsInput, setEmailsInput] = useState('');
-  const [role, setRole] = useState<UserRole>('editor');
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+
+  // Fetch roles when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const fetchRoles = async () => {
+        try {
+          setIsLoadingRoles(true);
+          const response = await getUserRoles();
+          if (response.status === 'success' && response.data.items) {
+            setRoles(response.data.items);
+            // Set default role to first role (or Editor if available)
+            if (response.data.items.length > 0) {
+              const editorRole = response.data.items.find(r => r.name.toLowerCase() === 'editor');
+              setSelectedRoleId(editorRole?.id || response.data.items[0].id);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching roles:', error);
+          toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Failed to load roles',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoadingRoles(false);
+        }
+      };
+
+      fetchRoles();
+    }
+  }, [isOpen]);
 
   const validateEmails = (input: string): string[] => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,13 +96,18 @@ export const InviteUserModal = ({
     const emails = validateEmails(emailsInput);
     if (emails.length === 0) return;
 
-    onSubmit({ emails, role, message });
+    if (!selectedRoleId) {
+      setErrors({ role: 'Please select a role' });
+      return;
+    }
+
+    onSubmit({ emails, roleId: selectedRoleId, message });
     handleClose();
   };
 
   const handleClose = () => {
     setEmailsInput('');
-    setRole('editor');
+    setSelectedRoleId('');
     setMessage('');
     setErrors({});
     onClose();
@@ -103,7 +143,16 @@ export const InviteUserModal = ({
           <Label className="block text-sm font-medium text-foreground mb-2">
             Role
           </Label>
-          <RoleSelector value={role} onChange={setRole} />
+          {isLoadingRoles ? (
+            <div className="text-sm text-muted-foreground">Loading roles...</div>
+          ) : (
+            <RoleSelector 
+              roles={roles} 
+              value={selectedRoleId} 
+              onChange={setSelectedRoleId}
+              error={errors.role}
+            />
+          )}
         </div>
 
         <div>

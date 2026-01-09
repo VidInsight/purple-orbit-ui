@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { User, UserRole, ROLE_COLORS, ROLE_LABELS } from '@/types/user';
-import { RoleSelector } from './RoleSelector';
+import { SimpleRoleSelector } from './SimpleRoleSelector';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DeleteConfirmModal } from '@/components/shared/DeleteConfirmModal';
@@ -114,7 +114,7 @@ export const ActiveUsersTab = ({
               
               <div className="min-w-[100px]">
                 {isCurrentUserAdmin && user.id !== currentUserId ? (
-                  <RoleSelector
+                  <SimpleRoleSelector
                     value={user.role}
                     onChange={(newRole) => onRoleChange(user.id, newRole)}
                   />

@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActiveUsersTab } from '@/components/user-management/ActiveUsersTab';
 import { PendingInvitationsTab } from '@/components/user-management/PendingInvitationsTab';
+import { MyInvitationsTab } from '@/components/user-management/MyInvitationsTab';
 import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
 import { UserPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { getWorkspaceMembers, WorkspaceMember } from '@/services/membersApi';
-import { getUserIdFromToken } from '@/utils/tokenUtils';
+import { getWorkspaceMembers, WorkspaceMember, inviteUserByEmail, getUserRoles } from '@/services/membersApi';
+import { getUserIdFromToken, getUserData } from '@/utils/tokenUtils';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Map API role names to UserRole
@@ -54,6 +55,13 @@ const UserManagement = () => {
   const currentUserId = getUserIdFromToken();
   const currentUser = users.find((u) => u.id === currentUserId);
   const isAdmin = currentUser?.role === 'admin';
+  
+  // Get current user email from token or user data
+  const userData = getUserData();
+  const currentUserEmail = currentUser?.email || userData?.email || '';
+  
+  // Filter invitations for current user
+  const myInvitations = invitations.filter((inv) => inv.email.toLowerCase() === currentUserEmail.toLowerCase());
 
   // Fetch workspace members from API
   useEffect(() => {
@@ -111,25 +119,79 @@ const UserManagement = () => {
     });
   };
 
-  const handleInviteSubmit = (data: InviteUserData) => {
-    const newInvitations: PendingInvitation[] = data.emails.map((email) => ({
-      id: `inv-${Date.now()}-${Math.random()}`,
-      email,
-      role: data.role,
-      invitedBy: currentUser?.name || 'Unknown',
-      sentAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60000).toISOString(), // 7 days
-    }));
+  const handleInviteSubmit = async (data: InviteUserData) => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'No workspace selected',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    setInvitations((prev) => [...newInvitations, ...prev]);
-    setActiveTab('invitations');
+    try {
+      // Fetch roles to map role_id to role name
+      const rolesResponse = await getUserRoles();
+      const roles = rolesResponse.status === 'success' ? rolesResponse.data.items : [];
+      const roleMap = new Map(roles.map(r => [r.id, r.name]));
 
-    toast({
-      title: 'Invitation Sent',
-      description: `Sent ${data.emails.length} invitation${
-        data.emails.length > 1 ? 's' : ''
-      } successfully.`,
-    });
+      const invitationPromises = data.emails.map((email) =>
+        inviteUserByEmail(currentWorkspace.id, {
+          email,
+          role_id: data.roleId,
+          message: data.message || undefined,
+        })
+      );
+
+      const responses = await Promise.allSettled(invitationPromises);
+      
+      const successfulInvitations: PendingInvitation[] = [];
+      const failedEmails: string[] = [];
+
+      responses.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          const response = result.value;
+          if (response.status === 'success' && response.data) {
+            const roleName = roleMap.get(response.data.role_id) || 'editor';
+            successfulInvitations.push({
+              id: response.data.id,
+              email: response.data.invitee_email,
+              role: mapRoleNameToUserRole(roleName),
+              invitedBy: currentUser?.name || 'Unknown',
+              sentAt: new Date().toISOString(),
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60000).toISOString(), // 7 days
+            });
+          }
+        } else {
+          failedEmails.push(data.emails[index]);
+        }
+      });
+
+      if (successfulInvitations.length > 0) {
+        setInvitations((prev) => [...successfulInvitations, ...prev]);
+        setActiveTab('invitations');
+
+        toast({
+          title: 'Invitation Sent',
+          description: `Sent ${successfulInvitations.length} invitation${
+            successfulInvitations.length > 1 ? 's' : ''
+          } successfully.${failedEmails.length > 0 ? ` Failed to send ${failedEmails.length} invitation(s).` : ''}`,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to send invitations. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error sending invitations:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send invitations',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleResendInvitation = (invitationId: string) => {
@@ -160,6 +222,30 @@ const UserManagement = () => {
     toast({
       title: 'Invitation Cancelled',
       description: `Invitation to ${invitation?.email} has been cancelled.`,
+    });
+  };
+
+  const handleAcceptInvitation = async (invitationId: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    const invitation = invitations.find((inv) => inv.id === invitationId);
+    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+
+    toast({
+      title: 'Invitation Accepted',
+      description: `You have successfully joined the workspace.`,
+    });
+  };
+
+  const handleDeclineInvitation = async (invitationId: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    const invitation = invitations.find((inv) => inv.id === invitationId);
+    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+
+    toast({
+      title: 'Invitation Declined',
+      description: `You have declined the workspace invitation.`,
     });
   };
 
@@ -201,9 +287,12 @@ const UserManagement = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-muted/50">
             <TabsTrigger value="users" className="text-sm">
               Active Users <span className="ml-1.5 text-xs text-muted-foreground">({users.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="my-invitations" className="text-sm">
+              My Invitations <span className="ml-1.5 text-xs text-muted-foreground">({myInvitations.length})</span>
             </TabsTrigger>
             <TabsTrigger value="invitations" className="text-sm">
               Pending <span className="ml-1.5 text-xs text-muted-foreground">({invitations.length})</span>
@@ -218,6 +307,22 @@ const UserManagement = () => {
                 onRoleChange={handleRoleChange}
                 onRemoveUser={handleRemoveUser}
               />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="my-invitations" className="mt-4">
+            <div className="rounded-lg border border-border overflow-hidden bg-card">
+              {myInvitations.length > 0 ? (
+                <MyInvitationsTab
+                  invitations={myInvitations}
+                  onAccept={handleAcceptInvitation}
+                  onDecline={handleDeclineInvitation}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-sm text-muted-foreground">No invitations found</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
