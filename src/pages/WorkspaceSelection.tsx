@@ -10,13 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Crown, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
-import { getUserWorkspaces, createWorkspace as createWorkspaceApi } from '@/services/workspaceApi';
+import { getUserWorkspaces, createWorkspace as createWorkspaceApi, deleteWorkspace } from '@/services/workspaceApi';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useUser } from '@/context/UserContext';
 import { getAccessToken, clearAllLocalStorage, getUserIdFromToken, getUserData } from '@/utils/tokenUtils';
 import { MyInvitationsTab } from '@/components/user-management/MyInvitationsTab';
 import { PendingInvitation, UserRole } from '@/types/user';
 import { getUserPendingInvitations, PendingInvitationItem, acceptInvitation, declineInvitation } from '@/services/membersApi';
+import { DeleteConfirmModal } from '@/components/shared/DeleteConfirmModal';
 
 // Map API role names to UserRole
 const mapRoleNameToUserRole = (roleName: string): UserRole => {
@@ -44,6 +45,9 @@ const WorkspaceSelection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [activeTab, setActiveTab] = useState('workspaces');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingWorkspace, setDeletingWorkspace] = useState<Workspace | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check authentication on mount
   useEffect(() => {
@@ -362,6 +366,41 @@ const WorkspaceSelection = () => {
     }
   };
 
+  const handleDeleteWorkspace = (workspace: Workspace) => {
+    setDeletingWorkspace(workspace);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteWorkspace = async () => {
+    if (!deletingWorkspace) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deleteWorkspace(deletingWorkspace.id);
+      
+      toast({
+        title: 'Workspace Deleted',
+        description: `${deletingWorkspace.name} has been deleted successfully.`,
+      });
+
+      // Reload workspaces after deletion
+      await loadWorkspaces();
+      setIsDeleteModalOpen(false);
+      setDeletingWorkspace(null);
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete workspace',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
@@ -420,6 +459,7 @@ const WorkspaceSelection = () => {
                       <WorkspaceCard
                         workspace={workspace}
                         onClick={handleWorkspaceSelect}
+                        onDelete={handleDeleteWorkspace}
                       />
                     </div>
                   ))}
@@ -443,6 +483,7 @@ const WorkspaceSelection = () => {
                       <WorkspaceCard
                         workspace={workspace}
                         onClick={handleWorkspaceSelect}
+                        onDelete={handleDeleteWorkspace}
                       />
                     </div>
                   ))}
@@ -512,6 +553,19 @@ const WorkspaceSelection = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateWorkspace}
         isCreating={isCreating}
+      />
+
+      {/* Delete Workspace Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingWorkspace(null);
+        }}
+        onConfirm={confirmDeleteWorkspace}
+        itemName={deletingWorkspace?.name || ''}
+        itemType="workspace"
+        isDeleting={isDeleting}
       />
     </div>
   );

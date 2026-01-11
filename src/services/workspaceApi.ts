@@ -173,3 +173,49 @@ export const updateWorkspace = async (
   return response.json();
 };
 
+export interface DeleteWorkspaceResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: any;
+}
+
+/**
+ * Delete a workspace
+ */
+export const deleteWorkspace = async (workspaceId: string): Promise<DeleteWorkspaceResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  console.log('Deleting workspace:', workspaceId);
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}`);
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to delete workspace: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+

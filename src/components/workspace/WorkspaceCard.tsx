@@ -1,14 +1,15 @@
 import { Workspace } from '@/types/workspace';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface WorkspaceCardProps {
   workspace: Workspace;
   onClick: (workspace: Workspace) => void;
+  onDelete?: (workspace: Workspace) => void;
 }
 
-export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
+export const WorkspaceCard = ({ workspace, onClick, onDelete }: WorkspaceCardProps) => {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -60,12 +61,29 @@ export const WorkspaceCard = ({ workspace, onClick }: WorkspaceCardProps) => {
         )}
       </div>
 
-      {/* Enter Button */}
-      <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted/50 group-hover:bg-primary/15 transition-all duration-200 group-hover:scale-105">
-        <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors duration-200">
-          Enter
-        </span>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
+      {/* Action Buttons */}
+      <div className="flex-shrink-0 flex items-center gap-2">
+        {/* Delete Button - Only for owners */}
+        {workspace.role === 'owner' && onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(workspace);
+            }}
+            className="p-2 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all duration-200"
+            title="Delete workspace"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+        
+        {/* Enter Button */}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted/50 group-hover:bg-primary/15 transition-all duration-200 group-hover:scale-105">
+          <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors duration-200">
+            Enter
+          </span>
+          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
+        </div>
       </div>
     </button>
   );
