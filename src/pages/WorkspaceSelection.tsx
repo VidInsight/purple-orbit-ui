@@ -124,7 +124,7 @@ const WorkspaceSelection = () => {
     }
   };
 
-  const loadWorkspaces = async () => {
+  const loadWorkspaces = async (): Promise<Workspace[]> => {
     try {
       setIsLoading(true);
       // getUserWorkspaces artık userId'yi token'dan otomatik alıyor
@@ -209,6 +209,7 @@ const WorkspaceSelection = () => {
       // Save workspaces to localStorage so WorkspaceContext can access them
       saveWorkspaces(mappedWorkspaces);
       setWorkspaces(mappedWorkspaces);
+      return mappedWorkspaces;
     } catch (error) {
       console.error('Error loading workspaces:', error);
       toast({
@@ -222,6 +223,7 @@ const WorkspaceSelection = () => {
         new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
       );
       setWorkspaces(loadedWorkspaces);
+      return loadedWorkspaces;
     } finally {
       setIsLoading(false);
     }
@@ -267,19 +269,18 @@ const WorkspaceSelection = () => {
       setIsModalOpen(false);
       
       // Reload workspaces to get the new one from API
-      await loadWorkspaces();
+      const updatedWorkspaces = await loadWorkspaces();
       
-      // Wait a bit for state to update, then find and select the new workspace
-      setTimeout(() => {
-        // Find workspace by slug in the updated state
-        const newWorkspace = workspaces.find(ws => ws.slug === data.slug);
-        if (newWorkspace) {
-          handleWorkspaceSelect(newWorkspace);
-        } else if (workspaces.length > 0) {
-          // If not found by slug, select the first workspace (should be the newest)
-          handleWorkspaceSelect(workspaces[0]);
-        }
-      }, 500);
+      // Find the newly created workspace by slug
+      const newWorkspace = updatedWorkspaces.find(ws => ws.slug === data.slug);
+      
+      if (newWorkspace) {
+        // Select and navigate to the new workspace
+        handleWorkspaceSelect(newWorkspace);
+      } else if (updatedWorkspaces.length > 0) {
+        // If not found by slug, select the first workspace (should be the newest)
+        handleWorkspaceSelect(updatedWorkspaces[0]);
+      }
     } catch (error) {
       console.error('Error creating workspace:', error);
       toast({
