@@ -1,6 +1,7 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+import { decodeToken } from '@/utils/tokenUtils';
+
+const BASE_URL = getBaseUrl();
 
 export interface WorkspaceApiResponse {
   status: string;
@@ -44,15 +45,7 @@ export const getUserWorkspaces = async (userId?: string): Promise<WorkspaceApiRe
   let finalUserId = userId;
   if (!finalUserId) {
     try {
-      const base64Url = accessToken.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      const decoded = JSON.parse(jsonPayload);
+      const decoded = decodeToken(accessToken);
       finalUserId = decoded?.user_id || decoded?.sub;
     } catch (error) {
       console.error('Error decoding token:', error);
@@ -63,12 +56,8 @@ export const getUserWorkspaces = async (userId?: string): Promise<WorkspaceApiRe
     throw new Error('User ID not found in token. Please login again.');
   }
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/user/${finalUserId}/workspaces`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/user/${finalUserId}/workspaces`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -83,21 +72,11 @@ export const getUserWorkspaces = async (userId?: string): Promise<WorkspaceApiRe
  * Create a new workspace
  */
 export const createWorkspace = async (workspaceData: CreateWorkspaceRequest): Promise<CreateWorkspaceResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Creating workspace with data:', workspaceData);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(workspaceData),
   });
 
@@ -139,21 +118,11 @@ export const updateWorkspace = async (
   workspaceId: string,
   workspaceData: UpdateWorkspaceRequest
 ): Promise<UpdateWorkspaceResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating workspace with data:', workspaceData);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(workspaceData),
   });
 
@@ -186,21 +155,11 @@ export interface DeleteWorkspaceResponse {
  * Delete a workspace
  */
 export const deleteWorkspace = async (workspaceId: string): Promise<DeleteWorkspaceResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Deleting workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {

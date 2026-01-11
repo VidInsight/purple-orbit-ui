@@ -20,14 +20,22 @@ export const WorkspaceCard = ({ workspace, onClick, onDelete }: WorkspaceCardPro
   };
 
   return (
-    <button
+    <div
       onClick={() => onClick(workspace)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(workspace);
+        }
+      }}
+      role="button"
+      tabIndex={0}
       className={cn(
         'group relative w-full px-5 py-4 rounded-lg border border-border bg-surface',
         'hover:border-primary/60 hover:bg-surface/80 hover:shadow-lg hover:-translate-y-0.5',
         'transition-all duration-300 ease-out',
         'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background',
-        'flex items-center gap-4 sm:gap-5'
+        'flex items-center gap-4 sm:gap-5 cursor-pointer'
       )}
     >
       {/* Logo */}
@@ -85,6 +93,6 @@ export const WorkspaceCard = ({ workspace, onClick, onDelete }: WorkspaceCardPro
           <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
         </div>
       </div>
-    </button>
+    </div>
   );
 };

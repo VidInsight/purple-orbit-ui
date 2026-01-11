@@ -168,3 +168,39 @@ export const verifyEmail = async (data: VerifyEmailRequest): Promise<VerifyEmail
   return response.json();
 };
 
+export interface RefreshTokenRequest {
+  refresh_token: string;
+}
+
+export interface RefreshTokenResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: {
+    access_token: string;
+    refresh_token: string;
+  };
+}
+
+/**
+ * Refresh token API çağrısı
+ */
+export const refreshToken = async (refreshTokenValue: string): Promise<RefreshTokenResponse> => {
+  const response = await fetch(`${BASE_URL}/frontend/auth/refresh-token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ refresh_token: refreshTokenValue }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Token refresh failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+

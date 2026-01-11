@@ -116,3 +116,14 @@ export const clearAllLocalStorage = (): void => {
   localStorage.removeItem('i18nextLng');
 };
 
+/**
+ * Logout user and redirect to login page
+ */
+export const logout = (): void => {
+  clearAllLocalStorage();
+  // Trigger token change event to update UserContext
+  window.dispatchEvent(new Event('tokenChange'));
+  // Redirect to login page
+  window.location.href = '/login';
+};
+
