@@ -17,6 +17,10 @@ export interface PendingInvitation {
   invitedBy: string;
   sentAt: string;
   expiresAt: string;
+  workspaceId?: string;
+  workspaceName?: string;
+  workspaceSlug?: string;
+  message?: string;
 }
 
 export interface InviteUserData {

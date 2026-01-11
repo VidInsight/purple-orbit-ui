@@ -5,14 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActiveUsersTab } from '@/components/user-management/ActiveUsersTab';
 import { PendingInvitationsTab } from '@/components/user-management/PendingInvitationsTab';
-import { MyInvitationsTab } from '@/components/user-management/MyInvitationsTab';
 import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
 import { UserPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { getWorkspaceMembers, WorkspaceMember, inviteUserByEmail, getUserRoles } from '@/services/membersApi';
-import { getUserIdFromToken, getUserData } from '@/utils/tokenUtils';
+import { getUserIdFromToken } from '@/utils/tokenUtils';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Map API role names to UserRole
@@ -55,13 +54,6 @@ const UserManagement = () => {
   const currentUserId = getUserIdFromToken();
   const currentUser = users.find((u) => u.id === currentUserId);
   const isAdmin = currentUser?.role === 'admin';
-  
-  // Get current user email from token or user data
-  const userData = getUserData();
-  const currentUserEmail = currentUser?.email || userData?.email || '';
-  
-  // Filter invitations for current user
-  const myInvitations = invitations.filter((inv) => inv.email.toLowerCase() === currentUserEmail.toLowerCase());
 
   // Fetch workspace members from API
   useEffect(() => {
@@ -225,29 +217,6 @@ const UserManagement = () => {
     });
   };
 
-  const handleAcceptInvitation = async (invitationId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const invitation = invitations.find((inv) => inv.id === invitationId);
-    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-
-    toast({
-      title: 'Invitation Accepted',
-      description: `You have successfully joined the workspace.`,
-    });
-  };
-
-  const handleDeclineInvitation = async (invitationId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const invitation = invitations.find((inv) => inv.id === invitationId);
-    setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
-
-    toast({
-      title: 'Invitation Declined',
-      description: `You have declined the workspace invitation.`,
-    });
-  };
 
   const existingEmails = [
     ...users.map((u) => u.email),
@@ -287,12 +256,9 @@ const UserManagement = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3 bg-muted/50">
+          <TabsList className="grid w-full max-w-2xl grid-cols-2 bg-muted/50">
             <TabsTrigger value="users" className="text-sm">
               Active Users <span className="ml-1.5 text-xs text-muted-foreground">({users.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="my-invitations" className="text-sm">
-              My Invitations <span className="ml-1.5 text-xs text-muted-foreground">({myInvitations.length})</span>
             </TabsTrigger>
             <TabsTrigger value="invitations" className="text-sm">
               Pending <span className="ml-1.5 text-xs text-muted-foreground">({invitations.length})</span>
@@ -307,22 +273,6 @@ const UserManagement = () => {
                 onRoleChange={handleRoleChange}
                 onRemoveUser={handleRemoveUser}
               />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="my-invitations" className="mt-4">
-            <div className="rounded-lg border border-border overflow-hidden bg-card">
-              {myInvitations.length > 0 ? (
-                <MyInvitationsTab
-                  invitations={myInvitations}
-                  onAccept={handleAcceptInvitation}
-                  onDecline={handleDeclineInvitation}
-                />
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-sm text-muted-foreground">No invitations found</p>
-                </div>
-              )}
             </div>
           </TabsContent>
 

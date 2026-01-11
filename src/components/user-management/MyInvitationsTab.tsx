@@ -86,7 +86,7 @@ export const MyInvitationsTab = ({
               <div className="flex items-center gap-2 mb-1">
                 <Building2 className="h-4 w-4 text-muted-foreground" />
                 <p className="text-sm font-medium text-foreground truncate">
-                  Workspace Invitation
+                  {invitation.workspaceName || 'Workspace Invitation'}
                 </p>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
@@ -97,6 +97,14 @@ export const MyInvitationsTab = ({
                 <span className="text-xs text-muted-foreground">
                   {formatDate(invitation.sentAt)}
                 </span>
+                {invitation.message && (
+                  <>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={invitation.message}>
+                      {invitation.message}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 

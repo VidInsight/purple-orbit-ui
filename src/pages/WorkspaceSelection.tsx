@@ -6,13 +6,33 @@ import { CreateWorkspaceModal } from '@/components/workspace/CreateWorkspaceModa
 import { Workspace, CreateWorkspaceData } from '@/types/workspace';
 import { getWorkspaces, createWorkspace as createWorkspaceUtil, setCurrentWorkspace, saveWorkspaces } from '@/utils/workspaceStorage';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Crown, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { getUserWorkspaces, createWorkspace as createWorkspaceApi } from '@/services/workspaceApi';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useUser } from '@/context/UserContext';
-import { getAccessToken, clearAllLocalStorage } from '@/utils/tokenUtils';
+import { getAccessToken, clearAllLocalStorage, getUserIdFromToken, getUserData } from '@/utils/tokenUtils';
+import { MyInvitationsTab } from '@/components/user-management/MyInvitationsTab';
+import { PendingInvitation, UserRole } from '@/types/user';
+import { getUserPendingInvitations, PendingInvitationItem, acceptInvitation, declineInvitation } from '@/services/membersApi';
+
+// Map API role names to UserRole
+const mapRoleNameToUserRole = (roleName: string): UserRole => {
+  const normalized = roleName.toLowerCase();
+  if (normalized === 'owner' || normalized === 'admin') {
+    return 'admin';
+  }
+  if (normalized === 'editor') {
+    return 'editor';
+  }
+  if (normalized === 'viewer') {
+    return 'viewer';
+  }
+  // Default to viewer if role is unknown
+  return 'viewer';
+};
 
 const WorkspaceSelection = () => {
   const navigate = useNavigate();
@@ -22,6 +42,8 @@ const WorkspaceSelection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
+  const [activeTab, setActiveTab] = useState('workspaces');
 
   // Check authentication on mount
   useEffect(() => {
@@ -50,9 +72,57 @@ const WorkspaceSelection = () => {
   const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
   const joinedWorkspaces = workspaces.filter(ws => ws.role !== 'owner');
 
+  // Get current user email from token or user data
+  const userData = getUserData();
+  const currentUserEmail = currentUser?.email || userData?.email || '';
+  
+  // Filter invitations for current user (myInvitations are already filtered from API)
+  const myInvitations = invitations;
+
+  // Map API invitation to PendingInvitation type
+  const mapApiInvitationToPendingInvitation = (apiInv: PendingInvitationItem): PendingInvitation => {
+    // Calculate expiration date (7 days from creation)
+    const createdAt = new Date(apiInv.created_at);
+    const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    return {
+      id: apiInv.id,
+      email: currentUserEmail, // Current user's email
+      role: mapRoleNameToUserRole(apiInv.role_name),
+      invitedBy: apiInv.inviter_name,
+      sentAt: apiInv.created_at,
+      expiresAt: expiresAt.toISOString(),
+      workspaceId: apiInv.workspace_id,
+      workspaceName: apiInv.workspace_name,
+      workspaceSlug: apiInv.workspace_slug,
+      message: apiInv.message,
+    };
+  };
+
   useEffect(() => {
     loadWorkspaces();
+    loadPendingInvitations();
   }, []);
+
+  const loadPendingInvitations = async () => {
+    try {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        console.warn('User ID not found, skipping invitation load');
+        return;
+      }
+
+      const response = await getUserPendingInvitations(userId);
+      
+      if (response.status === 'success' && response.data.pending_invitations) {
+        const mappedInvitations = response.data.pending_invitations.map(mapApiInvitationToPendingInvitation);
+        setInvitations(mappedInvitations);
+      }
+    } catch (error) {
+      console.error('Error loading pending invitations:', error);
+      // Don't show error toast for invitations, just log it
+    }
+  };
 
   const loadWorkspaces = async () => {
     try {
@@ -242,6 +312,56 @@ const WorkspaceSelection = () => {
     navigate('/login');
   };
 
+  const handleAcceptInvitation = async (invitationId: string) => {
+    try {
+      const invitation = invitations.find((inv) => inv.id === invitationId);
+      
+      await acceptInvitation(invitationId);
+      
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+
+      toast({
+        title: 'Invitation Accepted',
+        description: invitation?.workspaceName 
+          ? `You have successfully joined ${invitation.workspaceName}.`
+          : `You have successfully joined the workspace.`,
+      });
+
+      // Reload workspaces after accepting invitation
+      await loadWorkspaces();
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to accept invitation',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeclineInvitation = async (invitationId: string) => {
+    try {
+      const invitation = invitations.find((inv) => inv.id === invitationId);
+      
+      await declineInvitation(invitationId);
+      
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+
+      toast({
+        title: 'Invitation Declined',
+        description: `You have declined the workspace invitation.`,
+      });
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to decline invitation',
+        variant: 'destructive',
+      });
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
       {/* Main Content */}
@@ -271,66 +391,104 @@ const WorkspaceSelection = () => {
           </button>
         </div>
 
-        {/* Owned Workspaces Section */}
-        {ownedWorkspaces.length > 0 && (
-          <div className="mb-10">
-...
-            <div className="space-y-2">
-              {ownedWorkspaces.map((workspace, index) => (
-                <div
-                  key={workspace.id}
-                >
-                  <WorkspaceCard
-                    workspace={workspace}
-                    onClick={handleWorkspaceSelect}
-                  />
+        {/* Tabs for Workspaces and My Invitations */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 bg-muted/50">
+            <TabsTrigger value="workspaces" className="text-sm">
+              Workspaces <span className="ml-1.5 text-xs text-muted-foreground">({workspaces.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="my-invitations" className="text-sm">
+              My Invitations <span className="ml-1.5 text-xs text-muted-foreground">({myInvitations.length})</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="workspaces" className="mt-6">
+            {/* Owned Workspaces Section */}
+            {ownedWorkspaces.length > 0 && (
+              <div className="mb-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <Crown className="h-5 w-5 text-amber-500" />
+                  <h2 className="text-lg font-semibold text-foreground">Owned Workspaces</h2>
+                  <span className="text-sm text-muted-foreground">({ownedWorkspaces.length})</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Joined Workspaces Section */}
-        {joinedWorkspaces.length > 0 && (
-          <div className="mb-10">
-...
-            <div className="space-y-2">
-              {joinedWorkspaces.map((workspace, index) => (
-                <div
-                  key={workspace.id}
-                >
-                  <WorkspaceCard
-                    workspace={workspace}
-                    onClick={handleWorkspaceSelect}
-                  />
+                <div className="space-y-2">
+                  {ownedWorkspaces.map((workspace, index) => (
+                    <div
+                      key={workspace.id}
+                    >
+                      <WorkspaceCard
+                        workspace={workspace}
+                        onClick={handleWorkspaceSelect}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-16">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
-            <p className="text-sm text-muted-foreground">Loading workspaces...</p>
-          </div>
-        )}
+            {/* Joined Workspaces Section */}
+            {joinedWorkspaces.length > 0 && (
+              <div className="mb-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  <h2 className="text-lg font-semibold text-foreground">Member Workspaces</h2>
+                  <span className="text-sm text-muted-foreground">({joinedWorkspaces.length})</span>
+                </div>
+                <div className="space-y-2">
+                  {joinedWorkspaces.map((workspace, index) => (
+                    <div
+                      key={workspace.id}
+                    >
+                      <WorkspaceCard
+                        workspace={workspace}
+                        onClick={handleWorkspaceSelect}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Empty State */}
-        {!isLoading && workspaces.length === 0 && (
-          <div className="text-center py-16">
-            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-muted-foreground" />
+            {/* Loading State */}
+            {isLoading && (
+              <div className="text-center py-16">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
+                <p className="text-sm text-muted-foreground">Loading workspaces...</p>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isLoading && workspaces.length === 0 && (
+              <div className="text-center py-16">
+                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Plus className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
+                <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
+                <Button onClick={() => setIsModalOpen(true)} size="lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Workspace
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="my-invitations" className="mt-6">
+            <div className="rounded-lg border border-border overflow-hidden bg-card">
+              {myInvitations.length > 0 ? (
+                <MyInvitationsTab
+                  invitations={myInvitations}
+                  onAccept={handleAcceptInvitation}
+                  onDecline={handleDeclineInvitation}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-sm text-muted-foreground">No invitations found</p>
+                </div>
+              )}
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
-            <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
-            <Button onClick={() => setIsModalOpen(true)} size="lg">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Workspace
-            </Button>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
 
         {/* Footer Info - Better spacing and typography */}
         <div className="text-center pt-10 mt-10 border-t border-border">

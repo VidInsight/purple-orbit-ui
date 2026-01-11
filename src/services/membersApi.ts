@@ -1,6 +1,4 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+const BASE_URL =   'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
 
 export interface WorkspaceMember {
   id: string;
@@ -85,6 +83,33 @@ export interface InviteUserByEmailResponse {
   };
 }
 
+export interface PendingInvitationItem {
+  id: string;
+  workspace_id: string;
+  workspace_name: string;
+  workspace_slug: string;
+  invited_by: string;
+  inviter_name: string;
+  inviter_email: string;
+  role_id: string;
+  role_name: string;
+  message: string;
+  created_at: string;
+}
+
+export interface PendingInvitationsResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: {
+    user_id: string;
+    pending_invitations: PendingInvitationItem[];
+    count: number;
+  };
+}
+
 /**
  * Get workspace members
  */
@@ -162,6 +187,102 @@ export const inviteUserByEmail = async (
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `Failed to invite user: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Get pending invitations for a user
+ */
+export const getUserPendingInvitations = async (userId: string): Promise<PendingInvitationsResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/user/${userId}/invitations/pending`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to fetch pending invitations: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+export interface AcceptInvitationResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: any;
+}
+
+export interface DeclineInvitationResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: any;
+}
+
+/**
+ * Accept a workspace invitation
+ */
+export const acceptInvitation = async (invitationId: string): Promise<AcceptInvitationResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/invitations/${invitationId}/accept`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to accept invitation: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Decline a workspace invitation
+ */
+export const declineInvitation = async (invitationId: string): Promise<DeclineInvitationResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/invitations/${invitationId}/decline`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to decline invitation: ${response.status} ${response.statusText}`);
   }
 
   return response.json();
