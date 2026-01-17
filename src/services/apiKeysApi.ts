@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+
+const BASE_URL = getBaseUrl();
 
 export interface ApiKeysApiResponse {
   status: string;
@@ -15,20 +15,10 @@ export interface ApiKeysApiResponse {
  * Get API keys for a workspace
  */
 export const getApiKeys = async (workspaceId: string): Promise<ApiKeysApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -88,22 +78,12 @@ export const createApiKey = async (
   workspaceId: string,
   apiKeyData: CreateApiKeyRequest
 ): Promise<CreateApiKeyResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Creating API key for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`);
   console.log('Request data:', apiKeyData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(apiKeyData),
   });
 
@@ -223,22 +203,12 @@ export const updateApiKey = async (
   apiKeyId: string,
   apiKeyData: UpdateApiKeyRequest
 ): Promise<UpdateApiKeyResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating API key:', apiKeyId, 'for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`);
   console.log('Request data:', apiKeyData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(apiKeyData),
   });
 
@@ -276,21 +246,11 @@ export const deleteApiKey = async (
   workspaceId: string,
   apiKeyId: string
 ): Promise<DeleteApiKeyResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Deleting API key:', apiKeyId, 'for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {

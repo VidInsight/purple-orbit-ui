@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Eye, EyeOff, Home } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import { login as loginApi } from '@/services/authApi';
 import { saveUserData } from '@/utils/tokenUtils';
+import { handleError } from '@/utils/errorHandler';
 
 export const Login = () => {
   const { t } = useTranslation();
@@ -76,20 +77,42 @@ export const Login = () => {
           }
         });
         setErrors(fieldErrors);
+        
+        // Show general form error toast
+        toast({
+          title: t('common:errors.form.title'),
+          description: t('common:errors.form.description'),
+          variant: 'destructive',
+        });
       } else {
         // API hatası - kullanıcı adı veya şifre hatalı
         const isInvalidCredentials = error instanceof Error && error.message === 'INVALID_CREDENTIALS';
-        const errorMessage = isInvalidCredentials 
-          ? t('auth:login.errors.invalidCredentials')
-          : (error instanceof Error ? error.message : t('auth:login.errors.invalidCredentials'));
         
-        setGeneralError(t('auth:login.errors.invalidCredentials'));
-        
-        toast({
-          title: t('common:messages.error'),
-          description: errorMessage,
-          variant: 'destructive',
-        });
+        if (isInvalidCredentials) {
+          const errorMessage = t('common:errors.auth.invalidCredentials');
+          setGeneralError(errorMessage);
+          toast({
+            title: t('common:errors.client.title'),
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        } else {
+          const parsedError = await handleError(error);
+          // Check if the error message contains "bad request" and replace with user-friendly message
+          let errorDescription = parsedError.description;
+          if (errorDescription.toLowerCase().includes('bad request') || 
+              errorDescription.toLowerCase().includes('400') ||
+              (parsedError.statusCode === 400 && errorDescription.toLowerCase().includes('invalid request'))) {
+            errorDescription = t('common:errors.auth.invalidCredentials');
+          }
+          
+          setGeneralError(errorDescription);
+          toast({
+            title: parsedError.title,
+            description: errorDescription,
+            variant: 'destructive',
+          });
+        }
       }
     } finally {
       setLoading(false);
@@ -186,6 +209,18 @@ export const Login = () => {
             </Link>
           </p>
           </form>
+          
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/')}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Ana Sayfaya Dön
+            </Button>
+          </div>
         </div>
       </div>
     </div>

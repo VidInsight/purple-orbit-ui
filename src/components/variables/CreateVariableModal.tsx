@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createVariable, CreateVariableRequest } from '@/services/variablesApi';
 import { toast } from '@/hooks/use-toast';
+import { handleError } from '@/utils/errorHandler';
 
 interface CreateVariableModalProps {
   isOpen: boolean;
@@ -71,9 +72,10 @@ export const CreateVariableModal = ({
       handleClose();
     } catch (error) {
       console.error('Error creating variable:', error);
+      const parsedError = await handleError(error);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create variable',
+        title: parsedError.title,
+        description: parsedError.description,
         variant: 'destructive',
       });
     } finally {

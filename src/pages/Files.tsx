@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { FileItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
@@ -9,6 +10,7 @@ import { getFiles, deleteFile } from '@/services/filesApi';
 
 const Files = () => {
   const { currentWorkspace } = useWorkspace();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -18,6 +20,16 @@ const Files = () => {
   useEffect(() => {
     loadFiles();
   }, [currentWorkspace]);
+
+  // Check for upload query parameter
+  useEffect(() => {
+    const uploadParam = searchParams.get('upload');
+    if (uploadParam === 'true' && currentWorkspace?.id) {
+      setIsUploadModalOpen(true);
+      // Remove query parameter from URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, currentWorkspace, setSearchParams]);
 
   const loadFiles = async () => {
     if (!currentWorkspace?.id) {
@@ -157,7 +169,13 @@ const Files = () => {
       {currentWorkspace && (
         <UploadFileModal
           isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
+          onClose={() => {
+            setIsUploadModalOpen(false);
+            // Remove query parameter if it exists
+            if (searchParams.get('upload') === 'true') {
+              setSearchParams({}, { replace: true });
+            }
+          }}
           workspaceId={currentWorkspace.id}
           onSuccess={handleUploadSuccess}
         />

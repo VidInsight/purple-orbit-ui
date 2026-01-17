@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+
+const BASE_URL = getBaseUrl();
 
 export interface FilesApiResponse {
   status: string;
@@ -25,12 +25,6 @@ export const uploadFile = async (
   workspaceId: string,
   fileData: UploadFileRequest
 ): Promise<FilesApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   // Create FormData for file upload
   const formData = new FormData();
   formData.append('file', fileData.file);
@@ -56,12 +50,8 @@ export const uploadFile = async (
     fileType: fileData.file.type,
   });
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      // Don't set Content-Type header, browser will set it with boundary for FormData
-    },
     body: formData,
   });
 
@@ -87,21 +77,11 @@ export const uploadFile = async (
  * Get files for a workspace
  */
 export const getFiles = async (workspaceId: string): Promise<FilesApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching files for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -138,21 +118,11 @@ export const deleteFile = async (
   workspaceId: string,
   fileId: string
 ): Promise<DeleteFileResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Deleting file for workspace:', workspaceId, 'file:', fileId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -203,21 +173,11 @@ export const getFileDetail = async (
   workspaceId: string,
   fileId: string
 ): Promise<FileDetailApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching file detail for workspace:', workspaceId, 'file:', fileId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -261,22 +221,12 @@ export const updateFile = async (
   fileId: string,
   updateData: UpdateFileRequest
 ): Promise<UpdateFileResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating file for workspace:', workspaceId, 'file:', fileId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
   console.log('Update data:', updateData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(updateData),
   });
 

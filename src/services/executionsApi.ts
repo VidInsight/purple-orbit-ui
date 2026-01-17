@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+
+const BASE_URL = getBaseUrl();
 
 export interface ExecutionsApiResponse {
   status: string;
@@ -29,18 +29,8 @@ export interface ExecutionApiItem {
  * Get executions for a workspace
  */
 export const getExecutions = async (workspaceId: string): Promise<ExecutionsApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {

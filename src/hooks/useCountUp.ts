@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface UseCountUpOptions {
   start?: number;
@@ -23,8 +23,23 @@ export const useCountUp = ({
 }: UseCountUpOptions) => {
   const [count, setCount] = useState(start);
   const [hasStarted, setHasStarted] = useState(false);
+  const prevEndRef = useRef(end);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // If end value changed, reset and restart animation
+    if (prevEndRef.current !== end) {
+      setCount(start);
+      setHasStarted(false);
+      prevEndRef.current = end;
+      
+      // Cancel any ongoing animation
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    }
+
     if (!isVisible || hasStarted) return;
 
     const timeout = setTimeout(() => {
@@ -43,16 +58,23 @@ export const useCountUp = ({
         setCount(currentValue);
 
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          animationFrameRef.current = requestAnimationFrame(animate);
         } else {
           setCount(end);
+          animationFrameRef.current = null;
         }
       };
 
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     }, delay);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
   }, [isVisible, hasStarted, start, end, duration, delay]);
 
   const formattedValue = `${prefix}${count.toFixed(decimals)}${suffix}`;

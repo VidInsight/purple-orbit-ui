@@ -99,8 +99,8 @@ export const apiClient = async (
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  // Add Content-Type if not already set
-  if (!headers.has('Content-Type') && options.body) {
+  // Add Content-Type if not already set and body is not FormData
+  if (!headers.has('Content-Type') && options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 

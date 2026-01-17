@@ -2,6 +2,8 @@ const BASE_URL = import.meta.env.DEV
   ? '/api' // Development'ta Vite proxy kullan
   : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
 
+import { handleApiResponse, parseApiError } from '@/utils/errorHandler';
+
 export interface LoginRequest {
   email_or_username: string;
   password: string;
@@ -89,83 +91,109 @@ export interface VerifyEmailResponse {
  * Login API çağrısı
  */
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
-  const response = await fetch(`${BASE_URL}/frontend/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credentials),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/frontend/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    // 401 veya 403 durumunda kullanıcı adı/şifre hatası
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('INVALID_CREDENTIALS');
+    if (!response.ok) {
+      // For login endpoint, 400/401/403 always means invalid credentials
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
+        throw new Error('INVALID_CREDENTIALS');
+      }
+      
+      // Parse error to get user-friendly message for other errors
+      const parsedError = await parseApiError(response);
+      throw new Error(parsedError.description);
     }
-    throw new Error(errorData.message || `Login failed: ${response.status} ${response.statusText}`);
-  }
 
-  return response.json();
+    return await response.json();
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
+      throw error;
+    }
+    // Re-throw network errors
+    throw error;
+  }
 };
 
 /**
  * Register API çağrısı
  */
 export const register = async (userData: RegisterRequest): Promise<RegisterResponse> => {
-  const response = await fetch(`${BASE_URL}/frontend/auth/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/frontend/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Registration failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      // Parse error to get user-friendly message
+      const parsedError = await parseApiError(response);
+      
+      // The error handler already maps email/username conflicts to user-friendly messages
+      throw new Error(parsedError.description);
+    }
+
+    return await response.json();
+  } catch (error) {
+    // Re-throw to preserve error type
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
  * Agreement API çağrısı
  */
 export const fetchAgreement = async (locale: string): Promise<AgreementResponse> => {
-  const response = await fetch(`${BASE_URL}/frontend/agreements/active?locale=${locale}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/frontend/agreements/active?locale=${locale}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Agreement fetch failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const parsedError = await parseApiError(response);
+      throw new Error(parsedError.description);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
  * Verify Email API çağrısı
  */
 export const verifyEmail = async (data: VerifyEmailRequest): Promise<VerifyEmailResponse> => {
-  const response = await fetch(`${BASE_URL}/frontend/auth/verify-email`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/frontend/auth/verify-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Email verification failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const parsedError = await parseApiError(response);
+      throw new Error(parsedError.description);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
-
-  return response.json();
 };
 
 export interface RefreshTokenRequest {
@@ -188,19 +216,23 @@ export interface RefreshTokenResponse {
  * Refresh token API çağrısı
  */
 export const refreshToken = async (refreshTokenValue: string): Promise<RefreshTokenResponse> => {
-  const response = await fetch(`${BASE_URL}/frontend/auth/refresh-token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ refresh_token: refreshTokenValue }),
-  });
+  try {
+    const response = await fetch(`${BASE_URL}/frontend/auth/refresh-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh_token: refreshTokenValue }),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Token refresh failed: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const parsedError = await parseApiError(response);
+      throw new Error(parsedError.description);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
-
-  return response.json();
 };
 

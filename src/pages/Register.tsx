@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, Eye, EyeOff, Check, X } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Check, X, Home } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import i18n from '@/i18n/config';
 import { register as registerApi, fetchAgreement as fetchAgreementApi } from '@/services/authApi';
+import { handleError } from '@/utils/errorHandler';
 
 export const Register = () => {
   const { t } = useTranslation();
@@ -95,16 +96,17 @@ export const Register = () => {
           setAgreementVersions(prev => ({ ...prev, [type]: agreementData.id }));
         } else {
           toast({
-            title: t('common:messages.error'),
-            description: 'Failed to fetch agreement. Please try again.',
+            title: t('common:errors.generic.title'),
+            description: t('common:errors.api.description'),
             variant: 'destructive',
           });
         }
       } catch (error) {
         console.error('Error in handleAgreementCheck:', error);
+        const parsedError = await handleError(error);
         toast({
-          title: t('common:messages.error'),
-          description: error instanceof Error ? error.message : 'Failed to fetch agreement',
+          title: parsedError.title,
+          description: parsedError.description,
           variant: 'destructive',
         });
       } finally {
@@ -151,8 +153,8 @@ export const Register = () => {
       // Agreement version ID'lerini kontrol et
       if (!agreementVersions.terms || !agreementVersions.privacyPolicy) {
         toast({
-          title: t('common:messages.error'),
-          description: 'Please accept terms and privacy policy',
+          title: t('common:errors.validation.title'),
+          description: t('auth:register.errors.termsRequired'),
           variant: 'destructive',
         });
         return;
@@ -190,12 +192,25 @@ export const Register = () => {
           }
         });
         setErrors(fieldErrors);
-      } else {
+        
+        // Show general form error toast
         toast({
-          title: t('common:messages.error'),
-          description: error instanceof Error ? error.message : 'Registration failed',
+          title: t('common:errors.form.title'),
+          description: t('common:errors.form.description'),
           variant: 'destructive',
         });
+      } else {
+        const parsedError = await handleError(error);
+        toast({
+          title: parsedError.title,
+          description: parsedError.description,
+          variant: 'destructive',
+        });
+        
+        // If there are field-specific errors, set them
+        if (parsedError.fieldErrors) {
+          setErrors(parsedError.fieldErrors);
+        }
       }
     } finally {
       setLoading(false);
@@ -469,6 +484,18 @@ export const Register = () => {
             </Link>
           </p>
         </form>
+        
+        <div className="mt-4 pt-4 border-t border-border/50">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => navigate('/')}
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Ana Sayfaya Dön
+          </Button>
+        </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.DEV
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+
+const BASE_URL = getBaseUrl();
 
 export interface CreateDatabaseRequest {
   name: string;
@@ -61,12 +61,6 @@ export interface DatabaseDetailApiResponse {
  * Get databases for a workspace
  */
 export const getDatabases = async (workspaceId: string): Promise<DatabaseApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -74,12 +68,8 @@ export const getDatabases = async (workspaceId: string): Promise<DatabaseApiResp
   console.log('Fetching databases for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -107,12 +97,6 @@ export const createDatabase = async (
   workspaceId: string,
   databaseData: CreateDatabaseRequest
 ): Promise<DatabaseApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -121,12 +105,8 @@ export const createDatabase = async (
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases`);
   console.log('Request body:', databaseData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(databaseData),
   });
 
@@ -165,12 +145,6 @@ export const getDatabaseDetail = async (
   workspaceId: string,
   databaseId: string
 ): Promise<DatabaseDetailApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -182,12 +156,8 @@ export const getDatabaseDetail = async (
   console.log('Fetching database detail:', { workspaceId, databaseId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -228,12 +198,6 @@ export const updateDatabase = async (
   databaseId: string,
   databaseData: UpdateDatabaseRequest
 ): Promise<DatabaseApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -246,12 +210,8 @@ export const updateDatabase = async (
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
   console.log('Request body:', databaseData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(databaseData),
   });
 
@@ -290,12 +250,6 @@ export const deleteDatabase = async (
   workspaceId: string,
   databaseId: string
 ): Promise<DatabaseApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -307,12 +261,8 @@ export const deleteDatabase = async (
   console.log('Deleting database:', { workspaceId, databaseId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {

@@ -1,6 +1,7 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+import { handleApiResponse } from '@/utils/errorHandler';
+
+const BASE_URL = getBaseUrl();
 
 export interface WorkflowApiResponse {
   status: string;
@@ -49,39 +50,15 @@ export interface UpdateNodeFormSchemaData {
  * Get workflows for a workspace
  */
 export const getWorkflows = async (workspaceId: string): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
+  try {
+    const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`, {
+      method: 'GET',
+    });
+
+    return await handleApiResponse<WorkflowApiResponse>(response, 'Failed to fetch workflows');
+  } catch (error) {
+    throw error;
   }
-
-  console.log('Fetching workflows for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`);
-
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Error response:', errorText);
-    let errorData;
-    try {
-      errorData = JSON.parse(errorText);
-    } catch {
-      errorData = { message: errorText };
-    }
-    console.error('Parsed error data:', errorData);
-    throw new Error(errorData.message || errorData.error || `Failed to fetch workflows: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  console.log('Workflows API response:', data);
-  return data;
 };
 
 export interface CreateWorkflowData {
@@ -98,12 +75,6 @@ export const createWorkflow = async (
   workspaceId: string,
   workflowData: CreateWorkflowData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -116,41 +87,16 @@ export const createWorkflow = async (
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`);
   console.log('Request body:', workflowData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(workflowData),
-  });
+  try {
+    const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`, {
+      method: 'POST',
+      body: JSON.stringify(workflowData),
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Error response:', errorText);
-    console.error('Response status:', response.status);
-    let errorData;
-    try {
-      errorData = JSON.parse(errorText);
-    } catch {
-      errorData = { message: errorText };
-    }
-    console.error('Parsed error data:', errorData);
-    
-    // Extract error message from different possible response formats
-    const errorMessage = 
-      errorData.message || 
-      errorData.error || 
-      errorData.detail ||
-      (errorData.data && (errorData.data.message || errorData.data.error)) ||
-      `Failed to create workflow: ${response.status} ${response.statusText}`;
-    
-    throw new Error(errorMessage);
+    return await handleApiResponse<WorkflowApiResponse>(response, 'Failed to create workflow');
+  } catch (error) {
+    throw error;
   }
-
-  const data = await response.json();
-  console.log('Create workflow API response:', data);
-  return data;
 };
 
 export interface CreateNodeData {
@@ -167,21 +113,11 @@ export const getWorkflowGraph = async (
   workspaceId: string,
   workflowId: string
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching workflow graph:', { workspaceId, workflowId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/graph`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/graph`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/graph`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -210,21 +146,11 @@ export const addNodeToWorkflow = async (
   workflowId: string,
   nodeData: CreateNodeData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Adding node to workflow:', { workspaceId, workflowId, nodeData });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(nodeData),
   });
 
@@ -259,21 +185,11 @@ export const addEdgeToWorkflow = async (
   workflowId: string,
   edgeData: CreateEdgeData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Adding edge to workflow:', { workspaceId, workflowId, edgeData });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(edgeData),
   });
 
@@ -303,21 +219,11 @@ export const getNodeFormSchema = async (
   workflowId: string,
   nodeId: string
 ): Promise<WorkflowApiResponse & { data: FormSchemaResponse }> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching node form schema:', { workspaceId, workflowId, nodeId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -347,21 +253,11 @@ export const updateNodeFormSchema = async (
   nodeId: string,
   formData: UpdateNodeFormSchemaData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating node form schema:', { workspaceId, workflowId, nodeId, formData });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(formData),
   });
 
@@ -396,12 +292,6 @@ export const updateNodeInputParams = async (
   nodeId: string,
   inputParams: Record<string, any>
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating node input params:', { workspaceId, workflowId, nodeId, inputParams });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/input-params`);
 
@@ -409,12 +299,8 @@ export const updateNodeInputParams = async (
     input_params: inputParams,
   };
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/input-params`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/input-params`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(requestBody),
   });
 
@@ -468,12 +354,6 @@ export const getWorkflowDetail = async (
   workspaceId: string,
   workflowId: string
 ): Promise<WorkflowDetailApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -485,12 +365,8 @@ export const getWorkflowDetail = async (
   console.log('Fetching workflow detail:', { workspaceId, workflowId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -519,12 +395,6 @@ export const deleteNodeFromWorkflow = async (
   workflowId: string,
   nodeId: string
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -540,12 +410,8 @@ export const deleteNodeFromWorkflow = async (
   console.log('Deleting node from workflow:', { workspaceId, workflowId, nodeId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -578,12 +444,6 @@ export const testWorkflowExecution = async (
   workflowId: string,
   testData: TestExecutionData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -595,12 +455,8 @@ export const testWorkflowExecution = async (
   console.log('Testing workflow execution:', { workspaceId, workflowId, testData });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(testData),
   });
 
@@ -629,12 +485,6 @@ export const getExecution = async (
   workspaceId: string,
   executionId: string
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -646,12 +496,8 @@ export const getExecution = async (
   console.log('Fetching execution details:', { workspaceId, executionId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -694,12 +540,6 @@ export const getWorkflowTriggers = async (
   workspaceId: string,
   workflowId: string
 ): Promise<WorkflowApiResponse & { data: WorkflowTriggersResponse }> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -711,12 +551,8 @@ export const getWorkflowTriggers = async (
   console.log('Fetching workflow triggers:', { workspaceId, workflowId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -760,12 +596,6 @@ export const getWorkflowTrigger = async (
   workflowId: string,
   triggerId: string
 ): Promise<WorkflowApiResponse & { data: TriggerDetail }> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -781,12 +611,8 @@ export const getWorkflowTrigger = async (
   console.log('Fetching workflow trigger detail:', { workspaceId, workflowId, triggerId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -824,12 +650,6 @@ export const updateWorkflowTrigger = async (
   triggerId: string,
   triggerData: UpdateTriggerData
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -845,12 +665,8 @@ export const updateWorkflowTrigger = async (
   console.log('Updating workflow trigger:', { workspaceId, workflowId, triggerId, triggerData });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(triggerData),
   });
 
@@ -879,12 +695,6 @@ export const deleteWorkflow = async (
   workspaceId: string,
   workflowId: string
 ): Promise<WorkflowApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
@@ -896,12 +706,8 @@ export const deleteWorkflow = async (
   console.log('Deleting workflow:', { workspaceId, workflowId });
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {

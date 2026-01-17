@@ -58,6 +58,69 @@
     "deleted": "Başarıyla silindi",
     "created": "Başarıyla oluşturuldu"
   },
+  "errors": {
+    "network": {
+      "title": "Ağ Hatası",
+      "description": "Sunucuya bağlanılamıyor. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
+      "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.",
+      "offline": "Şu anda çevrimdışısınız. Lütfen internet bağlantınızı kontrol edin."
+    },
+    "server": {
+      "title": "Sunucu Hatası",
+      "description": "Sunucuda bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+      "500": "Sunucu hatası. Ekibimiz bilgilendirildi.",
+      "502": "Hatalı ağ geçidi. Sunucu geçici olarak kullanılamıyor.",
+      "503": "Hizmet kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+      "504": "Ağ geçidi zaman aşımı. Sunucu çok uzun süre yanıt vermedi."
+    },
+    "client": {
+      "title": "Hata",
+      "description": "Beklenmeyen bir hata oluştu.",
+      "400": "Geçersiz istek. Lütfen girdiğiniz bilgileri kontrol edip tekrar deneyin.",
+      "401": "Kimlik doğrulama başarısız. Lütfen tekrar giriş yapın.",
+      "403": "Bu işlemi gerçekleştirmek için yetkiniz yok.",
+      "404": "İstenen kaynak bulunamadı.",
+      "409": "Bir çakışma oluştu. Bu kaynak zaten mevcut olabilir.",
+      "422": "Doğrulama hatası. Lütfen girdiğiniz bilgileri kontrol edin.",
+      "429": "Çok fazla istek. Lütfen bir süre bekleyip tekrar deneyin."
+    },
+    "auth": {
+      "invalidCredentials": "Kullanıcı adı veya şifre hatalı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.",
+      "loginFailed": "Giriş başarısız. Lütfen kullanıcı adı ve şifrenizi kontrol edin.",
+      "emailExists": "Bu e-posta adresi zaten kayıtlı. Lütfen farklı bir e-posta kullanın veya giriş yapmayı deneyin.",
+      "usernameExists": "Bu kullanıcı adı zaten alınmış. Lütfen farklı bir kullanıcı adı seçin.",
+      "registrationFailed": "Kayıt başarısız. Lütfen bilgilerinizi kontrol edip tekrar deneyin.",
+      "emailNotVerified": "Giriş yapmadan önce lütfen e-posta adresinizi doğrulayın.",
+      "accountLocked": "Hesabınız kilitlenmiş. Lütfen destek ekibiyle iletişime geçin.",
+      "sessionExpired": "Oturumunuz sona erdi. Lütfen tekrar giriş yapın."
+    },
+    "validation": {
+      "title": "Doğrulama Hatası",
+      "required": "Bu alan zorunludur",
+      "invalid": "Geçersiz değer girildi",
+      "minLength": "Değer çok kısa",
+      "maxLength": "Değer çok uzun",
+      "email": "Geçersiz e-posta adresi",
+      "password": "Şifre gereksinimleri karşılamıyor"
+    },
+    "api": {
+      "title": "API Hatası",
+      "description": "İstek tamamlanamadı. Lütfen tekrar deneyin.",
+      "parse": "Sunucu yanıtı ayrıştırılamadı.",
+      "unknown": "Bilinmeyen bir hata oluştu."
+    },
+    "form": {
+      "title": "Form Hatası",
+      "description": "Lütfen formdaki hataları düzeltin.",
+      "submit": "Form gönderilemedi. Lütfen tekrar deneyin."
+    },
+    "generic": {
+      "title": "Hata",
+      "description": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
+      "retry": "Lütfen tekrar deneyin",
+      "contact": "Sorun devam ederse, lütfen destek ekibiyle iletişime geçin."
+    }
+  },
   "pagination": {
     "showing": "{{total}} kayıttan {{from}}-{{to}} arası gösteriliyor",
     "rowsPerPage": "Sayfa başına satır:",

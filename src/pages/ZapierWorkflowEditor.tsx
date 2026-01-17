@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle, Loader2, XCircle, AlertCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution } from '@/services/workflowApi';
@@ -963,6 +963,9 @@ export default function ZapierWorkflowEditor() {
     }
 
     setIsRunningTest(true);
+    // Switch to test tab immediately to show loading
+    setActiveTab('test');
+    
     try {
       // Build input_data from trigger's input_mapping parameters
       const inputData: Record<string, any> = {};
@@ -1005,9 +1008,6 @@ export default function ZapierWorkflowEditor() {
         title: 'Success',
         description: 'Workflow test execution started successfully',
       });
-
-      // Switch to test tab to show results
-      setActiveTab('test');
     } catch (error) {
       console.error('Failed to test workflow:', error);
       toast({
@@ -1371,29 +1371,84 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="test" className="mt-0">
             <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
               <div className="container mx-auto px-6 py-8 space-y-6">
-                {isLoadingExecution ? (
+                {!executionId && !isRunningTest ? (
+                  // Empty state when no test has been run
                   <div className="flex items-center justify-center py-16">
-                    <div className="text-center">
-                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
-                      <p className="text-sm text-muted-foreground">Loading execution details...</p>
+                    <div className="text-center max-w-md">
+                      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 mx-auto">
+                        <Play className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">No Test Execution Yet</h3>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Click the "Run" button in the toolbar to start a test execution and see the results here.
+                      </p>
                     </div>
                   </div>
-                ) : (
+                ) : (isRunningTest || isLoadingExecution || (executionData && (executionData.status === 'RUNNING' || executionData.status === 'running' || executionData.status === 'PENDING' || executionData.status === 'pending'))) ? (
+                  // Loading state when test is running
+                  <div className="flex items-center justify-center py-16">
+                    <div className="text-center max-w-md">
+                      <Loader2 className="h-12 w-12 text-primary animate-spin mb-4 mx-auto" />
+                      <h3 className="text-xl font-bold mb-2">Running Test Execution</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {isRunningTest ? 'Starting workflow execution...' : 'Workflow is running...'}
+                      </p>
+                      {executionId && (
+                        <p className="text-xs text-muted-foreground">
+                          Execution ID: {executionId}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : executionData && (executionData.status === 'COMPLETED' || executionData.status === 'completed' || executionData.status === 'FAILED' || executionData.status === 'failed') ? (
+                  // Show results when execution is completed or failed
                   <>
+                    {/* Execution Status Banner */}
+                    {executionData && (
+                      <div className={`border rounded-lg p-4 ${
+                        executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                          ? 'bg-success/10 border-success/30'
+                          : 'bg-destructive/10 border-destructive/30'
+                      }`}>
+                        <div className="flex items-center gap-3">
+                          {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? (
+                            <CheckCircle className="h-5 w-5 text-success" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-destructive" />
+                          )}
+                          <div className="flex-1">
+                            <h3 className={`font-bold ${
+                              executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                                ? 'text-success'
+                                : 'text-destructive'
+                            }`}>
+                              Execution {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? 'Completed' : 'Failed'}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                                ? 'All nodes executed successfully'
+                                : 'One or more nodes failed during execution'}
+                            </p>
+                          </div>
+                          {executionData.duration && (
+                            <div className="text-sm text-muted-foreground">
+                              Duration: {executionData.duration.toFixed(3)}s
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Test Summary Card */}
                     <TestSummaryCard
-                      totalNodes={executionTestResults?.summary.total_nodes || mockTestResults.summary.total_nodes}
-                      successfulNodes={executionTestResults?.summary.successful_nodes || mockTestResults.summary.successful_nodes}
-                      failedNodes={executionTestResults?.summary.failed_nodes || mockTestResults.summary.failed_nodes}
-                      totalDuration={executionTestResults?.metadata.duration || nodes.reduce((total, node) => {
-                        const testResults = executionTestResults || mockTestResults;
-                        return total + (testResults.node_results[node.id]?.duration_seconds || 0);
-                      }, 0)}
+                      totalNodes={executionTestResults?.summary.total_nodes || 0}
+                      successfulNodes={executionTestResults?.summary.successful_nodes || 0}
+                      failedNodes={executionTestResults?.summary.failed_nodes || 0}
+                      totalDuration={executionTestResults?.metadata.duration || 0}
                       averageNodeTime={
-                        nodes.length > 0
+                        nodes.length > 0 && executionTestResults
                           ? nodes.reduce((total, node) => {
-                              const testResults = executionTestResults || mockTestResults;
-                              return total + (testResults.node_results[node.id]?.duration_seconds || 0);
+                              return total + (executionTestResults.node_results[node.id]?.duration_seconds || 0);
                             }, 0) / nodes.length
                           : 0
                       }
@@ -1405,14 +1460,13 @@ export default function ZapierWorkflowEditor() {
                       <div className="min-h-[600px] flex flex-col">
                         <ExecutionTimeline
                           nodes={nodes.map((node, index) => {
-                            const testResults = executionTestResults || mockTestResults;
-                            const nodeResult = testResults.node_results[node.id];
+                            const nodeResult = executionTestResults?.node_results[node.id];
                             const NodeIcon = node.icon || Settings;
                             
                             // Get input data from previous nodes (simplified)
                             const firstNode = nodes[0];
                             const inputData = node.type === 'trigger' ? undefined : {
-                              trigger_data: firstNode ? testResults.node_results[firstNode.id]?.result_data : undefined,
+                              trigger_data: firstNode ? executionTestResults?.node_results[firstNode.id]?.result_data : undefined,
                             };
 
                             return {
@@ -1430,10 +1484,7 @@ export default function ZapierWorkflowEditor() {
                               order: index + 1,
                             };
                           })}
-                          totalDuration={executionTestResults?.metadata.duration || nodes.reduce((total, node) => {
-                            const testResults = executionTestResults || mockTestResults;
-                            return total + (testResults.node_results[node.id]?.duration_seconds || 0);
-                          }, 0)}
+                          totalDuration={executionTestResults?.metadata.duration || 0}
                         />
                       </div>
 
@@ -1466,8 +1517,7 @@ export default function ZapierWorkflowEditor() {
                                   <p className="text-muted-foreground">[INFO] Duration: {executionData.duration?.toFixed(3)}s</p>
                                   <p className="text-success">[INFO] Executing workflow...</p>
                                   {nodes.map((node) => {
-                                    const testResults = executionTestResults || mockTestResults;
-                                    const result = testResults.node_results[node.id];
+                                    const result = executionTestResults?.node_results[node.id];
                                     const statusClass = result?.status === 'SUCCESS' || result?.status === 'success' 
                                       ? 'text-success' 
                                       : result?.status === 'FAILED' || result?.status === 'failed' 
@@ -1485,12 +1535,14 @@ export default function ZapierWorkflowEditor() {
                                       </p>
                                     );
                                   })}
-                                  <p className={executionData.status === 'COMPLETED' ? 'text-success' : executionData.status === 'FAILED' ? 'text-destructive' : 'text-muted-foreground'}>
-                                    [INFO] Test execution {executionData.status?.toLowerCase() || 'completed'}
+                                  <p className={executionData.status === 'COMPLETED' || executionData.status === 'completed' ? 'text-success' : executionData.status === 'FAILED' || executionData.status === 'failed' ? 'text-destructive' : 'text-muted-foreground'}>
+                                    [{executionData.status === 'COMPLETED' || executionData.status === 'completed' ? 'SUCCESS' : executionData.status === 'FAILED' || executionData.status === 'failed' ? 'ERROR' : 'INFO'}] Test execution {executionData.status?.toLowerCase() || 'completed'}
                                   </p>
-                                  <p className="text-muted-foreground">
-                                    [SUMMARY] Success: {executionTestResults?.summary.successful_nodes || 0}, Failed: {executionTestResults?.summary.failed_nodes || 0}
-                                  </p>
+                                  {executionTestResults && (
+                                    <p className={executionTestResults.summary.failed_nodes > 0 ? 'text-destructive' : 'text-success'}>
+                                      [SUMMARY] Success: {executionTestResults.summary.successful_nodes}, Failed: {executionTestResults.summary.failed_nodes}
+                                    </p>
+                                  )}
                                 </>
                               ) : (
                                 <>
@@ -1504,10 +1556,13 @@ export default function ZapierWorkflowEditor() {
                       </div>
                     </div>
 
-                    {/* Final Result */}
+                    {/* Final Result - Only show if execution completed successfully */}
                     {(() => {
-                      const testResults = executionTestResults || mockTestResults;
-                      
+                      // Only show final result if execution completed successfully
+                      if (executionData && executionData.status !== 'COMPLETED' && executionData.status !== 'completed') {
+                        return null;
+                      }
+
                       // Get the last node's result data
                       let finalResult = null;
                       
@@ -1524,10 +1579,6 @@ export default function ZapierWorkflowEditor() {
                             finalResult = lastResult?.result_data || null;
                           }
                         }
-                      } else if (nodes.length > 0) {
-                        // Fallback to test results
-                        const lastNode = nodes[nodes.length - 1];
-                        finalResult = testResults.node_results[lastNode.id]?.result_data || null;
                       }
                       
                       if (!finalResult) return null;
@@ -1547,6 +1598,14 @@ export default function ZapierWorkflowEditor() {
                       );
                     })()}
                   </>
+                ) : (
+                  // Fallback loading state
+                  <div className="flex items-center justify-center py-16">
+                    <div className="text-center">
+                      <Loader2 className="h-8 w-8 text-primary animate-spin mb-4 mx-auto" />
+                      <p className="text-sm text-muted-foreground">Loading execution details...</p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

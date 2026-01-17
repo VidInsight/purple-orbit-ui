@@ -1,6 +1,6 @@
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+import { apiClient, getBaseUrl } from '@/utils/apiClient';
+
+const BASE_URL = getBaseUrl();
 
 export interface CredentialsApiResponse {
   status: string;
@@ -40,21 +40,11 @@ export interface CredentialDetailApiResponse {
  * Get credentials for a workspace
  */
 export const getCredentials = async (workspaceId: string): Promise<CredentialsApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching credentials for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -79,21 +69,11 @@ export const getCredentials = async (workspaceId: string): Promise<CredentialsAp
  * Get credential detail by ID
  */
 export const getCredentialDetail = async (workspaceId: string, credentialId: string): Promise<CredentialDetailApiResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Fetching credential detail for workspace:', workspaceId, 'credential:', credentialId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -137,22 +117,12 @@ export const updateCredential = async (
   credentialId: string,
   updateData: UpdateCredentialRequest
 ): Promise<UpdateCredentialResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Updating credential for workspace:', workspaceId, 'credential:', credentialId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
   console.log('Update data:', updateData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(updateData),
   });
 
@@ -190,21 +160,11 @@ export const deleteCredential = async (
   workspaceId: string,
   credentialId: string
 ): Promise<DeleteCredentialResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Deleting credential for workspace:', workspaceId, 'credential:', credentialId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
   });
 
   if (!response.ok) {
@@ -251,22 +211,12 @@ export const createSlackCredential = async (
   workspaceId: string,
   credentialData: CreateSlackCredentialRequest
 ): Promise<CreateCredentialResponse> => {
-  const accessToken = localStorage.getItem('access_token');
-  
-  if (!accessToken) {
-    throw new Error('No access token found. Please login again.');
-  }
-
   console.log('Creating Slack credential for workspace:', workspaceId);
   console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/slack`);
   console.log('Credential data:', credentialData);
 
-  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/slack`, {
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/slack`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(credentialData),
   });
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
 import { DatabaseItem } from '@/types/common';
 import { toast } from '@/hooks/use-toast';
@@ -11,6 +12,7 @@ import { getDatabases, getDatabaseDetail, deleteDatabase, DatabaseDetail } from 
 
 const Databases = () => {
   const { currentWorkspace } = useWorkspace();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [databases, setDatabases] = useState<DatabaseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -79,6 +81,16 @@ const Databases = () => {
   useEffect(() => {
     loadDatabases();
   }, [currentWorkspace]);
+
+  // Check for create query parameter
+  useEffect(() => {
+    const createParam = searchParams.get('create');
+    if (createParam === 'true' && currentWorkspace?.id) {
+      setIsCreateModalOpen(true);
+      // Remove query parameter from URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, currentWorkspace, setSearchParams]);
 
   const loadDatabases = async () => {
     if (!currentWorkspace?.id) {
@@ -220,6 +232,10 @@ const Databases = () => {
           isOpen={isCreateModalOpen}
           onClose={() => {
             setIsCreateModalOpen(false);
+            // Remove query parameter if it exists
+            if (searchParams.get('create') === 'true') {
+              setSearchParams({}, { replace: true });
+            }
           }}
           workspaceId={currentWorkspace.id}
           onSuccess={() => {
