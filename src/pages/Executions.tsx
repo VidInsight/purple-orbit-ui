@@ -99,6 +99,7 @@ const Executions = () => {
       emptyMessage="No executions yet"
       emptyDescription="Your workflow runs will appear here."
       onView={handleView}
+      itemsPerPage={15}
     />
   );
 };
