@@ -288,3 +288,76 @@ export const declineInvitation = async (invitationId: string): Promise<DeclineIn
   return response.json();
 };
 
+export interface LeaveWorkspaceResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: any;
+}
+
+/**
+ * Leave a workspace (for invited members)
+ */
+export const leaveWorkspace = async (workspaceId: string): Promise<LeaveWorkspaceResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/leave`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to leave workspace: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+export interface RemoveWorkspaceMemberResponse {
+  status: string;
+  code: number;
+  message: string | null;
+  traceId: string;
+  timestamp: string;
+  data: any;
+}
+
+/**
+ * Remove a member from workspace (for owners/admins)
+ */
+export const removeWorkspaceMember = async (
+  workspaceId: string,
+  userId: string
+): Promise<RemoveWorkspaceMemberResponse> => {
+  const accessToken = localStorage.getItem('access_token');
+  
+  if (!accessToken) {
+    throw new Error('No access token found. Please login again.');
+  }
+
+  const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/members/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to remove member: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+};
+

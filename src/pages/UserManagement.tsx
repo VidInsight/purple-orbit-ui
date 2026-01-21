@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -7,12 +8,14 @@ import { ActiveUsersTab } from '@/components/user-management/ActiveUsersTab';
 import { PendingInvitationsTab } from '@/components/user-management/PendingInvitationsTab';
 import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { getWorkspaceMembers, WorkspaceMember, inviteUserByEmail, getUserRoles } from '@/services/membersApi';
+import { getWorkspaceMembers, WorkspaceMember, inviteUserByEmail, getUserRoles, leaveWorkspace, removeWorkspaceMember } from '@/services/membersApi';
 import { getUserIdFromToken } from '@/utils/tokenUtils';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { getUserWorkspaces } from '@/services/workspaceApi';
+import { saveWorkspaces } from '@/utils/workspaceStorage';
 
 // Map API role names to UserRole
 const mapRoleNameToUserRole = (roleName: string): UserRole => {
@@ -44,16 +47,19 @@ const mapMemberToUser = (member: WorkspaceMember): User => {
 };
 
 const UserManagement = () => {
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, refreshWorkspaces } = useWorkspace();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const currentUserId = getUserIdFromToken();
   const currentUser = users.find((u) => u.id === currentUserId);
   const isAdmin = currentUser?.role === 'admin';
+  const isOwner = currentWorkspace?.role === 'owner';
 
   // Fetch workspace members from API
   useEffect(() => {
@@ -100,15 +106,45 @@ const UserManagement = () => {
   };
 
   const handleRemoveUser = async (userId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    const user = users.find((u) => u.id === userId);
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'No workspace selected',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    toast({
-      title: 'User Removed',
-      description: `${user?.name} has been removed from the workspace.`,
-    });
+    const user = users.find((u) => u.id === userId);
+    
+    if (!user) {
+      toast({
+        title: 'Error',
+        description: 'User not found',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await removeWorkspaceMember(currentWorkspace.id, userId);
+      
+      // Remove user from local state
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+
+      toast({
+        title: 'User Removed',
+        description: `${user.name} has been removed from the workspace.`,
+      });
+    } catch (error) {
+      console.error('Error removing user:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to remove user from workspace',
+        variant: 'destructive',
+      });
+      throw error; // Re-throw so ActiveUsersTab can handle it
+    }
   };
 
   const handleInviteSubmit = async (data: InviteUserData) => {
@@ -217,6 +253,132 @@ const UserManagement = () => {
     });
   };
 
+  const handleLeaveWorkspace = async () => {
+    if (!currentWorkspace?.id) {
+      toast({
+        title: 'Error',
+        description: 'No workspace selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (isOwner) {
+      toast({
+        title: 'Error',
+        description: 'Workspace owners cannot leave their workspace. Please transfer ownership first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to leave "${currentWorkspace.name}"? You will need to be invited again to rejoin.`)) {
+      return;
+    }
+
+    try {
+      setIsLeaving(true);
+      await leaveWorkspace(currentWorkspace.id);
+
+      // Refresh workspace list
+      try {
+        const response = await getUserWorkspaces();
+        const mappedWorkspaces: any[] = [];
+
+        if (response.data.owned_workspaces && Array.isArray(response.data.owned_workspaces)) {
+          response.data.owned_workspaces.forEach((ws: any) => {
+            mappedWorkspaces.push({
+              id: ws.id || ws.workspace_id,
+              name: ws.name || ws.workspace_name || 'Unnamed Workspace',
+              slug: ws.slug || ws.workspace_slug || ws.name?.toLowerCase().replace(/\s+/g, '-') || 'workspace',
+              description: ws.description || ws.workspace_description,
+              icon: ws.icon || ws.workspace_icon,
+              memberCount: ws.member_count || ws.memberCount || 0,
+              lastAccessed: ws.last_accessed || ws.lastAccessed || new Date().toISOString(),
+              createdAt: ws.created_at || ws.createdAt || new Date().toISOString(),
+              role: 'owner',
+              member_limit: ws.member_limit || 5,
+              current_member_count: ws.current_member_count || ws.memberCount || 0,
+              workflow_limit: ws.workflow_limit || 50,
+              current_workflow_count: ws.current_workflow_count || 0,
+              custom_script_limit: ws.custom_script_limit || 25,
+              current_custom_script_count: ws.current_custom_script_count || 0,
+              storage_limit_mb: ws.storage_limit_mb || 10240,
+              current_storage_mb: ws.current_storage_mb || 0,
+              api_key_limit: ws.api_key_limit || 10,
+              current_api_key_count: ws.current_api_key_count || 0,
+              monthly_execution_limit: ws.monthly_execution_limit || 10000,
+              current_month_executions: ws.current_month_executions || 0,
+              monthly_concurrent_executions: ws.monthly_concurrent_executions || 5,
+              current_month_concurrent_executions: ws.current_month_concurrent_executions || 0,
+              current_period_start: ws.current_period_start || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+              current_period_end: ws.current_period_end || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+            });
+          });
+        }
+
+        if (response.data.memberships && Array.isArray(response.data.memberships)) {
+          response.data.memberships.forEach((membership: any) => {
+            const ws = membership.workspace || membership;
+            mappedWorkspaces.push({
+              id: ws.id || ws.workspace_id,
+              name: ws.name || ws.workspace_name || 'Unnamed Workspace',
+              slug: ws.slug || ws.workspace_slug || ws.name?.toLowerCase().replace(/\s+/g, '-') || 'workspace',
+              description: ws.description || ws.workspace_description,
+              icon: ws.icon || ws.workspace_icon,
+              memberCount: ws.member_count || ws.memberCount || 0,
+              lastAccessed: ws.last_accessed || ws.lastAccessed || new Date().toISOString(),
+              createdAt: ws.created_at || ws.createdAt || new Date().toISOString(),
+              role: membership.role || 'viewer',
+              member_limit: ws.member_limit || 5,
+              current_member_count: ws.current_member_count || ws.memberCount || 0,
+              workflow_limit: ws.workflow_limit || 50,
+              current_workflow_count: ws.current_workflow_count || 0,
+              custom_script_limit: ws.custom_script_limit || 25,
+              current_custom_script_count: ws.current_custom_script_count || 0,
+              storage_limit_mb: ws.storage_limit_mb || 10240,
+              current_storage_mb: ws.current_storage_mb || 0,
+              api_key_limit: ws.api_key_limit || 10,
+              current_api_key_count: ws.current_api_key_count || 0,
+              monthly_execution_limit: ws.monthly_execution_limit || 10000,
+              current_month_executions: ws.current_month_executions || 0,
+              monthly_concurrent_executions: ws.monthly_concurrent_executions || 5,
+              current_month_concurrent_executions: ws.current_month_concurrent_executions || 0,
+              current_period_start: ws.current_period_start || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+              current_period_end: ws.current_period_end || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString(),
+            });
+          });
+        }
+
+        mappedWorkspaces.sort((a, b) => 
+          new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
+        );
+
+        saveWorkspaces(mappedWorkspaces);
+        refreshWorkspaces();
+      } catch (error) {
+        console.error('Error refreshing workspaces:', error);
+      }
+
+      toast({
+        title: 'Left Workspace',
+        description: `You have successfully left "${currentWorkspace.name}".`,
+      });
+
+      // Navigate to workspace selection
+      navigate('/');
+    } catch (error) {
+      console.error('Error leaving workspace:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to leave workspace',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
 
   const existingEmails = [
     ...users.map((u) => u.email),
@@ -246,12 +408,24 @@ const UserManagement = () => {
           title="User Management"
           description="Manage workspace members and permissions"
           actions={
-            isAdmin ? (
-              <Button variant="primary" onClick={() => setInviteModalOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Users
-              </Button>
-            ) : undefined
+            <div className="flex gap-2">
+              {isAdmin && (
+                <Button variant="primary" onClick={() => setInviteModalOpen(true)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite Users
+                </Button>
+              )}
+              {!isOwner && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleLeaveWorkspace}
+                  disabled={isLeaving}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {isLeaving ? 'Leaving...' : 'Leave Workspace'}
+                </Button>
+              )}
+            </div>
           }
         />
 
