@@ -8,14 +8,16 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
   return (
-    <div className="flex items-start justify-between mb-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+    <div className="flex items-start justify-between mb-10">
+      <div className="space-y-3">
+        <h1 className="text-4xl font-bold text-foreground bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+          {title}
+        </h1>
         {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">{description}</p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </div>
   );
 };

@@ -185,6 +185,7 @@ const Credentials = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        itemsPerPage={10}
       />
 
       {/* Credential Detail Modal */}

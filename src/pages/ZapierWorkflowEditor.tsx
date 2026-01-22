@@ -1082,10 +1082,16 @@ export default function ZapierWorkflowEditor() {
 
   if (isLoadingWorkflow) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading workflow...</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-surface/30 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary/30 border-r-primary mb-4"></div>
+            <div className="absolute inset-0 inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-transparent border-t-primary/60" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+          </div>
+          <div>
+            <p className="text-base font-medium text-foreground mb-1">Loading workflow</p>
+            <p className="text-sm text-muted-foreground">Please wait while we fetch your workflow...</p>
+          </div>
         </div>
       </div>
     );
@@ -1093,9 +1099,9 @@ export default function ZapierWorkflowEditor() {
 
   return (
     <PathProvider>
-      <div className="min-h-screen bg-background">
-        {/* Toolbar */}
-        <div className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-surface/20">
+        {/* Modern Toolbar */}
+        <div className="sticky top-0 z-50 border-b border-border/50 bg-gradient-to-r from-surface/95 via-surface/90 to-surface/95 backdrop-blur-xl shadow-lg shadow-primary/5">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Left Side */}
@@ -1104,11 +1110,13 @@ export default function ZapierWorkflowEditor() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/workflows')}
-                  className="hover:bg-surface"
+                  className="hover:bg-primary/10 hover:text-primary transition-all duration-200 group"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                   Back
                 </Button>
+
+                <div className="h-6 w-px bg-border/50" />
 
                 {isEditingName ? (
                   <input
@@ -1120,14 +1128,17 @@ export default function ZapierWorkflowEditor() {
                       if (e.key === 'Enter') setIsEditingName(false);
                     }}
                     autoFocus
-                    className="text-xl font-semibold bg-transparent border-b-2 border-primary focus:outline-none"
+                    className="text-xl font-bold bg-transparent border-b-2 border-primary focus:outline-none focus:border-primary/80 transition-colors px-2 py-1"
                   />
                 ) : (
                   <h1
-                    className="text-xl font-semibold cursor-pointer hover:text-primary transition-colors"
+                    className="text-xl font-bold cursor-pointer hover:text-primary transition-all duration-200 group flex items-center gap-2"
                     onClick={() => setIsEditingName(true)}
                   >
-                    {workflowName}
+                    <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80">
+                      {workflowName}
+                    </span>
+                    <Zap className="h-4 w-4 text-primary/60 group-hover:text-primary group-hover:scale-110 transition-all" />
                   </h1>
                 )}
               </div>
@@ -1140,19 +1151,21 @@ export default function ZapierWorkflowEditor() {
                   onClick={handleTest}
                   disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
                   loading={isRunningTest}
-                  className="gap-2"
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg hover:shadow-primary/30 transition-all duration-200"
                 >
                   <Play className="h-4 w-4" />
                   Run
                 </Button>
-                <div className="flex items-center gap-3 px-4 py-2 bg-surface border border-border rounded-lg">
-                  <Label htmlFor="workflow-active" className="text-sm font-medium cursor-pointer">
-                    {isActive ? 'Active' : 'Inactive'}
+                <div className="flex items-center gap-3 px-4 py-2 bg-surface/80 border border-border/50 rounded-lg backdrop-blur-sm hover:border-primary/30 transition-all duration-200 group">
+                  <Label htmlFor="workflow-active" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
+                    <span className={isActive ? 'text-success' : 'text-muted-foreground'}>{isActive ? 'Active' : 'Inactive'}</span>
                   </Label>
                   <Switch 
                     id="workflow-active"
                     checked={isActive}
                     onCheckedChange={setIsActive}
+                    className="data-[state=checked]:bg-success"
                   />
                 </div>
               </div>
@@ -1160,22 +1173,29 @@ export default function ZapierWorkflowEditor() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Modern Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-          <div className="border-b border-border bg-surface/30">
+          <div className="border-b border-border/50 bg-gradient-to-b from-surface/40 via-surface/30 to-transparent backdrop-blur-sm">
             <div className="container mx-auto px-6 flex justify-center">
-              <TabsList className="bg-transparent border-0 p-0 h-12">
+              <TabsList className="bg-transparent border-0 p-0 h-14 gap-1">
                 <TabsTrigger 
                   value="editor" 
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-6"
+                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-8 h-full font-semibold text-sm transition-all duration-200 data-[state=active]:text-primary data-[state=active]:shadow-[0_-2px_8px_rgba(0,0,0,0.1)] relative group"
                 >
-                  Editor
+                  <span className="relative z-10">Editor</span>
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
                 </TabsTrigger>
                 <TabsTrigger 
                   value="test" 
-                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-6"
+                  className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-8 h-full font-semibold text-sm transition-all duration-200 data-[state=active]:text-primary data-[state=active]:shadow-[0_-2px_8px_rgba(0,0,0,0.1)] relative group"
                 >
-                  Test
+                  <span className="relative z-10 flex items-center gap-2">
+                    Test
+                    {executionId && (
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    )}
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -1185,41 +1205,46 @@ export default function ZapierWorkflowEditor() {
           <TabsContent value="editor" className="mt-0">
             {/* Workflow Canvas */}
             <div 
-              className="relative h-[calc(100vh-144px)] overflow-auto bg-background"
+              className="relative h-[calc(100vh-144px)] overflow-auto bg-gradient-to-br from-background via-background to-surface/10"
               onWheel={handleWheel}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
             >
-              {/* Zoom Controls */}
-              <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2 bg-surface border border-border rounded-lg shadow-lg p-2">
+              {/* Modern Zoom Controls */}
+              <div className="absolute bottom-6 left-6 z-20 flex flex-col gap-2 bg-surface/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-xl shadow-primary/10 p-2 group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleZoomIn}
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
                   title="Zoom In"
                 >
-                  +
+                  <span className="text-lg font-semibold">+</span>
                 </Button>
+                <div className="px-2 py-1.5 text-center">
+                  <div className="text-xs font-bold text-primary bg-primary/10 rounded-md px-2 py-1">
+                    {Math.round(zoom * 100)}%
+                  </div>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleResetView}
-                  className="h-8 w-8 p-0 text-xs"
+                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg text-xs font-medium"
                   title="Reset View"
                 >
-                  {Math.round(zoom * 100)}%
+                  ↻
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleZoomOut}
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 rounded-lg"
                   title="Zoom Out"
                 >
-                  −
+                  <span className="text-lg font-semibold">−</span>
                 </Button>
               </div>
 
@@ -1245,11 +1270,23 @@ export default function ZapierWorkflowEditor() {
                     </div>
 
                     {nodes.length === 0 ? (
-                      // Empty state - show Add Node button for first node
-                      <div className="flex flex-col items-center justify-center py-16">
-                        <div className="text-center mb-6">
-                          <p className="text-lg font-medium text-foreground mb-2">No nodes yet</p>
-                          <p className="text-sm text-muted-foreground">Add your first node to get started</p>
+                      // Modern Empty state
+                      <div className="flex flex-col items-center justify-center py-24 px-6">
+                        <div className="relative mb-8">
+                          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                          <div className="relative bg-gradient-to-br from-surface/80 to-surface/40 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-xl">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                              <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
+                                <Zap className="h-8 w-8 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="text-xl font-bold text-foreground mb-2">Start Building Your Workflow</h3>
+                                <p className="text-sm text-muted-foreground max-w-md">
+                                  Add your first node to begin creating an automated workflow. Connect triggers, actions, and conditions to build powerful automations.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                         <AddNodeButton 
                           onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId)} 
@@ -1297,16 +1334,21 @@ export default function ZapierWorkflowEditor() {
                             />
                           )}
 
-                          {/* Connection line between nodes */}
+                          {/* Modern Connection line between nodes */}
                           {index < nodes.length - 1 ? (
-                            // Between nodes: just show connection line
-                            <div className="flex flex-col items-center my-3">
-                              <div className="w-0.5 h-8 bg-border" />
+                            // Between nodes: modern connection line
+                            <div className="flex flex-col items-center my-4 group">
+                              <div className="relative w-0.5 h-8">
+                                <div className="absolute inset-0 bg-gradient-to-b from-border via-primary/30 to-border" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
                             </div>
                           ) : (
-                            // After last node: show connection line and Add button
-                            <div className="flex flex-col items-center my-3" id={`add-node-${index}`}>
-                              <div className="w-0.5 h-4 bg-border" />
+                            // After last node: modern connection line and Add button
+                            <div className="flex flex-col items-center my-4" id={`add-node-${index}`}>
+                              <div className="relative w-0.5 h-4">
+                                <div className="absolute inset-0 bg-gradient-to-b from-border to-transparent" />
+                              </div>
                               <AddNodeButton 
                                 onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId, node.id)} 
                                 onMenuOpen={() => {
@@ -1332,7 +1374,9 @@ export default function ZapierWorkflowEditor() {
                                   }
                                 }}
                               />
-                              <div className="w-0.5 h-4 bg-border" />
+                              <div className="relative w-0.5 h-4">
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-border" />
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1369,55 +1413,76 @@ export default function ZapierWorkflowEditor() {
 
           {/* Test Tab Content */}
           <TabsContent value="test" className="mt-0">
-            <div className="h-[calc(100vh-144px)] overflow-auto bg-background">
+            <div className="h-[calc(100vh-144px)] overflow-auto bg-gradient-to-br from-background via-background to-surface/10">
               <div className="container mx-auto px-6 py-8 space-y-6">
                 {!executionId && !isRunningTest ? (
-                  // Empty state when no test has been run
-                  <div className="flex items-center justify-center py-16">
-                    <div className="text-center max-w-md">
-                      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 mx-auto">
-                        <Play className="h-8 w-8 text-primary" />
+                  // Modern Empty state
+                  <div className="flex items-center justify-center py-24">
+                    <div className="text-center max-w-lg">
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                        <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 backdrop-blur-sm">
+                          <Play className="h-10 w-10 text-primary" />
+                        </div>
                       </div>
-                      <h3 className="text-xl font-bold mb-2">No Test Execution Yet</h3>
-                      <p className="text-sm text-muted-foreground mb-6">
-                        Click the "Run" button in the toolbar to start a test execution and see the results here.
+                      <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                        No Test Execution Yet
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                        Click the "Run" button in the toolbar to start a test execution and see the results here. 
+                        Test executions help you verify that your workflow is working correctly before deploying.
                       </p>
                     </div>
                   </div>
                 ) : (isRunningTest || isLoadingExecution || (executionData && (executionData.status === 'RUNNING' || executionData.status === 'running' || executionData.status === 'PENDING' || executionData.status === 'pending'))) ? (
-                  // Loading state when test is running
-                  <div className="flex items-center justify-center py-16">
-                    <div className="text-center max-w-md">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin mb-4 mx-auto" />
-                      <h3 className="text-xl font-bold mb-2">Running Test Execution</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
+                  // Modern Loading state
+                  <div className="flex items-center justify-center py-24">
+                    <div className="text-center max-w-lg">
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                        <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 backdrop-blur-sm">
+                          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                        </div>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3 text-foreground">Running Test Execution</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
                         {isRunningTest ? 'Starting workflow execution...' : 'Workflow is running...'}
                       </p>
                       {executionId && (
-                        <p className="text-xs text-muted-foreground">
-                          Execution ID: {executionId}
-                        </p>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface/80 border border-border/50 rounded-lg backdrop-blur-sm">
+                          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                          <p className="text-xs font-mono text-muted-foreground">
+                            Execution ID: {executionId.slice(0, 8)}...
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 ) : executionData && (executionData.status === 'COMPLETED' || executionData.status === 'completed' || executionData.status === 'FAILED' || executionData.status === 'failed') ? (
                   // Show results when execution is completed or failed
                   <>
-                    {/* Execution Status Banner */}
+                    {/* Modern Execution Status Banner */}
                     {executionData && (
-                      <div className={`border rounded-lg p-4 ${
+                      <div className={`relative overflow-hidden border-2 rounded-xl p-5 backdrop-blur-sm ${
                         executionData.status === 'COMPLETED' || executionData.status === 'completed'
-                          ? 'bg-success/10 border-success/30'
-                          : 'bg-destructive/10 border-destructive/30'
+                          ? 'bg-gradient-to-br from-success/20 via-success/10 to-success/5 border-success/40 shadow-lg shadow-success/10'
+                          : 'bg-gradient-to-br from-destructive/20 via-destructive/10 to-destructive/5 border-destructive/40 shadow-lg shadow-destructive/10'
                       }`}>
-                        <div className="flex items-center gap-3">
-                          {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? (
-                            <CheckCircle className="h-5 w-5 text-success" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-destructive" />
-                          )}
-                          <div className="flex-1">
-                            <h3 className={`font-bold ${
+                        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5" />
+                        <div className="relative flex items-center gap-4">
+                          <div className={`flex-shrink-0 p-3 rounded-xl ${
+                            executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                              ? 'bg-success/20 border border-success/30'
+                              : 'bg-destructive/20 border border-destructive/30'
+                          }`}>
+                            {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? (
+                              <CheckCircle className="h-6 w-6 text-success" />
+                            ) : (
+                              <XCircle className="h-6 w-6 text-destructive" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`text-lg font-bold mb-1 ${
                               executionData.status === 'COMPLETED' || executionData.status === 'completed'
                                 ? 'text-success'
                                 : 'text-destructive'
@@ -1431,8 +1496,9 @@ export default function ZapierWorkflowEditor() {
                             </p>
                           </div>
                           {executionData.duration && (
-                            <div className="text-sm text-muted-foreground">
-                              Duration: {executionData.duration.toFixed(3)}s
+                            <div className="flex-shrink-0 px-4 py-2 bg-surface/80 border border-border/50 rounded-lg backdrop-blur-sm">
+                              <div className="text-xs text-muted-foreground mb-1">Duration</div>
+                              <div className="text-sm font-bold text-foreground">{executionData.duration.toFixed(3)}s</div>
                             </div>
                           )}
                         </div>
@@ -1488,22 +1554,22 @@ export default function ZapierWorkflowEditor() {
                         />
                       </div>
 
-                      {/* Execution Logs */}
-                      <div className="bg-surface border border-border rounded-lg min-h-[600px] flex flex-col">
-                        <div className="px-6 py-4 border-b border-border flex-shrink-0">
+                      {/* Modern Execution Logs */}
+                      <div className="bg-surface/80 backdrop-blur-sm border-2 border-border/50 rounded-xl min-h-[600px] flex flex-col shadow-lg shadow-primary/5 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-border/50 flex-shrink-0 bg-gradient-to-r from-surface/50 to-transparent">
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                              <MessageSquare className="h-4 w-4 text-primary" />
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
+                              <MessageSquare className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <h3 className="text-lg font-bold">Execution Logs</h3>
+                              <h3 className="text-lg font-bold text-foreground">Execution Logs</h3>
                               <p className="text-xs text-muted-foreground">Detailed execution logs and debug information</p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="p-6 flex-1 overflow-hidden">
-                          <div className="bg-background rounded-md p-4 font-mono text-xs h-full overflow-auto border border-border">
+                        <div className="p-6 flex-1 overflow-hidden bg-gradient-to-b from-background/50 to-background">
+                          <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 font-mono text-xs h-full overflow-auto border border-border/50 shadow-inner">
                             <div className="space-y-1">
                               {executionData ? (
                                 <>
@@ -1584,26 +1650,40 @@ export default function ZapierWorkflowEditor() {
                       if (!finalResult) return null;
 
                       return (
-                        <div className="bg-surface/50 border border-border rounded-md p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <CheckCircle className="h-4 w-4 text-success" />
-                            <span className="text-sm font-medium">Final Result</span>
-                          </div>
-                          <div className="bg-background rounded p-3 font-mono text-xs overflow-auto max-h-[300px]">
-                            <pre className="whitespace-pre-wrap break-words m-0">
-                              {JSON.stringify(finalResult, null, 2)}
-                            </pre>
+                        <div className="relative overflow-hidden bg-gradient-to-br from-surface/80 to-surface/40 backdrop-blur-sm border-2 border-success/30 rounded-xl p-5 shadow-lg shadow-success/10">
+                          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5" />
+                          <div className="relative">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-success/20 to-success/10 border border-success/30">
+                                <CheckCircle className="h-5 w-5 text-success" />
+                              </div>
+                              <div>
+                                <h3 className="text-base font-bold text-foreground">Final Result</h3>
+                                <p className="text-xs text-muted-foreground">Output from the last node in the workflow</p>
+                              </div>
+                            </div>
+                            <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 font-mono text-xs overflow-auto max-h-[300px] border border-border/50 shadow-inner">
+                              <pre className="whitespace-pre-wrap break-words m-0 text-foreground/90">
+                                {JSON.stringify(finalResult, null, 2)}
+                              </pre>
+                            </div>
                           </div>
                         </div>
                       );
                     })()}
                   </>
                 ) : (
-                  // Fallback loading state
-                  <div className="flex items-center justify-center py-16">
-                    <div className="text-center">
-                      <Loader2 className="h-8 w-8 text-primary animate-spin mb-4 mx-auto" />
-                      <p className="text-sm text-muted-foreground">Loading execution details...</p>
+                  // Modern Fallback loading state
+                  <div className="flex items-center justify-center py-24">
+                    <div className="text-center max-w-lg">
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                        <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 backdrop-blur-sm">
+                          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-bold mb-2 text-foreground">Loading Execution Details</h3>
+                      <p className="text-sm text-muted-foreground">Fetching execution information...</p>
                     </div>
                   </div>
                 )}

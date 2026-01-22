@@ -97,7 +97,7 @@ const Dropdown = ({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-2 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-[100] w-full mt-2 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
             {searchable && (
               <div className="p-2 border-b border-border">
                 <input

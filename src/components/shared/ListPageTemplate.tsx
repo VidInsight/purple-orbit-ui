@@ -130,44 +130,56 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+      <div className="container mx-auto max-w-[1600px]">
         <PageHeader
           title={pageTitle}
           description={pageDescription}
           actions={headerActions}
         />
 
-        <SearchFilterBar
-          searchPlaceholder={searchPlaceholder}
-          createButtonText={createButtonText}
-          filterOptions={filterOptions}
-          showFilter={!!filterOptions}
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          onCreateClick={onCreate}
-        />
-
-        <div>
-          <ListTable
-            items={paginatedItems}
-            isLoading={isLoading}
-            error={error}
-            emptyMessage={emptyMessage}
-            emptyDescription={emptyDescription}
-            onView={onView}
-            onEdit={onEdit}
-            onDelete={onDelete ? handleDeleteClick : undefined}
+        <div className="mb-8 relative z-50">
+          <SearchFilterBar
+            searchPlaceholder={searchPlaceholder}
+            createButtonText={createButtonText}
+            filterOptions={filterOptions}
+            showFilter={!!filterOptions}
+            onSearch={handleSearch}
+            onFilterChange={handleFilterChange}
+            onCreateClick={onCreate}
           />
         </div>
 
+        <div className="relative">
+          {/* Background gradient effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
+          
+          {/* Main content card */}
+          <div className="relative bg-surface/80 backdrop-blur-xl rounded-3xl border border-border/60 shadow-2xl shadow-primary/5 p-8 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80 ">
+            <ListTable
+              items={paginatedItems}
+              isLoading={isLoading}
+              error={error}
+              emptyMessage={emptyMessage}
+              emptyDescription={emptyDescription}
+              onView={onView}
+              onEdit={onEdit}
+              onDelete={onDelete ? handleDeleteClick : undefined}
+            />
+          </div>
+        </div>
+
         {filteredItems.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredItems.length}
-            onPageChange={setCurrentPage}
-          />
+          <div className="mt-8">
+            <div className="bg-surface/40 backdrop-blur-sm rounded-2xl border border-border/40 p-4 shadow-md">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredItems.length}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
         )}
 
         {onDelete && (

@@ -44,59 +44,71 @@ export const PlanCard = ({ plan, billingCycle, currentPlanId, onSelect }: PlanCa
   };
 
   return (
-    <div
-      className={`relative bg-card border rounded-lg p-4 sm:p-5 lg:p-6 transition-all h-full flex flex-col ${
-        plan.popular
-          ? 'border-primary shadow-lg sm:scale-105'
-          : 'border-border hover:border-primary/50'
-      }`}
-    >
+    <div className="relative group">
+      {/* Background gradient effect for popular plan */}
       {plan.popular && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs sm:text-sm px-2 sm:px-3">
-          Most Popular
-        </Badge>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 rounded-3xl blur-2xl -z-10 group-hover:blur-3xl transition-all duration-300" />
       )}
+      
+      {/* Main card */}
+      <div
+        className={`relative bg-surface/80 backdrop-blur-xl border rounded-3xl p-6 sm:p-7 lg:p-8 transition-all duration-300 h-full flex flex-col ${
+          plan.popular
+            ? 'border-primary/60 shadow-2xl shadow-primary/20 scale-105 hover:scale-110 hover:shadow-primary/30'
+            : 'border-border/60 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10'
+        }`}
+      >
+        {plan.popular && (
+          <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-sm font-semibold px-4 py-1.5 shadow-lg border-0">
+            Most Popular
+          </Badge>
+        )}
 
-      <div className="mb-4 sm:mb-5">
-        <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{plan.name}</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{plan.description}</p>
-        
-        <div className="flex items-baseline gap-1">
-          {isContactSales ? (
-            <span className="text-xl sm:text-2xl font-bold text-foreground">Contact Sales</span>
-          ) : (
-            <>
-              <span className="text-2xl sm:text-3xl font-bold text-foreground">${price}</span>
-              <span className="text-sm sm:text-base text-muted-foreground">
-                /{billingCycle === 'monthly' ? 'mo' : 'yr'}
-              </span>
-            </>
+        <div className="mb-6">
+          <h3 className="text-2xl font-bold text-foreground mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            {plan.name}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">{plan.description}</p>
+          
+          <div className="flex items-baseline gap-2 mb-2">
+            {isContactSales ? (
+              <span className="text-3xl font-bold text-foreground">Contact Sales</span>
+            ) : (
+              <>
+                <span className="text-4xl font-bold text-foreground">${price}</span>
+                <span className="text-lg text-muted-foreground">
+                  /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                </span>
+              </>
+            )}
+          </div>
+          {billingCycle === 'annual' && !isContactSales && price > 0 && (
+            <p className="text-sm text-muted-foreground">
+              ${(price / 12).toFixed(2)}/month billed annually
+            </p>
           )}
         </div>
-        {billingCycle === 'annual' && !isContactSales && price > 0 && (
-          <p className="text-xs text-muted-foreground mt-1">
-            ${(price / 12).toFixed(2)}/month billed annually
-          </p>
-        )}
+
+        <ul className="space-y-3 mb-6 flex-grow">
+          {plan.features.map((feature, index) => (
+            <li key={index} className="flex items-start gap-3">
+              <div className="mt-0.5 flex-shrink-0">
+                <Check className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-sm text-foreground leading-relaxed">{feature}</span>
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          variant={isCurrent ? 'secondary' : isUpgrade ? 'primary' : 'ghost'}
+          className="w-full mt-auto h-11 font-semibold text-base shadow-md hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+          onClick={() => onSelect(plan.id)}
+          disabled={isCurrent}
+        >
+          {getButtonText()}
+        </Button>
       </div>
-
-      <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6 flex-grow">
-        {plan.features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-2">
-            <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0 mt-0.5" />
-            <span className="text-xs sm:text-sm text-foreground leading-relaxed">{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      <Button
-        variant={isCurrent ? 'secondary' : isUpgrade ? 'primary' : 'ghost'}
-        className="w-full mt-auto text-sm sm:text-base"
-        onClick={() => onSelect(plan.id)}
-        disabled={isCurrent}
-      >
-        {getButtonText()}
-      </Button>
     </div>
   );
 };

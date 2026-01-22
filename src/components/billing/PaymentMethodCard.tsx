@@ -23,61 +23,72 @@ export const PaymentMethodCard = ({
     new Date(paymentMethod.expiryYear, paymentMethod.expiryMonth - 1);
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-            <CreditCard className="h-6 w-6 text-primary" />
+    <div className="relative">
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-3xl blur-2xl -z-10" />
+      
+      {/* Main card */}
+      <div className="relative bg-surface/80 backdrop-blur-xl border border-border/60 rounded-3xl shadow-2xl shadow-primary/5 p-8 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80">
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shadow-md">
+              <CreditCard className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-1">
+                Payment Method
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your payment information
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">
-              Payment Method
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Manage your payment information
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onUpdate}
+            className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+          >
+            <Edit className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <div className="space-y-4 p-5 bg-gradient-to-r from-surface/50 to-surface/30 rounded-xl border border-border/40 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Card</span>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">
+                {CARD_BRAND_ICONS[paymentMethod.cardBrand.toLowerCase()] || '💳'}
+              </span>
+              <span className="text-base font-semibold text-foreground">
+                {paymentMethod.cardBrand.toUpperCase()} •••• {paymentMethod.lastFour}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-border/40">
+            <span className="text-sm font-medium text-muted-foreground">Expires</span>
+            <span
+              className={`text-base font-semibold ${
+                isExpired ? 'text-destructive' : 'text-foreground'
+              }`}
+            >
+              {String(paymentMethod.expiryMonth).padStart(2, '0')}/
+              {paymentMethod.expiryYear}
+              {isExpired && ' (Expired)'}
+            </span>
+          </div>
+        </div>
+
+        {isExpired && (
+          <div className="mt-6 p-4 bg-destructive/10 border border-destructive/30 rounded-xl backdrop-blur-sm">
+            <p className="text-sm font-medium text-destructive">
+              Your payment method has expired. Please update it to avoid service
+              interruption.
             </p>
           </div>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onUpdate}>
-          <Edit className="h-4 w-4" />
-        </Button>
+        )}
       </div>
-
-      <div className="space-y-3 p-4 bg-surface rounded-lg">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Card</span>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">
-              {CARD_BRAND_ICONS[paymentMethod.cardBrand.toLowerCase()] || '💳'}
-            </span>
-            <span className="text-sm font-medium text-foreground">
-              {paymentMethod.cardBrand.toUpperCase()} •••• {paymentMethod.lastFour}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Expires</span>
-          <span
-            className={`text-sm font-medium ${
-              isExpired ? 'text-destructive' : 'text-foreground'
-            }`}
-          >
-            {String(paymentMethod.expiryMonth).padStart(2, '0')}/
-            {paymentMethod.expiryYear}
-            {isExpired && ' (Expired)'}
-          </span>
-        </div>
-      </div>
-
-      {isExpired && (
-        <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-sm text-destructive">
-            Your payment method has expired. Please update it to avoid service
-            interruption.
-          </p>
-        </div>
-      )}
     </div>
   );
 };

@@ -180,6 +180,7 @@ const Variables = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        itemsPerPage={10}
       />
       {/* Variable Detail Modal */}
       <VariableDetailModal

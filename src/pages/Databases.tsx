@@ -224,6 +224,7 @@ const Databases = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        itemsPerPage={10}
       />
 
       {/* Create Database Modal */}

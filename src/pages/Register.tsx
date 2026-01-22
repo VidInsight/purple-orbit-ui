@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -7,11 +7,57 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, Eye, EyeOff, Check, X, Home } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Check, X, Home, Sparkles } from 'lucide-react';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import i18n from '@/i18n/config';
 import { register as registerApi, fetchAgreement as fetchAgreementApi } from '@/services/authApi';
 import { handleError } from '@/utils/errorHandler';
+
+// Floating particles component
+const FloatingParticles = () => {
+  const [particles] = useState(() => 
+    Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1.5,
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 5,
+    }))
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((particle) => (
+        <div
+          key={particle.id}
+          className="absolute rounded-full bg-primary/20 blur-sm"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            animation: `float ${particle.duration}s ease-in-out infinite`,
+            animationDelay: `${particle.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Glowing orb component
+const GlowingOrb = ({ className, delay = 0 }: { className?: string; delay?: number }) => {
+  return (
+    <div
+      className={`absolute rounded-full blur-3xl animate-pulse ${className}`}
+      style={{
+        animationDelay: `${delay}s`,
+        animationDuration: '4s',
+      }}
+    />
+  );
+};
 
 export const Register = () => {
   const { t } = useTranslation();
@@ -36,6 +82,19 @@ export const Register = () => {
     privacyPolicy: false,
     terms: false,
   });
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Şifre kurallarını kontrol et
   const passwordRules = useMemo(() => {
@@ -219,30 +278,84 @@ export const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 py-12 relative overflow-hidden">
+      {/* Enhanced Matrix Background */}
       <MatrixBackground />
-      <div className="w-full max-w-md relative z-10">
+      
+      {/* Animated Grid Pattern */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(hsla(var(--primary) / 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, hsla(var(--primary) / 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px',
+          animation: 'grid-move 20s linear infinite',
+        }} />
+      </div>
+      
+      {/* Floating Particles */}
+      <FloatingParticles />
+      
+      {/* Dynamic Gradient Overlay */}
+      <div 
+        className="absolute inset-0 bg-gradient-radial from-primary/10 via-primary/5 to-transparent pointer-events-none transition-opacity duration-1000"
+        style={{
+          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, hsla(var(--primary) / 0.12) 0%, transparent 50%)`,
+        }}
+      />
+      
+      {/* Premium Glow Effects */}
+      <GlowingOrb className="top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/20" delay={0} />
+      <GlowingOrb className="bottom-1/4 right-1/4 w-[500px] h-[500px] bg-primary/15" delay={1.5} />
+      <GlowingOrb className="top-1/2 right-1/3 w-[350px] h-[350px] bg-primary/18" delay={2} />
+
+      {/* Animated gradient border effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-shimmer" />
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-shimmer" style={{ animationDelay: '1s' }} />
+      </div>
+
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-lg shadow-primary/10 mb-6 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:scale-105">
-            <UserPlus className="w-10 h-10 text-primary" />
+          {/* Premium Icon with enhanced effects */}
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-3xl animate-pulse" />
+            <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/30 via-primary/20 to-primary/10 border-2 border-primary/30 shadow-2xl shadow-primary/20 mb-6 transition-all duration-300 hover:shadow-primary/30 hover:scale-105 group">
+              <UserPlus className="w-12 h-12 text-primary group-hover:scale-110 transition-transform duration-300" />
+              <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-primary animate-pulse" />
+            </div>
           </div>
-          <h1 className="text-4xl font-semibold text-foreground mb-3 tracking-tight">
-            {t('auth:register.title')}
+          
+          <h1 className="text-5xl font-extrabold text-foreground mb-4 tracking-tight">
+            <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+              {t('auth:register.title')}
+            </span>
           </h1>
           <p className="text-muted-foreground text-lg">
             {t('auth:register.subtitle')}
           </p>
         </div>
 
-        <div className="bg-surface/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-xl">
+        {/* Premium Card with enhanced glassmorphism */}
+        <div className="relative bg-surface/60 backdrop-blur-xl border border-border/60 rounded-3xl p-8 shadow-2xl overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+          
+          {/* Animated border gradient */}
+          <div className="absolute inset-0 rounded-3xl p-[1px] bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 opacity-50 -z-10">
+            <div className="h-full w-full rounded-3xl bg-surface/60 backdrop-blur-xl" />
+          </div>
+          
+          <div className="relative z-10">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="username" className="transition-colors duration-200">{t('auth:register.username')}</Label>
+              <Label htmlFor="username" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.username')}</Label>
               <Input
                 id="username"
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm"
               />
               {errors.username && (
                 <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.username}</p>
@@ -251,13 +364,13 @@ export const Register = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="transition-colors duration-200">{t('auth:register.name')}</Label>
+                <Label htmlFor="name" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.name')}</Label>
                 <Input
                   id="name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                  className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm"
                 />
                 {errors.name && (
                   <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.name}</p>
@@ -265,13 +378,13 @@ export const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="surname" className="transition-colors duration-200">{t('auth:register.surname')}</Label>
+                <Label htmlFor="surname" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.surname')}</Label>
                 <Input
                   id="surname"
                   type="text"
                   value={formData.surname}
                   onChange={(e) => setFormData({ ...formData, surname: e.target.value })}
-                  className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                  className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm"
                 />
                 {errors.surname && (
                   <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.surname}</p>
@@ -280,13 +393,13 @@ export const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="transition-colors duration-200">{t('auth:register.email')}</Label>
+              <Label htmlFor="email" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10"
+                className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm"
               />
               {errors.email && (
                 <p className="text-sm text-destructive mt-1 animate-fade-in">{errors.email}</p>
@@ -294,14 +407,14 @@ export const Register = () => {
             </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="transition-colors duration-200">{t('auth:register.password')}</Label>
+            <Label htmlFor="password" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.password')}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10 pr-10"
+                className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm pr-10"
               />
               <button
                 type="button"
@@ -317,7 +430,7 @@ export const Register = () => {
               </button>
             </div>
             {formData.password && (
-              <div className="mt-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+              <div className="mt-2 p-4 bg-muted/60 backdrop-blur-sm rounded-xl border border-border/60 shadow-lg">
                 <p className="text-xs font-medium text-foreground mb-2">{t('auth:register.passwordRules.title')}</p>
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 text-xs">
@@ -379,14 +492,14 @@ export const Register = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="transition-colors duration-200">{t('auth:register.confirmPassword')}</Label>
+            <Label htmlFor="confirmPassword" className="text-sm font-semibold transition-colors duration-200">{t('auth:register.confirmPassword')}</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="transition-all duration-200 focus:scale-[1.01] focus:shadow-lg focus:shadow-primary/10 pr-10"
+                className="h-12 transition-all duration-300 focus:scale-[1.01] focus:shadow-xl focus:shadow-primary/20 focus:border-primary/50 bg-background/50 backdrop-blur-sm pr-10"
               />
               <button
                 type="button"
@@ -470,11 +583,12 @@ export const Register = () => {
           <Button
             type="submit"
             variant="default"
-            className="w-full shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+            className="group relative w-full h-12 text-base font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
             loading={loading}
             disabled={loading}
           >
-            {t('auth:register.createAccount')}
+            <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <span className="relative">{t('auth:register.createAccount')}</span>
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
@@ -485,17 +599,18 @@ export const Register = () => {
           </p>
         </form>
         
-        <div className="mt-4 pt-4 border-t border-border/50">
+        <div className="mt-6 pt-6 border-t border-border/50">
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full h-11 border-2 hover:bg-primary/10 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 backdrop-blur-sm"
             onClick={() => navigate('/')}
           >
             <Home className="w-4 h-4 mr-2" />
             Ana Sayfaya Dön
           </Button>
         </div>
+          </div>
         </div>
       </div>
     </div>

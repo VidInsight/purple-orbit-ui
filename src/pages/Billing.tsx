@@ -278,15 +278,46 @@ const Billing = () => {
           description="Manage your subscription, billing, and payment methods"
         />
 
-        <Tabs defaultValue="overview" className="mt-6">
-          <div className="flex justify-center mb-6">
-            <TabsList className="inline-flex">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="payment">Payment</TabsTrigger>
-              <TabsTrigger value="quotas">Quotas</TabsTrigger>
-              <TabsTrigger value="plans">Plans</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="overview" className="mt-8">
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              {/* Background gradient effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 rounded-2xl blur-2xl -z-10" />
+              
+              {/* Tabs container */}
+              <TabsList className="inline-flex bg-surface/60 backdrop-blur-xl border border-border/60 shadow-lg shadow-primary/5 rounded-2xl p-1.5">
+                <TabsTrigger 
+                  value="overview"
+                  className="px-6 py-2.5 rounded-xl transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="payment"
+                  className="px-6 py-2.5 rounded-xl transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                >
+                  Payment
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="quotas"
+                  className="px-6 py-2.5 rounded-xl transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                >
+                  Quotas
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="plans"
+                  className="px-6 py-2.5 rounded-xl transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                >
+                  Plans
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history"
+                  className="px-6 py-2.5 rounded-xl transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                >
+                  History
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           {/* Overview Tab */}
@@ -328,21 +359,27 @@ const Billing = () => {
 
           {/* Plans Tab */}
           <TabsContent value="plans" className="space-y-6 mt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 sm:mb-10">
-              <Button
-                variant={billingCycle === 'monthly' ? 'primary' : 'ghost'}
-                onClick={() => setBillingCycle('monthly')}
-                className="w-full sm:w-auto min-w-[120px]"
-              >
-                Monthly
-              </Button>
-              <Button
-                variant={billingCycle === 'annual' ? 'primary' : 'ghost'}
-                onClick={() => setBillingCycle('annual')}
-                className="w-full sm:w-auto min-w-[120px]"
-              >
-                Annual (Save 17%)
-              </Button>
+            <div className="relative">
+              {/* Background gradient effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 rounded-2xl blur-2xl -z-10" />
+              
+              {/* Billing cycle toggle */}
+              <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 mb-10 p-4 bg-surface/40 backdrop-blur-sm rounded-2xl border border-border/40 shadow-md">
+                <Button
+                  variant={billingCycle === 'monthly' ? 'primary' : 'ghost'}
+                  onClick={() => setBillingCycle('monthly')}
+                  className="w-full sm:w-auto min-w-[140px] h-11 font-semibold transition-all duration-200"
+                >
+                  Monthly
+                </Button>
+                <Button
+                  variant={billingCycle === 'annual' ? 'primary' : 'ghost'}
+                  onClick={() => setBillingCycle('annual')}
+                  className="w-full sm:w-auto min-w-[140px] h-11 font-semibold transition-all duration-200"
+                >
+                  Annual (Save 17%)
+                </Button>
+              </div>
             </div>
 
             {loading ? (
@@ -370,8 +407,14 @@ const Billing = () => {
 
           {/* History Tab */}
           <TabsContent value="history">
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <BillingHistoryTable invoices={mockInvoices} />
+            <div className="relative">
+              {/* Background gradient effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
+              
+              {/* Table container */}
+              <div className="relative bg-surface/80 backdrop-blur-xl border border-border/60 rounded-3xl shadow-2xl shadow-primary/5 overflow-hidden">
+                <BillingHistoryTable invoices={mockInvoices} />
+              </div>
             </div>
           </TabsContent>
         </Tabs>

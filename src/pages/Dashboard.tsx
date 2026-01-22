@@ -312,34 +312,7 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] px-4 py-6 space-y-6">
-        {/* Header with Quick Actions */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <PageHeader
-              title="Dashboard"
-              description="Real-time overview of your automation workspace"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Button
-                  key={action.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(action.path)}
-                  className="gap-2"
-                >
-                  <Icon className={`h-4 w-4 ${action.color}`} />
-                  {action.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
+      <div className="container mx-auto max-w-[1600px] space-y-8">
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Executions */}
@@ -484,99 +457,32 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Stats & Quotas */}
-          <Card className="space-y-6">
+          {/* Quick Actions */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
-                Quick Stats
+                Quick Actions
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Workflows */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded bg-primary/10">
-                    <Workflow className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Workflows</p>
-                    <p className="text-xs text-muted-foreground">
-                      {isLoadingWorkflows ? 'Loading...' : `${workflows.length} active`}
-                    </p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/workflows')}>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+            <CardContent>
+              <div className="flex flex-col gap-3">
+                {quickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <Button
+                      key={action.id}
+                      variant="outline"
+                      size="lg"
+                      onClick={() => navigate(action.path)}
+                      className="gap-3 h-14 px-6 text-base font-medium w-full justify-start"
+                    >
+                      <Icon className={`h-6 w-6 ${action.color}`} />
+                      {action.label}
+                    </Button>
+                  );
+                })}
               </div>
-
-              {/* Credentials */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-surface/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded bg-success/10">
-                    <Key className="h-4 w-4 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Credentials</p>
-                    <p className="text-xs text-muted-foreground">
-                      {isLoadingCredentials ? 'Loading...' : `${credentials.length} configured`}
-                    </p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/credentials')}>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Usage Quotas Preview */}
-              {usageQuotas && (
-                <div className="pt-4 border-t space-y-3">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Usage This Month
-                  </p>
-                  <div className="space-y-2">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">Executions</span>
-                        <span className="font-medium">
-                          {usageQuotas.current_month_executions} / {usageQuotas.monthly_execution_limit}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all duration-500"
-                          style={{
-                            width: `${Math.min(
-                              (usageQuotas.current_month_executions / usageQuotas.monthly_execution_limit) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">Storage</span>
-                        <span className="font-medium">
-                          {Math.round(usageQuotas.current_storage_mb / 1024 * 10) / 10} / {Math.round(usageQuotas.storage_limit_mb / 1024 * 10) / 10} GB
-                        </span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-warning transition-all duration-500"
-                          style={{
-                            width: `${Math.min(
-                              (usageQuotas.current_storage_mb / usageQuotas.storage_limit_mb) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

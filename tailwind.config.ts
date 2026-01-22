@@ -196,6 +196,42 @@ export default {
             backgroundPosition: "200% center",
           },
         },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0) translateX(0)",
+            opacity: "0.3",
+          },
+          "25%": {
+            transform: "translateY(-20px) translateX(10px)",
+            opacity: "0.6",
+          },
+          "50%": {
+            transform: "translateY(-40px) translateX(-10px)",
+            opacity: "0.4",
+          },
+          "75%": {
+            transform: "translateY(-20px) translateX(5px)",
+            opacity: "0.5",
+          },
+        },
+        "grid-move": {
+          "0%": {
+            transform: "translate(0, 0)",
+          },
+          "100%": {
+            transform: "translate(50px, 50px)",
+          },
+        },
+        "flow-down": {
+          "0%": {
+            transform: "translateY(0) translateX(-50%)",
+            opacity: "1",
+          },
+          "100%": {
+            transform: "translateY(16px) translateX(-50%)",
+            opacity: "0",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -210,6 +246,9 @@ export default {
         "glow": "glow 2s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
+        "float": "float 15s ease-in-out infinite",
+        "grid-move": "grid-move 20s linear infinite",
+        "flow-down": "flow-down 0.4s ease-out",
       },
       boxShadow: {
         "glow-primary": "0 0 20px hsla(250, 90%, 68%, 0.35), 0 0 40px hsla(250, 90%, 68%, 0.2)",

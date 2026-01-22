@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Zap, CheckCircle2, Loader2, AlertCircle, Edit2, X, Plus, Trash2 } from 'lucide-react';
 import { getWorkflowTriggers, getWorkflowTrigger, updateWorkflowTrigger, Trigger, UpdateTriggerData } from '@/services/workflowApi';
 import { Badge } from '@/components/ui/badge';
@@ -705,16 +706,19 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
       </div>
 
       {/* Edit Panel */}
-      {isEditOpen && (
+      {isEditOpen && typeof document !== 'undefined' && createPortal(
         <>
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setIsEditOpen(false)}
           />
-
+          
           {/* Panel */}
-          <div className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 animate-slide-in-right flex flex-col">
+          <div 
+            className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-4 border-b border-border flex items-start justify-between">
               <div>
@@ -988,7 +992,8 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
               </Button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

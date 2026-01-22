@@ -199,6 +199,7 @@ const Workflows = () => {
             Settings
           </Button>
         }
+        itemsPerPage={10}
       />
       {currentWorkspace && currentWorkspace.id && (
         <CreateWorkflowModal

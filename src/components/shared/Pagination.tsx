@@ -58,18 +58,18 @@ export const Pagination = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems || currentPage * itemsPerPage);
 
   return (
-    <div className="flex items-center justify-between py-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
       {/* Items Info */}
       {totalItems && (
-        <div className="text-sm text-muted-foreground">
-          Showing <span className="font-medium text-foreground">{startItem}</span> to{' '}
-          <span className="font-medium text-foreground">{endItem}</span> of{' '}
-          <span className="font-medium text-foreground">{totalItems}</span> items
+        <div className="text-sm text-muted-foreground/80">
+          Showing <span className="font-semibold text-foreground">{startItem}</span> to{' '}
+          <span className="font-semibold text-foreground">{endItem}</span> of{' '}
+          <span className="font-semibold text-foreground">{totalItems}</span> items
         </div>
       )}
 
       {/* Pagination Controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {/* First Page */}
         <Button
           variant="ghost"
@@ -77,6 +77,7 @@ export const Pagination = ({
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
           aria-label="First page"
+          className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary disabled:opacity-30 transition-colors"
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
@@ -88,6 +89,7 @@ export const Pagination = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           aria-label="Previous page"
+          className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary disabled:opacity-30 transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -99,7 +101,7 @@ export const Pagination = ({
               return (
                 <span
                   key={`ellipsis-${index}`}
-                  className="px-3 py-1 text-muted-foreground"
+                  className="px-3 py-1.5 text-muted-foreground/60 text-sm"
                 >
                   ...
                 </span>
@@ -114,8 +116,10 @@ export const Pagination = ({
                 size="sm"
                 onClick={() => onPageChange(pageNum)}
                 className={cn(
-                  'min-w-[2.5rem]',
-                  currentPage === pageNum && 'pointer-events-none'
+                  'min-w-[2.5rem] h-9 font-medium transition-all',
+                  currentPage === pageNum 
+                    ? 'pointer-events-none shadow-md shadow-primary/20' 
+                    : 'hover:bg-primary/10 hover:text-primary'
                 )}
               >
                 {pageNum}
@@ -125,7 +129,7 @@ export const Pagination = ({
         </div>
 
         {/* Mobile Page Indicator */}
-        <div className="sm:hidden px-3 py-1 text-sm text-foreground">
+        <div className="sm:hidden px-4 py-1.5 text-sm font-medium text-foreground bg-surface/50 rounded-lg border border-border/50">
           {currentPage} / {totalPages}
         </div>
 
@@ -136,6 +140,7 @@ export const Pagination = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           aria-label="Next page"
+          className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary disabled:opacity-30 transition-colors"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -147,6 +152,7 @@ export const Pagination = ({
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
           aria-label="Last page"
+          className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary disabled:opacity-30 transition-colors"
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>

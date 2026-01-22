@@ -48,77 +48,91 @@ export const CurrentPlanCard = ({
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-2xl font-semibold text-foreground">{planData.name} Plan</h3>
-            <Badge className="bg-primary/10 text-primary border-primary/20">
-              Current
-            </Badge>
+    <div className="relative">
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 rounded-3xl blur-3xl -z-10" />
+      
+      {/* Main card */}
+      <div className="relative bg-surface/80 backdrop-blur-xl border border-border/60 rounded-3xl shadow-2xl shadow-primary/5 p-8 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80">
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-3xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {planData.name} Plan
+              </h3>
+              <Badge className="bg-primary/20 text-primary border-primary/30 px-3 py-1 text-sm font-semibold shadow-md">
+                Current
+              </Badge>
+            </div>
+            <p className="text-base text-muted-foreground mb-4">{planData.description}</p>
+            <div className="flex items-baseline gap-2">
+              {price > 0 ? (
+                <>
+                  <span className="text-4xl font-bold text-foreground">${price}</span>
+                  <span className="text-lg text-muted-foreground">
+                    /{isAnnual ? 'year' : 'month'}
+                  </span>
+                  {isAnnual && planData.monthlyPrice > 0 && (
+                    <Badge variant="secondary" className="ml-3 px-3 py-1 text-sm font-semibold">
+                      Save ${(planData.monthlyPrice * 12 - planData.annualPrice).toFixed(0)}
+                    </Badge>
+                  )}
+                </>
+              ) : (
+                <span className="text-4xl font-bold text-foreground">Free</span>
+              )}
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">{planData.description}</p>
-          <div className="flex items-baseline gap-1">
-            {price > 0 ? (
-              <>
-                <span className="text-3xl font-bold text-foreground">${price}</span>
-                <span className="text-muted-foreground">
-                  /{isAnnual ? 'year' : 'month'}
-                </span>
-                {isAnnual && planData.monthlyPrice > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    Save ${(planData.monthlyPrice * 12 - planData.annualPrice).toFixed(0)}
-                  </Badge>
-                )}
-              </>
-            ) : (
-              <span className="text-3xl font-bold text-foreground">Free</span>
-            )}
-          </div>
+
+          {price === 0 && planData.monthlyPrice === 0 && planData.annualPrice === 0 ? null : (
+            <Button 
+              variant="primary" 
+              onClick={onUpgrade}
+              className="h-11 px-6 font-semibold shadow-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105"
+            >
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Upgrade Plan
+            </Button>
+          )}
         </div>
 
-        {price === 0 && planData.monthlyPrice === 0 && planData.annualPrice === 0 ? null : (
-          <Button variant="primary" onClick={onUpgrade}>
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Upgrade Plan
-          </Button>
-        )}
-      </div>
+        <div className="mb-8 p-5 bg-gradient-to-r from-surface/50 to-surface/30 rounded-xl border border-border/40 backdrop-blur-sm">
+          <p className="text-sm text-muted-foreground mb-1.5 font-medium">Current billing period</p>
+          <p className="text-base font-semibold text-foreground">
+            {formatDate(subscription.startDate)} - {formatDate(subscription.endDate)}
+          </p>
+        </div>
 
-      <div className="mb-6 p-4 bg-surface rounded-lg">
-        <p className="text-sm text-muted-foreground mb-1">Current billing period</p>
-        <p className="text-sm font-medium text-foreground">
-          {formatDate(subscription.startDate)} - {formatDate(subscription.endDate)}
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-foreground">Usage this period</h4>
-        
-        <UsageBar
-          label="Members"
-          used={subscription.usage.members.used}
-          limit={subscription.usage.members.limit}
-        />
-        
-        <UsageBar
-          label="Workflows"
-          used={subscription.usage.workflows.used}
-          limit={subscription.usage.workflows.limit}
-        />
-        
-        <UsageBar
-          label="Executions"
-          used={subscription.usage.executions.used}
-          limit={subscription.usage.executions.limit}
-        />
-        
-        <UsageBar
-          label="Storage"
-          used={subscription.usage.storage.used}
-          limit={subscription.usage.storage.limit}
-          unit="GB"
-        />
+        <div className="space-y-5">
+          <h4 className="text-lg font-bold text-foreground mb-1">Usage this period</h4>
+          
+          <div className="space-y-5">
+            <UsageBar
+              label="Members"
+              used={subscription.usage.members.used}
+              limit={subscription.usage.members.limit}
+            />
+            
+            <UsageBar
+              label="Workflows"
+              used={subscription.usage.workflows.used}
+              limit={subscription.usage.workflows.limit}
+            />
+            
+            <UsageBar
+              label="Executions"
+              used={subscription.usage.executions.used}
+              limit={subscription.usage.executions.limit}
+            />
+            
+            <UsageBar
+              label="Storage"
+              used={subscription.usage.storage.used}
+              limit={subscription.usage.storage.limit}
+              unit="GB"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

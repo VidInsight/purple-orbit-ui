@@ -11,9 +11,12 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Premium background effects */}
+      <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background pointer-events-none z-0" />
+      
       <LandingNavbar />
-      <main>
+      <main className="relative z-10">
         <HeroSection />
         <WhatIsSection />
         <StatsSection />
@@ -22,8 +25,8 @@ const LandingPage = () => {
         <IntegrationsSection />
         <FAQSection />
         <CTASection />
-      </main>
       <LandingFooter />
+      </main>
     </div>
   );
 };

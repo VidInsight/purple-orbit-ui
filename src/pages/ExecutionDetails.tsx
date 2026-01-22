@@ -7,7 +7,7 @@ import { ExecutionTimeline } from '@/components/executions/ExecutionTimeline';
 import { ExecutionLogs } from '@/components/executions/ExecutionLogs';
 import { ExecutionDetails as ExecutionDetailsType, ExecutionStep } from '@/types/execution';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RefreshCw, Download, Share2 } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Share2, CheckCircle, Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useWorkspace } from '@/context/WorkspaceContext';
@@ -197,6 +197,62 @@ const ExecutionDetails = () => {
     });
   };
 
+  // Get the final result from the last completed step
+  const getFinalResult = () => {
+    if (!execution || !execution.steps || execution.steps.length === 0) {
+      return null;
+    }
+
+    // Find the last completed step with output
+    const completedSteps = execution.steps.filter(
+      (step) => step.status === 'success' && step.output
+    );
+
+    if (completedSteps.length === 0) {
+      return null;
+    }
+
+    // Get the last step's output
+    const lastStep = completedSteps[completedSteps.length - 1];
+    const output = lastStep.output;
+
+    // If output has a 'result' field, return only that
+    if (output && typeof output === 'object' && 'result' in output) {
+      return output.result;
+    }
+
+    // If output has a 'result_data' field with 'result' inside, return that
+    if (output && typeof output === 'object' && 'result_data' in output) {
+      const resultData = output.result_data;
+      if (resultData && typeof resultData === 'object' && 'result' in resultData) {
+        return resultData.result;
+      }
+    }
+
+    // Otherwise return the full output
+    return output;
+  };
+
+  const finalResult = getFinalResult();
+
+  const formatJSON = (obj: any): string => {
+    try {
+      return JSON.stringify(obj, null, 2);
+    } catch {
+      return String(obj);
+    }
+  };
+
+  const handleCopyResult = () => {
+    if (!finalResult) return;
+    const resultText = formatJSON(finalResult);
+    navigator.clipboard.writeText(resultText);
+    toast({
+      title: 'Copied',
+      description: 'Final result copied to clipboard',
+    });
+  };
+
   const getStatusBadgeColor = (status: string) => {
     const colors = {
       success: 'bg-success/10 text-success border-success',
@@ -280,6 +336,41 @@ const ExecutionDetails = () => {
           <div>
             <ExecutionTimeline steps={execution.steps} />
           </div>
+
+          {/* Final Result */}
+          {finalResult && (
+            <div>
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-lg border-2 border-primary/20 p-6 mb-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <CheckCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">Final Result</h3>
+                      <p className="text-sm text-muted-foreground">
+                        En son tamamlanan adımın çıktısı
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyResult}
+                    className="hover:bg-primary/10"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                  </Button>
+                </div>
+                <div className="bg-background/80 rounded-lg p-4 border border-border/50 overflow-auto max-h-[400px]">
+                  <pre className="text-sm font-mono text-foreground whitespace-pre-wrap break-words m-0">
+                    {formatJSON(finalResult)}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Logs */}
           <div>
