@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Zap, CheckCircle2, Loader2, AlertCircle, Edit2, X, Plus, Trash2 } from 'lucide-react';
 import { getWorkflowTriggers, getWorkflowTrigger, updateWorkflowTrigger, Trigger, UpdateTriggerData } from '@/services/workflowApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface DefaultTriggerCardProps {
   workspaceId?: string;
@@ -14,6 +14,7 @@ interface DefaultTriggerCardProps {
 }
 
 export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChange }: DefaultTriggerCardProps) => {
+  const MAX_NESTING_DEPTH = 4;
   const [defaultTrigger, setDefaultTrigger] = useState<Trigger | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -565,6 +566,136 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
     handleInputMappingChange(key, parsedValue);
   };
 
+  // Helper function to get nested value by path
+  const getNestedValueByPath = (parentKey: string, path: string[]): any => {
+    const currentValue = getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey]);
+    let result: any = currentValue;
+    
+    for (const key of path) {
+      if (result && typeof result === 'object' && !Array.isArray(result) && key in result) {
+        result = result[key];
+      } else {
+        return null;
+      }
+    }
+    
+    return result;
+  };
+
+  // Helper function to set nested value by path
+  const setNestedValueByPath = (parentKey: string, path: string[], value: any) => {
+    const currentValue = getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey]);
+    const objectValue = typeof currentValue === 'object' && currentValue !== null && !Array.isArray(currentValue)
+      ? { ...currentValue }
+      : {};
+    
+    // Deep clone to avoid mutations
+    const deepClone = (obj: any): any => {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(deepClone);
+      const cloned: any = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          cloned[key] = deepClone(obj[key]);
+        }
+      }
+      return cloned;
+    };
+    
+    const cloned = deepClone(objectValue);
+    
+    // Navigate to the target and update
+    if (path.length === 0) {
+      handleInputMappingChange(parentKey, value);
+      return;
+    }
+    
+    let current: any = cloned;
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = path[i];
+      if (!(key in current) || typeof current[key] !== 'object' || Array.isArray(current[key])) {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+    
+    current[path[path.length - 1]] = value;
+    handleInputMappingChange(parentKey, cloned);
+  };
+
+  // Nested parameter handlers for object types (supports recursive nesting)
+  const handleAddNestedParameter = (parentKey: string, path: string[] = []) => {
+    if (path.length >= MAX_NESTING_DEPTH - 1) {
+      toast({
+        title: 'Limit reached',
+        description: `You can nest up to ${MAX_NESTING_DEPTH} levels.`,
+        variant: 'default',
+      });
+      return;
+    }
+
+    const currentObject = path.length === 0
+      ? getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey])
+      : getNestedValueByPath(parentKey, path);
+    
+    const objectValue = typeof currentObject === 'object' && currentObject !== null && !Array.isArray(currentObject)
+      ? { ...currentObject }
+      : {};
+    
+    const newNestedKey = `nested_${Date.now()}`;
+    const updatedObject = {
+      ...objectValue,
+      [newNestedKey]: '',
+    };
+    
+    setNestedValueByPath(parentKey, path, updatedObject);
+  };
+
+  const handleNestedParameterChange = (parentKey: string, path: string[], nestedKey: string, value: any) => {
+    const fullPath = [...path, nestedKey];
+    setNestedValueByPath(parentKey, fullPath, value);
+  };
+
+  const handleNestedParameterKeyChange = (parentKey: string, path: string[], oldNestedKey: string, newNestedKey: string) => {
+    if (newNestedKey === oldNestedKey || !newNestedKey.trim()) return;
+    
+    const currentObject = path.length === 0
+      ? getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey])
+      : getNestedValueByPath(parentKey, path);
+    
+    const objectValue = typeof currentObject === 'object' && currentObject !== null && !Array.isArray(currentObject)
+      ? { ...currentObject }
+      : {};
+    
+    if (oldNestedKey in objectValue) {
+      const value = objectValue[oldNestedKey];
+      delete objectValue[oldNestedKey];
+      objectValue[newNestedKey] = value;
+      setNestedValueByPath(parentKey, path, objectValue);
+    }
+  };
+
+  const handleRemoveNestedParameter = (parentKey: string, path: string[], nestedKey: string) => {
+    const currentObject = path.length === 0
+      ? getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey])
+      : getNestedValueByPath(parentKey, path);
+    
+    const objectValue = typeof currentObject === 'object' && currentObject !== null && !Array.isArray(currentObject)
+      ? { ...currentObject }
+      : {};
+    
+    delete objectValue[nestedKey];
+    setNestedValueByPath(parentKey, path, objectValue);
+  };
+
+  const getNestedParameterType = (value: any): 'string' | 'number' | 'boolean' | 'object' | 'array' => {
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'boolean') return 'boolean';
+    if (Array.isArray(value)) return 'array';
+    if (typeof value === 'object' && value !== null) return 'object';
+    return 'string';
+  };
+
   const getInputMappingValueDisplay = (key: string, mappingData: any): string => {
     // Extract value from {type, value} format
     const value = mappingData && typeof mappingData === 'object' && 'value' in mappingData 
@@ -592,6 +723,190 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
       return mappingData.value;
     }
     return mappingData;
+  };
+
+  // Recursive Nested Object Editor Component
+  const NestedObjectEditor = ({ 
+    parentKey, 
+    path
+  }: { 
+    parentKey: string; 
+    path: string[]; 
+  }) => {
+    // Get current object value from state on each render to ensure real-time updates
+    const currentObject = path.length === 0
+      ? getInputMappingValue(parentKey, editForm.input_mapping?.[parentKey])
+      : getNestedValueByPath(parentKey, path);
+    
+    const objectValue = typeof currentObject === 'object' && currentObject !== null && !Array.isArray(currentObject)
+      ? currentObject
+      : {};
+    
+    const nestedKeys = Object.keys(objectValue);
+    
+    if (nestedKeys.length === 0) {
+      return (
+        <p className="text-xs text-muted-foreground text-center py-2">
+          No properties defined. Click "Add Property" to add one.
+        </p>
+      );
+    }
+    
+    return (
+      <div className="space-y-2">
+        {nestedKeys.map((nestedKey) => {
+          const nestedValue = objectValue[nestedKey];
+            const nestedType = getNestedParameterType(nestedValue);
+          const isNestedObject = nestedType === 'object';
+            const canAddNested = path.length < MAX_NESTING_DEPTH - 1;
+          
+          return (
+            <div key={nestedKey} className={`space-y-2 p-2 bg-surface rounded border border-border ${path.length > 0 ? 'ml-4 border-l-2 border-l-primary/30' : ''}`}>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={nestedKey}
+                  onChange={(e) => handleNestedParameterKeyChange(parentKey, path, nestedKey, e.target.value)}
+                  placeholder="Property name"
+                  className="flex-1 text-xs font-medium"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveNestedParameter(parentKey, path, nestedKey)}
+                  className="h-6 w-6 p-0 text-destructive hover:text-destructive flex-shrink-0"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+              
+              {/* Nested Type Selector */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Type</label>
+                <select
+                  value={nestedType}
+                  onChange={(e) => {
+                    const newType = e.target.value as 'string' | 'number' | 'boolean' | 'object' | 'array';
+                    let defaultValue: any = '';
+                    if (newType === 'number') {
+                      defaultValue = 0;
+                    } else if (newType === 'boolean') {
+                      defaultValue = false;
+                    } else if (newType === 'object') {
+                      defaultValue = {};
+                    } else if (newType === 'array') {
+                      defaultValue = [];
+                    }
+                    handleNestedParameterChange(parentKey, path, nestedKey, defaultValue);
+                  }}
+                  className="w-full px-2 py-1 rounded bg-background border border-input text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="string">String</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="object">Object (JSON)</option>
+                  <option value="array">Array (JSON)</option>
+                </select>
+              </div>
+              
+              {/* Nested Value Input */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Value</label>
+                {nestedType === 'boolean' ? (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={nestedValue === true || nestedValue === 'true' || nestedValue === 1}
+                        onChange={(e) => handleNestedParameterChange(parentKey, path, nestedKey, e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-accent rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                      <div className="absolute left-1 top-1 w-4 h-4 bg-background rounded-full transition-transform peer-checked:translate-x-5"></div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {nestedValue === true || nestedValue === 'true' || nestedValue === 1 ? 'True' : 'False'}
+                    </span>
+                  </label>
+                ) : isNestedObject ? (
+                  <div className="space-y-2">
+                    {/* Recursive nested properties editor */}
+                    <div className="space-y-2 p-2 bg-background/50 rounded border border-input">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Nested Properties {path.length > 0 && `(Level ${path.length + 1})`}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAddNestedParameter(parentKey, [...path, nestedKey])}
+                          className="h-6 px-2 text-xs"
+                          disabled={!canAddNested}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Property
+                        </Button>
+                      </div>
+                      <NestedObjectEditor
+                        parentKey={parentKey}
+                        path={[...path, nestedKey]}
+                      />
+                    </div>
+                    {/* JSON Textarea for manual editing */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground">JSON (Manual Edit)</label>
+                      <textarea
+                        value={typeof nestedValue === 'string' ? nestedValue : JSON.stringify(nestedValue, null, 2)}
+                        onChange={(e) => {
+                          try {
+                            const parsed = e.target.value === '' ? {} : JSON.parse(e.target.value);
+                            handleNestedParameterChange(parentKey, path, nestedKey, parsed);
+                          } catch {
+                            // Keep as string if invalid JSON
+                          }
+                        }}
+                        placeholder='{"key": "value"}'
+                        rows={2}
+                        className="w-full px-2 py-1 rounded bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-mono"
+                      />
+                    </div>
+                  </div>
+                ) : nestedType === 'array' ? (
+                  <textarea
+                    value={typeof nestedValue === 'string' ? nestedValue : JSON.stringify(nestedValue, null, 2)}
+                    onChange={(e) => {
+                      try {
+                        const parsed = e.target.value === '' ? [] : JSON.parse(e.target.value);
+                        handleNestedParameterChange(parentKey, path, nestedKey, parsed);
+                      } catch {
+                        // Keep as string if invalid JSON
+                      }
+                    }}
+                    placeholder='["item1", "item2"]'
+                    rows={3}
+                    className="w-full px-2 py-1 rounded bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-mono"
+                  />
+                ) : (
+                  <Input
+                    type={nestedType === 'number' ? 'number' : 'text'}
+                    value={String(nestedValue || '')}
+                    onChange={(e) => {
+                      if (nestedType === 'number') {
+                        const numValue = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                        handleNestedParameterChange(parentKey, path, nestedKey, isNaN(numValue) ? 0 : numValue);
+                      } else {
+                        handleNestedParameterChange(parentKey, path, nestedKey, e.target.value);
+                      }
+                    }}
+                    placeholder={nestedType === 'number' ? 'Enter a number' : 'Enter a string'}
+                    className="w-full text-xs"
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -705,38 +1020,18 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
         </div>
       </div>
 
-      {/* Edit Panel */}
-      {isEditOpen && typeof document !== 'undefined' && createPortal(
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-            onClick={() => setIsEditOpen(false)}
-          />
-          
-          {/* Panel */}
-          <div 
-            className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-border flex items-start justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Edit Trigger</h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Update trigger configuration
-                </p>
-              </div>
-              <button
-                onClick={() => setIsEditOpen(false)}
-                className="h-6 w-6 flex items-center justify-center hover:bg-accent/50 rounded transition-colors flex-shrink-0"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </div>
+      {/* Edit Panel - Modal/Popup */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Edit Trigger</DialogTitle>
+            <DialogDescription>
+              Update trigger configuration
+            </DialogDescription>
+          </DialogHeader>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-1 py-4">
               {isLoadingTriggerDetail ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
@@ -937,11 +1232,48 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
                                       {actualValue === true || actualValue === 'true' || actualValue === 1 ? 'True' : 'False'}
                                     </span>
                                   </label>
-                                ) : paramType === 'object' || paramType === 'array' ? (
+                                ) : paramType === 'object' ? (
+                                  <div className="space-y-2">
+                                    {/* Nested Parameters for Object */}
+                                    <div className="space-y-2 p-2 bg-background/50 rounded border border-input">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs font-medium text-muted-foreground">Object Properties</span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleAddNestedParameter(key, [])}
+                                          className="h-6 px-2 text-xs"
+                                        >
+                                          <Plus className="h-3 w-3 mr-1" />
+                                          Add Property
+                                        </Button>
+                                      </div>
+                                      <NestedObjectEditor
+                                        parentKey={key}
+                                        path={[]}
+                                      />
+                                    </div>
+                                    
+                                    {/* JSON Textarea for manual editing */}
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-medium text-muted-foreground">JSON (Manual Edit)</label>
+                                      <textarea
+                                        value={getInputMappingValueDisplay(key, mappingData)}
+                                        onChange={(e) => handleInputMappingValueChange(key, e.target.value)}
+                                        placeholder='{"key": "value"}'
+                                        rows={3}
+                                        className="w-full px-2 py-1.5 rounded bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-mono"
+                                      />
+                                      <p className="text-xs text-muted-foreground">
+                                        You can also edit the JSON manually, or use the properties editor above
+                                      </p>
+                                    </div>
+                                  </div>
+                                ) : paramType === 'array' ? (
                                   <textarea
                                     value={getInputMappingValueDisplay(key, mappingData)}
                                     onChange={(e) => handleInputMappingValueChange(key, e.target.value)}
-                                    placeholder={paramType === 'array' ? '["item1", "item2"]' : '{"key": "value"}'}
+                                    placeholder='["item1", "item2"]'
                                     rows={4}
                                     className="w-full px-2 py-1.5 rounded bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-mono"
                                   />
@@ -956,7 +1288,7 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
                                 );
                               })()}
                               <p className="text-xs text-muted-foreground">
-                                {paramType === 'object' && 'Enter a valid JSON object'}
+                                {paramType === 'object' && 'Add properties to the object or edit JSON manually'}
                                 {paramType === 'array' && 'Enter a valid JSON array'}
                                 {paramType === 'number' && 'Enter a numeric value'}
                                 {paramType === 'boolean' && 'Toggle true/false'}
@@ -971,30 +1303,28 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
                 </div>
               </div>
               )}
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-border">
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
-              </Button>
-            </div>
           </div>
-        </>,
-        document.body
-      )}
+
+          {/* Footer */}
+          <DialogFooter>
+            <Button
+              variant="default"
+              className="w-full"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -182,6 +182,19 @@ export const CreateApiKeyModal = ({
     setErrors((prev) => ({ ...prev, permissions: '' }));
   };
 
+  const toggleAllPermissions = () => {
+    const allPermissionIds = AVAILABLE_PERMISSIONS.map((p) => p.id);
+    const allSelected = allPermissionIds.every((id) =>
+      formData.permissions.includes(id)
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      permissions: allSelected ? [] : allPermissionIds,
+    }));
+    setErrors((prev) => ({ ...prev, permissions: '' }));
+  };
+
   const addTag = () => {
     if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
       setFormData((prev) => ({
@@ -284,9 +297,24 @@ export const CreateApiKeyModal = ({
         </div>
 
         <div>
-          <Label className="block text-sm font-medium text-foreground mb-3">
-            Permissions
-          </Label>
+          <div className="flex items-center justify-between mb-3">
+            <Label className="block text-sm font-medium text-foreground">
+              Permissions
+            </Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleAllPermissions}
+              className="text-xs"
+            >
+              {AVAILABLE_PERMISSIONS.every((p) =>
+                formData.permissions.includes(p.id)
+              )
+                ? 'Hepsini Kaldır'
+                : 'Hepsini Seç'}
+            </Button>
+          </div>
           <div className="space-y-3 max-h-[240px] overflow-y-auto border border-input rounded-lg p-4 bg-surface">
             {AVAILABLE_PERMISSIONS.map((permission) => (
               <div key={permission.id} className="flex items-center gap-3">

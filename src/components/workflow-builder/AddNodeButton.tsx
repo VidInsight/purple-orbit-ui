@@ -301,9 +301,9 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
             setTimeout(() => onMenuOpen(), 0);
           }
         }}
-        className="h-10 w-10 p-0 rounded-full bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20 transition-all duration-200"
+        className="h-14 w-14 p-0 rounded-full bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20 transition-all duration-200"
       >
-        <Plus className="h-5 w-5 text-primary" />
+        <Plus className="h-7 w-7 text-primary" />
       </Button>
 
       <Dialog open={isOpen} onOpenChange={(open) => {

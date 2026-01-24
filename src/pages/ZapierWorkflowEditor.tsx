@@ -1047,10 +1047,29 @@ export default function ZapierWorkflowEditor() {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
-      setIsPanning(true);
-      setStartPan({ x: e.clientX - panX, y: e.clientY - panY });
+    if (e.button !== 0 || e.ctrlKey || e.metaKey) {
+      return;
     }
+
+    const target = e.target as Element | null;
+    const interactiveSelector = [
+      'input',
+      'textarea',
+      'select',
+      'button',
+      'a',
+      '[contenteditable="true"]',
+      '[role="button"]',
+      '[role="textbox"]',
+      '[data-no-pan="true"]',
+    ].join(',');
+
+    if (target && target.closest(interactiveSelector)) {
+      return;
+    }
+
+    setIsPanning(true);
+    setStartPan({ x: e.clientX - panX, y: e.clientY - panY });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -1271,26 +1290,28 @@ export default function ZapierWorkflowEditor() {
 
                     {nodes.length === 0 ? (
                       // Modern Empty state
-                      <div className="flex flex-col items-center justify-center py-24 px-6">
-                        <div className="relative mb-8">
+                      <div className="flex flex-col items-center justify-center py-8 px-6">
+                        <div className="relative w-full max-w-4xl">
                           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-                          <div className="relative bg-gradient-to-br from-surface/80 to-surface/40 backdrop-blur-xl border border-border/50 rounded-2xl p-8 shadow-xl">
-                            <div className="flex flex-col items-center text-center space-y-4">
-                              <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
+                          <div className="relative bg-gradient-to-br from-surface/80 to-surface/40 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl">
+                            <div className="flex flex-row items-center gap-6">
+                              <div className="flex-shrink-0 p-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
                                 <Zap className="h-8 w-8 text-primary" />
                               </div>
-                              <div>
+                              <div className="flex-1">
                                 <h3 className="text-xl font-bold text-foreground mb-2">Start Building Your Workflow</h3>
-                                <p className="text-sm text-muted-foreground max-w-md">
+                                <p className="text-sm text-muted-foreground">
                                   Add your first node to begin creating an automated workflow. Connect triggers, actions, and conditions to build powerful automations.
                                 </p>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <AddNodeButton 
+                                  onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId)} 
+                                />
                               </div>
                             </div>
                           </div>
                         </div>
-                        <AddNodeButton 
-                          onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId)} 
-                        />
                       </div>
                     ) : (
                       nodes.map((node, index) => (

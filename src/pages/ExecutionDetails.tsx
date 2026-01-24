@@ -7,7 +7,7 @@ import { ExecutionTimeline } from '@/components/executions/ExecutionTimeline';
 import { ExecutionLogs } from '@/components/executions/ExecutionLogs';
 import { ExecutionDetails as ExecutionDetailsType, ExecutionStep } from '@/types/execution';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RefreshCw, Download, Share2, CheckCircle, Copy } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Share2, CheckCircle, Copy, ChevronRight, ChevronDown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useWorkspace } from '@/context/WorkspaceContext';
@@ -214,23 +214,7 @@ const ExecutionDetails = () => {
 
     // Get the last step's output
     const lastStep = completedSteps[completedSteps.length - 1];
-    const output = lastStep.output;
-
-    // If output has a 'result' field, return only that
-    if (output && typeof output === 'object' && 'result' in output) {
-      return output.result;
-    }
-
-    // If output has a 'result_data' field with 'result' inside, return that
-    if (output && typeof output === 'object' && 'result_data' in output) {
-      const resultData = output.result_data;
-      if (resultData && typeof resultData === 'object' && 'result' in resultData) {
-        return resultData.result;
-      }
-    }
-
-    // Otherwise return the full output
-    return output;
+    return lastStep.output;
   };
 
   const finalResult = getFinalResult();
@@ -251,6 +235,149 @@ const ExecutionDetails = () => {
       title: 'Copied',
       description: 'Final result copied to clipboard',
     });
+  };
+
+  // Syntax-Highlighted JSON Viewer Component
+  const JSONViewer = ({ data }: { data: any }) => {
+    const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+    const toggleCollapse = (key: string) => {
+      setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const renderValue = (key: string, value: any, path: string, currentDepth: number): JSX.Element => {
+      const indent = currentDepth * 16;
+      const isCollapsed = collapsed[path];
+      const shouldAutoCollapse = currentDepth >= 2;
+
+      // Null
+      if (value === null) {
+        return (
+          <div style={{ paddingLeft: `${indent}px` }} className="flex items-start gap-2">
+            <span className="text-primary font-mono text-sm">{key}:</span>
+            <span className="text-muted-foreground font-mono text-sm">null</span>
+          </div>
+        );
+      }
+
+      // Boolean
+      if (typeof value === 'boolean') {
+        return (
+          <div style={{ paddingLeft: `${indent}px` }} className="flex items-start gap-2">
+            <span className="text-primary font-mono text-sm">{key}:</span>
+            <span className="text-accent font-mono text-sm">{value.toString()}</span>
+          </div>
+        );
+      }
+
+      // Number
+      if (typeof value === 'number') {
+        return (
+          <div style={{ paddingLeft: `${indent}px` }} className="flex items-start gap-2">
+            <span className="text-primary font-mono text-sm">{key}:</span>
+            <span className="text-warning font-mono text-sm">{value}</span>
+          </div>
+        );
+      }
+
+      // String
+      if (typeof value === 'string') {
+        const truncatedValue = value.length > 100 ? value.substring(0, 100) + '...' : value;
+        return (
+          <div style={{ paddingLeft: `${indent}px` }} className="flex items-start gap-2">
+            <span className="text-primary font-mono text-sm">{key}:</span>
+            <span className="text-success font-mono text-sm break-words">"{truncatedValue}"</span>
+          </div>
+        );
+      }
+
+      // Array
+      if (Array.isArray(value)) {
+        const isCurrentlyCollapsed = isCollapsed ?? shouldAutoCollapse;
+        return (
+          <div>
+            <div
+              style={{ paddingLeft: `${indent}px` }}
+              className="flex items-start gap-2 cursor-pointer hover:bg-accent/50 py-0.5 rounded transition-colors"
+              onClick={() => toggleCollapse(path)}
+            >
+              {isCurrentlyCollapsed ? (
+                <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              )}
+              <span className="text-primary font-mono text-sm">{key}:</span>
+              <span className="text-muted-foreground font-mono text-sm">
+                [{value.length} items]
+              </span>
+            </div>
+            {!isCurrentlyCollapsed && (
+              <div className="space-y-1 mt-1">
+                {value.map((item, index) => renderValue(`[${index}]`, item, `${path}.${index}`, currentDepth + 1))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // Object
+      if (typeof value === 'object') {
+        const keys = Object.keys(value);
+        const isCurrentlyCollapsed = isCollapsed ?? shouldAutoCollapse;
+        return (
+          <div>
+            <div
+              style={{ paddingLeft: `${indent}px` }}
+              className="flex items-start gap-2 cursor-pointer hover:bg-accent/50 py-0.5 rounded transition-colors"
+              onClick={() => toggleCollapse(path)}
+            >
+              {isCurrentlyCollapsed ? (
+                <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              )}
+              <span className="text-primary font-mono text-sm">{key}:</span>
+              <span className="text-muted-foreground font-mono text-sm">
+                {'{' + keys.length + ' properties}'}
+              </span>
+            </div>
+            {!isCurrentlyCollapsed && (
+              <div className="space-y-1 mt-1">
+                {keys.map(k => renderValue(k, value[k], `${path}.${k}`, currentDepth + 1))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return <div />;
+    };
+
+    // Handle root level - if data is an object, render its keys
+    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+      const keys = Object.keys(data);
+      return (
+        <div className="space-y-1 font-mono text-sm">
+          {keys.map(key => renderValue(key, data[key], key, 0))}
+        </div>
+      );
+    }
+
+    // Handle array at root level
+    if (Array.isArray(data)) {
+      return (
+        <div className="space-y-1 font-mono text-sm">
+          {data.map((item, index) => renderValue(`[${index}]`, item, `[${index}]`, 0))}
+        </div>
+      );
+    }
+
+    // Handle primitive at root level
+    return (
+      <div className="font-mono text-sm">
+        {renderValue('', data, '', 0)}
+      </div>
+    );
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -363,10 +490,8 @@ const ExecutionDetails = () => {
                     Copy
                   </Button>
                 </div>
-                <div className="bg-background/80 rounded-lg p-4 border border-border/50 overflow-auto max-h-[400px]">
-                  <pre className="text-sm font-mono text-foreground whitespace-pre-wrap break-words m-0">
-                    {formatJSON(finalResult)}
-                  </pre>
+                <div className="bg-background/80 rounded-lg p-4 border border-border/50 overflow-auto max-h-[500px]">
+                  <JSONViewer data={finalResult} />
                 </div>
               </div>
             </div>
