@@ -238,3 +238,47 @@ export const createSlackCredential = async (
   return data;
 };
 
+export interface CreateGoogleCredentialRequest {
+  name: string;
+  service_type: 'drive' | 'sheets' | 'gmail' | 'calendar';
+  oauth_token: string;
+  refresh_token: string;
+  description?: string;
+  tags?: string[];
+  expires_at?: string | null;
+}
+
+/**
+ * Create Google credential
+ */
+export const createGoogleCredential = async (
+  workspaceId: string,
+  credentialData: CreateGoogleCredentialRequest
+): Promise<CreateCredentialResponse> => {
+  console.log('Creating Google credential for workspace:', workspaceId);
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/google`);
+  console.log('Credential data:', { ...credentialData, oauth_token: '***', refresh_token: '***' });
+
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/google`, {
+    method: 'POST',
+    body: JSON.stringify(credentialData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to create credential: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Create Google credential API response:', data);
+  return data;
+};
+

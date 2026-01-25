@@ -13,6 +13,8 @@ A modern, full-featured workflow automation platform built with React, TypeScrip
 - **Visual Workflow Editor** - Drag-and-drop interface powered by React Flow
 - **Execution Monitoring** - Real-time execution tracking with detailed logs
 - **Credential Management** - Secure storage for API keys and credentials
+  - **Slack Integration** - Connect Slack workspaces with bot tokens
+  - **Google OAuth** - Connect Google services (Drive, Sheets, Gmail, Calendar) via OAuth
 - **Database Connections** - Manage multiple database connections
 - **File Storage** - Upload and manage workflow files
 - **API Key Management** - Generate and manage API keys with granular permissions
@@ -56,14 +58,23 @@ npm install
 bun install
 ```
 
-3. Start the development server:
+3. Configure environment variables (optional for development):
+```bash
+# Create a .env file in the root directory
+# For Google OAuth integration, add:
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+Note: A default Google Client ID is configured for development. For production, you must set your own `VITE_GOOGLE_CLIENT_ID` in the `.env` file.
+
+4. Start the development server:
 ```bash
 npm run dev
 # or
 bun run dev
 ```
 
-4. Open your browser to `http://localhost:8080`
+5. Open your browser to `http://localhost:8080`
 
 ### Demo Data
 The application automatically seeds demo data on first load, including:

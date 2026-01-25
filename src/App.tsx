@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { UserProvider } from "@/context/UserContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { GoogleOAuthProviderWrapper } from "@/components/providers/GoogleOAuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useKeyboardShortcuts } from "@/utils/keyboardShortcuts";
 import WorkspaceSelection from "@/pages/WorkspaceSelection";
@@ -80,17 +81,19 @@ const App = () => {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark">
-          <WorkspaceProvider>
-            <UserProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRoutes />
-                </BrowserRouter>
-              </TooltipProvider>
-            </UserProvider>
-          </WorkspaceProvider>
+          <GoogleOAuthProviderWrapper>
+            <WorkspaceProvider>
+              <UserProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <AppRoutes />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </UserProvider>
+            </WorkspaceProvider>
+          </GoogleOAuthProviderWrapper>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

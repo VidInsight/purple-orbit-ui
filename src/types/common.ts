@@ -26,6 +26,18 @@ export interface CredentialItem extends BaseListItem {
   lastUsed?: string;
 }
 
+export type CredentialType = 'slack' | 'google';
+
+export type GoogleServiceType = 'drive' | 'sheets' | 'gmail' | 'calendar';
+
+export interface GoogleServiceConfig {
+  type: GoogleServiceType;
+  name: string;
+  description: string;
+  icon: string;
+  scopes: string[];
+}
+
 export interface DatabaseItem extends BaseListItem {
   type: 'postgresql' | 'mysql' | 'mongodb' | 'redis';
   host: string;

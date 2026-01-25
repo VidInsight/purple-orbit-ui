@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { createSlackCredential, CreateSlackCredentialRequest } from '@/services/credentialsApi';
 import { toast } from '@/hooks/use-toast';
+import { CredentialType } from '@/types/common';
+import { GoogleCredentialModal } from './GoogleCredentialModal';
 
 interface CreateCredentialModalProps {
   isOpen: boolean;
@@ -21,6 +24,8 @@ export const CreateCredentialModal = ({
   workspaceId,
   onSuccess,
 }: CreateCredentialModalProps) => {
+  const [credentialType, setCredentialType] = useState<CredentialType>('slack');
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<CreateSlackCredentialRequest>({
     name: '',
@@ -136,19 +141,75 @@ export const CreateCredentialModal = ({
         expires_at: null,
       });
       setTagInput('');
+      setCredentialType('slack');
       onClose();
     }
   };
+
+  const handleTypeChange = (type: CredentialType) => {
+    setCredentialType(type);
+    if (type === 'google') {
+      setIsGoogleModalOpen(true);
+    }
+  };
+
+  const handleGoogleSuccess = () => {
+    setIsGoogleModalOpen(false);
+    handleClose();
+    onSuccess();
+  };
+
+  const handleGoogleClose = () => {
+    setIsGoogleModalOpen(false);
+    setCredentialType('slack');
+  };
+
+  // If Google is selected, show Google modal instead
+  if (isGoogleModalOpen && isOpen) {
+    return (
+      <GoogleCredentialModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => {
+          handleGoogleClose();
+          onClose();
+        }}
+        workspaceId={workspaceId}
+        onSuccess={handleGoogleSuccess}
+      />
+    );
+  }
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create Slack Credential"
+      title="Create Credential"
       size="md"
       closeOnBackdropClick={!isSaving}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Credential Type Selector */}
+        <div>
+          <Label htmlFor="credential-type" className="block text-sm font-medium text-foreground mb-2">
+            Credential Type <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={credentialType}
+            onValueChange={(value) => handleTypeChange(value as CredentialType)}
+            disabled={isSaving}
+          >
+            <SelectTrigger id="credential-type" className="w-full">
+              <SelectValue placeholder="Select credential type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="slack">Slack</SelectItem>
+              <SelectItem value="google">Google (Drive, Sheets, Gmail, Calendar)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {credentialType === 'slack' && (
+          <>
         <div>
           <Label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
             Name <span className="text-destructive">*</span>
@@ -277,25 +338,29 @@ export const CreateCredentialModal = ({
             </div>
           )}
         </div>
+          </>
+        )}
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleClose}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSaving || !formData.name.trim() || !formData.bot_token.trim() || !formData.signing_secret.trim() || !formData.app_token.trim()}
-            loading={isSaving}
-          >
-            Create Credential
-          </Button>
-        </div>
+        {credentialType === 'slack' && (
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving || !formData.name.trim() || !formData.bot_token.trim() || !formData.signing_secret.trim() || !formData.app_token.trim()}
+              loading={isSaving}
+            >
+              Create Credential
+            </Button>
+          </div>
+        )}
       </form>
     </Modal>
   );
