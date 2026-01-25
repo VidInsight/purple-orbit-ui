@@ -728,5 +728,73 @@ export const deleteWorkflow = async (
   return data;
 };
 
+export interface InsertNodeBetweenData {
+  from_node_id: string;
+  to_node_id: string;
+  name: string;
+  script_id?: string;
+  custom_script_id?: string;
+  description?: string;
+  input_params?: Record<string, any>;
+  output_params?: Record<string, any>;
+  meta_data?: Record<string, any>;
+  max_retries?: number;
+  timeout_seconds?: number;
+}
+
+/**
+ * Insert a node between two existing nodes in a workflow
+ */
+export const insertNodeBetween = async (
+  workspaceId: string,
+  workflowId: string,
+  nodeData: InsertNodeBetweenData
+): Promise<WorkflowApiResponse> => {
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  if (!nodeData.from_node_id || nodeData.from_node_id.trim() === '') {
+    throw new Error('From node ID is required.');
+  }
+
+  if (!nodeData.to_node_id || nodeData.to_node_id.trim() === '') {
+    throw new Error('To node ID is required.');
+  }
+
+  if (!nodeData.name || nodeData.name.trim() === '') {
+    throw new Error('Node name is required.');
+  }
+
+  console.log('Inserting node between nodes:', { workspaceId, workflowId, nodeData });
+  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/insert-between`);
+
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/insert-between`, {
+    method: 'POST',
+    body: JSON.stringify(nodeData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to insert node between: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Insert node between API response:', data);
+  return data;
+};
+
 
 

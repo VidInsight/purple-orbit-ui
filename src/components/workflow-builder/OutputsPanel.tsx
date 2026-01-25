@@ -337,14 +337,14 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
   };
 
   return (
-    <div className="fixed left-0 top-0 h-full w-[420px] bg-surface border-r border-border z-40 flex flex-col">
+    <div className="fixed left-0 top-0 h-full w-[420px] bg-surface border-r border-border z-[60] flex flex-col">
       {/* Header */}
       <div className="px-5 py-4 border-b border-border">
         <Select value={selectedTab} onValueChange={setSelectedTab}>
           <SelectTrigger className="w-full border-0 bg-transparent hover:bg-accent/50 px-3">
             <SelectValue placeholder="Select resource type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[9999]" style={{ zIndex: 9999 }}>
             <SelectItem value="outputs">
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />

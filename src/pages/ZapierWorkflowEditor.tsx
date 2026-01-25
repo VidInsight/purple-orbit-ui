@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle, Loader2, XCircle, AlertCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution } from '@/services/workflowApi';
+import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution, insertNodeBetween } from '@/services/workflowApi';
 import { toast } from '@/hooks/use-toast';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -144,6 +144,7 @@ export default function ZapierWorkflowEditor() {
           
           // Map API nodes to WorkflowNode format
           if (workflowData.nodes && Array.isArray(workflowData.nodes)) {
+            const nodeMap = new Map<string, WorkflowNode>();
             const mappedNodes: WorkflowNode[] = workflowData.nodes.map((apiNode: any) => {
               // Determine node type based on name or script_type
               let nodeType: 'trigger' | 'action' | 'conditional' | 'loop' = 'action';
@@ -212,12 +213,82 @@ export default function ZapierWorkflowEditor() {
                 workflowNode.loopBody = [];
               }
               
+              nodeMap.set(apiNode.id, workflowNode);
               return workflowNode;
             });
             
+            // Sort nodes based on edges if edges are available
+            let sortedNodes = mappedNodes;
+            if (workflowData.edges && Array.isArray(workflowData.edges) && workflowData.edges.length > 0) {
+              // Build adjacency list: nodeId -> [nextNodeIds]
+              const adjacencyList = new Map<string, string[]>();
+              const inDegree = new Map<string, number>();
+              
+              // Initialize in-degree for all nodes
+              mappedNodes.forEach(node => {
+                inDegree.set(node.id, 0);
+                adjacencyList.set(node.id, []);
+              });
+              
+              // Build graph from edges
+              workflowData.edges.forEach((edge: any) => {
+                const fromId = edge.from_node_id || edge.from;
+                const toId = edge.to_node_id || edge.to;
+                
+                if (fromId && toId && nodeMap.has(fromId) && nodeMap.has(toId)) {
+                  const current = adjacencyList.get(fromId) || [];
+                  current.push(toId);
+                  adjacencyList.set(fromId, current);
+                  
+                  inDegree.set(toId, (inDegree.get(toId) || 0) + 1);
+                }
+              });
+              
+              // Topological sort: find nodes with no incoming edges first
+              const queue: string[] = [];
+              inDegree.forEach((degree, nodeId) => {
+                if (degree === 0) {
+                  queue.push(nodeId);
+                }
+              });
+              
+              const sorted: WorkflowNode[] = [];
+              const visited = new Set<string>();
+              
+              while (queue.length > 0) {
+                const currentNodeId = queue.shift()!;
+                if (visited.has(currentNodeId)) continue;
+                
+                const currentNode = nodeMap.get(currentNodeId);
+                if (currentNode) {
+                  sorted.push(currentNode);
+                  visited.add(currentNodeId);
+                }
+                
+                const nextNodes = adjacencyList.get(currentNodeId) || [];
+                nextNodes.forEach(nextNodeId => {
+                  const currentInDegree = (inDegree.get(nextNodeId) || 0) - 1;
+                  inDegree.set(nextNodeId, currentInDegree);
+                  
+                  if (currentInDegree === 0 && !visited.has(nextNodeId)) {
+                    queue.push(nextNodeId);
+                  }
+                });
+              }
+              
+              // Add any remaining nodes that weren't connected (shouldn't happen, but just in case)
+              mappedNodes.forEach(node => {
+                if (!visited.has(node.id)) {
+                  sorted.push(node);
+                }
+              });
+              
+              sortedNodes = sorted;
+            }
+            
             // If no nodes from API, keep default trigger node
-            if (mappedNodes.length > 0) {
-              setNodes(mappedNodes);
+            if (sortedNodes.length > 0) {
+              setNodes(sortedNodes);
             }
           }
         }
@@ -560,6 +631,164 @@ export default function ZapierWorkflowEditor() {
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to add node to workflow',
+        variant: 'destructive',
+      });
+    }
+  }, [nodes, scrollToNewNode, currentWorkspace, id]);
+
+  const handleInsertNodeBetween = useCallback(async (fromNodeId: string, toNodeId: string, category: string, subcategory: string, nodeType: string, scriptId: string) => {
+    // Map node types to icons
+    const nodeIcons: Record<string, LucideIcon> = {
+      'GPT-4 Completion': MessageSquare,
+      'DALL-E Image': Image,
+      'Embeddings': Hash,
+      'Claude': MessageSquare,
+      'JSON Parse': FileJson,
+      'Text Replace': Type,
+      'Date Format': Calendar,
+      'If/Else': GitBranch,
+      'For Each': Repeat,
+    };
+
+    // Check if we have workspace and workflow IDs for API call
+    if (!currentWorkspace?.id || !id || id === 'new') {
+      toast({
+        title: 'Error',
+        description: 'Please save the workflow before inserting nodes',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Define parameters based on node type
+    const getNodeParameters = (nodeType: string) => {
+      if (nodeType === 'GPT-4 Completion') {
+        return [
+          {
+            id: 'model',
+            label: 'Model',
+            type: 'dropdown' as const,
+            options: ['gpt-4', 'gpt-4-turbo', 'gpt-4o'],
+            value: 'gpt-4',
+          },
+          {
+            id: 'temperature',
+            label: 'Temperature',
+            type: 'number' as const,
+            min: 0,
+            max: 2,
+            value: 0.7,
+            placeholder: '0.7',
+          },
+          {
+            id: 'max_tokens',
+            label: 'Max Tokens',
+            type: 'number' as const,
+            min: 1,
+            max: 4000,
+            value: 1000,
+            placeholder: '1000',
+          },
+          {
+            id: 'prompt',
+            label: 'Prompt',
+            type: 'textarea' as const,
+            placeholder: 'Enter your prompt here...',
+            value: '',
+          },
+          {
+            id: 'api_key',
+            label: 'API Key',
+            type: 'credential' as const,
+            options: ['OpenAI Production', 'OpenAI Development'],
+            value: '',
+          },
+        ];
+      }
+      
+      if (nodeType === 'JSON Parse') {
+        return [
+          {
+            id: 'input',
+            label: 'JSON Input',
+            type: 'textarea' as const,
+            placeholder: 'Paste JSON here...',
+            value: '',
+          },
+          {
+            id: 'strict',
+            label: 'Strict Mode',
+            type: 'toggle' as const,
+            value: false,
+          },
+        ];
+      }
+
+      return [];
+    };
+
+    // Prepare node data for API
+    const nodeName = `Node${nodes.length} - ${nodeType}`;
+    const nodeDescription = `${nodeType} node from ${category} > ${subcategory}`;
+    
+    // Extract input_params from parameters (default empty object for now)
+    const inputParams: Record<string, any> = {};
+    const nodeParams = getNodeParameters(nodeType);
+    nodeParams?.forEach(param => {
+      if (param.value !== undefined && param.value !== '') {
+        inputParams[param.id] = param.value;
+      }
+    });
+
+    const nodeData = {
+      from_node_id: fromNodeId,
+      to_node_id: toNodeId,
+      name: nodeName,
+      script_id: scriptId,
+      description: nodeDescription,
+      input_params: inputParams,
+      output_params: {},
+      meta_data: {},
+      max_retries: 3,
+      timeout_seconds: 300,
+    };
+
+    try {
+      // Call API to insert node between
+      const response = await insertNodeBetween(currentWorkspace.id, id, nodeData);
+      
+      // Create node from API response
+      const apiNodeId = response.data?.id || response.data?.node_id || `node-${Date.now()}`;
+      const newNode: WorkflowNode = {
+        id: apiNodeId,
+        type: 'action',
+        title: nodeType,
+        icon: nodeIcons[nodeType] || Settings,
+        category: `${category} > ${subcategory}`,
+        nodeType: category,
+        configured: false,
+        config: {},
+        parameters: getNodeParameters(nodeType),
+      };
+
+      // Find the index of toNodeId and insert before it
+      const toNodeIndex = nodes.findIndex(n => n.id === toNodeId);
+      const insertIndex = toNodeIndex >= 0 ? toNodeIndex : nodes.length;
+      
+      const newNodes = [...nodes];
+      newNodes.splice(insertIndex, 0, newNode);
+      setNodes(newNodes);
+      scrollToNewNode(newNode.id);
+
+      toast({
+        title: 'Success',
+        description: 'Node inserted between nodes successfully',
+      });
+    } catch (error) {
+      console.error('Failed to insert node between:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to insert node between nodes',
         variant: 'destructive',
       });
     }
@@ -1357,11 +1586,16 @@ export default function ZapierWorkflowEditor() {
 
                           {/* Modern Connection line between nodes */}
                           {index < nodes.length - 1 ? (
-                            // Between nodes: modern connection line
-                            <div className="flex flex-col items-center my-4 group">
-                              <div className="relative w-0.5 h-8">
+                            // Between nodes: modern connection line with insert button
+                            <div className="flex flex-col items-center my-4 group relative">
+                              <div className="relative w-0.5 h-4">
                                 <div className="absolute inset-0 bg-gradient-to-b from-border via-primary/30 to-border" />
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <AddNodeButton 
+                                onAddNode={(cat, sub, type, scriptId) => handleInsertNodeBetween(node.id, nodes[index + 1].id, cat, sub, type, scriptId)} 
+                              />
+                              <div className="relative w-0.5 h-4">
+                                <div className="absolute inset-0 bg-gradient-to-b from-border via-primary/30 to-border" />
                               </div>
                             </div>
                           ) : (
