@@ -32,6 +32,7 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/vidinsight/purple-orbit-ui:latest
+          build-args: VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
