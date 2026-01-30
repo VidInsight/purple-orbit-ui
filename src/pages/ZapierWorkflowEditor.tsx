@@ -803,6 +803,10 @@ export default function ZapierWorkflowEditor() {
     setShowOutputsPanel(true);
   }, []);
 
+  const handleNodeConfigured = useCallback((nodeId: string) => {
+    setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, configured: true } : n));
+  }, []);
+
   const handleParameterChange = useCallback((parameterId: string, value: any, isDynamic: boolean = false) => {
     if (!selectedNode) return;
 
@@ -826,46 +830,101 @@ export default function ZapierWorkflowEditor() {
     }));
   }, [selectedNode]);
 
-  // Helper function to generate example output from output_schema
+  // Helper: extract real data from schema property (type + value format or nested schema)
+  const extractValueFromSchemaProperty = (prop: any): any => {
+    if (prop == null) return null;
+    // If property has explicit "value", use it (full example data for primitives or arrays/objects)
+    if (Object.prototype.hasOwnProperty.call(prop, 'value')) {
+      const v = prop.value;
+      // If value is array, ensure each item is extracted (in case items are schema-shaped)
+      if (Array.isArray(v)) {
+        return v.map((item: any) =>
+          item && typeof item === 'object' && (item.type === 'object' || item.properties)
+            ? extractValueFromSchemaProperty(item)
+            : item && typeof item === 'object' && item.type && item.properties
+              ? buildExampleFromObjectSchema(item)
+              : item
+        );
+      }
+      // If value is object that looks like schema (type+properties), recurse
+      if (v && typeof v === 'object' && !Array.isArray(v) && v.type === 'object' && v.properties) {
+        return buildExampleFromObjectSchema(v);
+      }
+      return v;
+    }
+    // No value: build from type/properties/items
+    if (prop.type === 'string') return prop.value ?? '';
+    if (prop.type === 'integer' || prop.type === 'number') return prop.value ?? 0;
+    if (prop.type === 'boolean') return prop.value ?? false;
+    if (prop.type === 'array') {
+      if (prop.items) {
+        const one = buildExampleFromSchemaNode(prop.items);
+        return one != null ? [one] : [];
+      }
+      return [];
+    }
+    if (prop.type === 'object' && prop.properties) {
+      return buildExampleFromObjectSchema(prop);
+    }
+    return null;
+  };
+
+  const buildExampleFromObjectSchema = (schema: any): any => {
+    if (!schema || !schema.properties) return {};
+    const example: any = {};
+    Object.entries(schema.properties).forEach(([key, prop]: [string, any]) => {
+      example[key] = extractValueFromSchemaProperty(prop);
+    });
+    return example;
+  };
+
+  const buildExampleFromSchemaNode = (node: any): any => {
+    if (node == null) return null;
+    if (node.type === 'object' && node.properties) return buildExampleFromObjectSchema(node);
+    if (node.type === 'array' && node.items) return [buildExampleFromSchemaNode(node.items)];
+    if (Object.prototype.hasOwnProperty.call(node, 'value')) return node.value;
+    if (node.type === 'string') return node.value ?? '';
+    if (node.type === 'integer' || node.type === 'number') return node.value ?? 0;
+    if (node.type === 'boolean') return node.value ?? false;
+    return null;
+  };
+
+  // Generate example output from output_schema (supports type+value format and nested objects/arrays)
   const generateExampleOutputFromSchema = (outputSchema: any): any => {
     if (!outputSchema) {
       return { message: 'No output schema available' };
     }
 
-    // If output_schema is a JSON Schema object
+    // Root: JSON Schema style { type: 'object', properties: { ... } } with optional "value" per property
     if (outputSchema.type === 'object' && outputSchema.properties) {
-      const example: any = {};
-      Object.entries(outputSchema.properties).forEach(([key, prop]: [string, any]) => {
-        if (prop.type === 'string') {
-          example[key] = prop.description || `example_${key}`;
-        } else if (prop.type === 'integer' || prop.type === 'number') {
-          example[key] = prop.default || 0;
-        } else if (prop.type === 'boolean') {
-          example[key] = prop.default || false;
-        } else if (prop.type === 'array') {
-          example[key] = [];
-        } else if (prop.type === 'object') {
-          example[key] = generateExampleOutputFromSchema(prop);
-        } else {
-          example[key] = null;
-        }
-      });
-      return example;
+      return buildExampleFromObjectSchema(outputSchema);
     }
 
-    // If output_schema is already an object (direct output structure)
+    // Direct output structure (plain object without type)
     if (typeof outputSchema === 'object' && !outputSchema.type) {
       const example: any = {};
       Object.keys(outputSchema).forEach(key => {
         const value = outputSchema[key];
-        if (typeof value === 'string') {
+        if (value && typeof value === 'object' && value.type === 'object' && value.properties) {
+          example[key] = buildExampleFromObjectSchema(value);
+        } else if (value && typeof value === 'object' && value.type === 'array' && value.items) {
+          example[key] = value.value && Array.isArray(value.value)
+            ? value.value.map((item: any) =>
+                item && typeof item === 'object' && item.properties
+                  ? buildExampleFromObjectSchema(item)
+                  : item
+              )
+            : [buildExampleFromSchemaNode(value.items)];
+        } else if (typeof value === 'string') {
           example[key] = `example_${key}`;
         } else if (typeof value === 'number') {
           example[key] = value;
         } else if (typeof value === 'boolean') {
           example[key] = value;
         } else if (Array.isArray(value)) {
-          example[key] = [];
+          example[key] = value;
+        } else if (value && typeof value === 'object' && 'value' in value) {
+          example[key] = value.value;
         } else if (typeof value === 'object') {
           example[key] = generateExampleOutputFromSchema(value);
         } else {
@@ -1652,6 +1711,7 @@ export default function ZapierWorkflowEditor() {
                   setShowOutputsPanel(false);
                 }}
                 onParameterChange={handleParameterChange}
+                onSaveSuccess={handleNodeConfigured}
                 workspaceId={currentWorkspace?.id}
                 workflowId={id}
               />
@@ -1672,12 +1732,12 @@ export default function ZapierWorkflowEditor() {
               <div className="container mx-auto px-6 py-8 space-y-6">
                 {!executionId && !isRunningTest ? (
                   // Modern Empty state
-                  <div className="flex items-center justify-center py-24">
-                    <div className="text-center max-w-lg">
-                      <div className="relative mb-6">
+                  <div className="flex items-center justify-center min-h-[calc(100vh-144px)] py-24">
+                    <div className="text-center max-w-lg flex flex-col items-center">
+                      <div className="relative mb-6 flex items-center justify-center">
                         <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
                         <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 backdrop-blur-sm">
-                          <Play className="h-10 w-10 text-primary" />
+                          <Play className="h-10 w-10 text-primary shrink-0" />
                         </div>
                       </div>
                       <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">

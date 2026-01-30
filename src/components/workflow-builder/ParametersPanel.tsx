@@ -31,11 +31,12 @@ interface ParametersPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onParameterChange: (parameterId: string, value: any, isDynamic?: boolean) => void;
+  onSaveSuccess?: (nodeId: string) => void;
   workspaceId?: string;
   workflowId?: string;
 }
 
-export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, workspaceId, workflowId }: ParametersPanelProps) => {
+export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSaveSuccess, workspaceId, workflowId }: ParametersPanelProps) => {
   const [waitingForDrop, setWaitingForDrop] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [apiParameters, setApiParameters] = useState<Parameter[]>([]);
@@ -195,6 +196,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, work
         description: 'All parameters saved successfully',
       });
       
+      onSaveSuccess?.(node.id);
       onClose();
     } catch (error) {
       console.error('Error saving parameters:', error);

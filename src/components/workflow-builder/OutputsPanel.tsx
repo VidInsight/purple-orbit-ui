@@ -173,8 +173,10 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
     console.log('Copied output to clipboard');
   };
 
+  const INDENT_PX = 18;
+
   const renderValue = (value: any, parentPath: string = '', depth: number = 0, nodeId: string = ''): JSX.Element => {
-    const indent = Math.min(depth, 2) * 6;
+    const indent = depth * INDENT_PX;
     const isCollapsed = collapsedPaths.has(parentPath);
     const shouldAutoCollapse = depth > 1;
 
@@ -203,11 +205,11 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
       const isArrayCollapsed = shouldAutoCollapse ? !collapsedPaths.has(arrayPath) : collapsedPaths.has(arrayPath);
 
       return (
-        <div className="inline-block">
-          <div className="flex items-center gap-1">
+        <div className="block w-full">
+          <div className="flex items-center gap-1 min-h-[20px]" style={{ paddingLeft: `${indent}px` }}>
             <button
               onClick={() => handleToggleCollapse(arrayPath)}
-              className="hover:bg-accent/50 rounded p-0.5 transition-colors"
+              className="hover:bg-accent/50 rounded p-0.5 transition-colors flex-shrink-0"
             >
               {isArrayCollapsed ? (
                 <ChevronRight className="h-3 w-3 text-muted-foreground" />
@@ -217,32 +219,36 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
             </button>
             <span className="text-foreground">[</span>
             {isArrayCollapsed && (
-              <span className="text-muted-foreground text-[10px]">{value.length} items</span>
+              <>
+                <span className="text-muted-foreground text-[10px]">{value.length} items</span>
+                <span className="text-foreground">]</span>
+              </>
             )}
-            {isArrayCollapsed && <span className="text-foreground">]</span>}
           </div>
           {!isArrayCollapsed && (
             <>
               {value.map((item, index) => (
-                <div key={index} style={{ paddingLeft: `${indent + 6}px` }} className="group">
-                  <div className="flex items-start gap-1">
+                <div key={index} className="group block w-full" style={{ paddingLeft: `${indent + INDENT_PX}px` }}>
+                  <div className="flex items-start gap-1 min-h-[20px]">
                     <button
                       onClick={() => handleDragClick(nodeId, `${parentPath}[${index}]`)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5"
                       title={`Path: \${node:${nodeId}.${parentPath}[${index}]}`}
                     >
                       <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
                     </button>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 block">
                       <span className="text-warning">{index}</span>
                       <span className="text-muted-foreground">: </span>
-                      <span className="inline-block">{renderValue(item, `${parentPath}[${index}]`, depth + 1, nodeId)}</span>
+                      <span className="block">{renderValue(item, `${parentPath}[${index}]`, depth + 1, nodeId)}</span>
                       {index < value.length - 1 && <span className="text-muted-foreground">,</span>}
                     </div>
                   </div>
                 </div>
               ))}
-              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>]</div>
+              <div className="text-foreground min-h-[20px] flex items-center" style={{ paddingLeft: `${indent}px` }}>
+                ]
+              </div>
             </>
           )}
         </div>
@@ -259,11 +265,11 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
       const isObjectCollapsed = shouldAutoCollapse ? !collapsedPaths.has(objectPath) : collapsedPaths.has(objectPath);
 
       return (
-        <div className="inline-block">
-          <div className="flex items-center gap-1">
+        <div className="block w-full">
+          <div className="flex items-center gap-1 min-h-[20px]" style={{ paddingLeft: `${indent}px` }}>
             <button
               onClick={() => handleToggleCollapse(objectPath)}
-              className="hover:bg-accent/50 rounded p-0.5 transition-colors"
+              className="hover:bg-accent/50 rounded p-0.5 transition-colors flex-shrink-0"
             >
               {isObjectCollapsed ? (
                 <ChevronRight className="h-3 w-3 text-muted-foreground" />
@@ -273,32 +279,44 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
             </button>
             <span className="text-foreground">{'{'}</span>
             {isObjectCollapsed && (
-              <span className="text-muted-foreground text-[10px]">{entries.length} keys</span>
+              <>
+                <span className="text-muted-foreground text-[10px]">{entries.length} keys</span>
+                <span className="text-foreground">{'}'}</span>
+              </>
             )}
-            {isObjectCollapsed && <span className="text-foreground">{'}'}</span>}
           </div>
           {!isObjectCollapsed && (
             <>
-              {entries.map(([key, val], index) => (
-                <div key={key} style={{ paddingLeft: `${indent + 6}px` }} className="group">
-                  <div className="flex items-start gap-1">
-                    <button
-                      onClick={() => handleDragClick(nodeId, parentPath ? `${parentPath}.${key}` : key)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      title={`Path: \${node:${nodeId}.${parentPath ? `${parentPath}.${key}` : key}}`}
-                    >
-                      <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-accent-foreground">"{key}"</span>
-                      <span className="text-muted-foreground">: </span>
-                      <span className="inline-block">{renderValue(val, `${parentPath}.${key}`, depth + 1, nodeId)}</span>
-                      {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+              {entries.map(([key, val], index) => {
+                const isNested = typeof val === 'object' && val !== null && (Array.isArray(val) || Object.keys(val).length > 0);
+                const childPath = parentPath ? `${parentPath}.${key}` : key;
+                return (
+                  <div key={key} className="group block w-full" style={{ paddingLeft: `${indent + INDENT_PX}px` }}>
+                    <div className="flex items-start gap-1 min-h-[20px]">
+                      <button
+                        onClick={() => handleDragClick(nodeId, childPath)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5"
+                        title={`Path: \${node:${nodeId}.${childPath}}`}
+                      >
+                        <GripVertical className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                      </button>
+                      <div className="flex-1 min-w-0 block break-inside-avoid">
+                        <span className="text-accent-foreground">"{key}"</span>
+                        <span className="text-muted-foreground">: </span>
+                        {isNested ? (
+                          <div className="block mt-0">{renderValue(val, childPath, depth + 1, nodeId)}</div>
+                        ) : (
+                          <span className="inline">{renderValue(val, childPath, depth + 1, nodeId)}</span>
+                        )}
+                        {index < entries.length - 1 && <span className="text-muted-foreground">,</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              <div className="text-foreground" style={{ paddingLeft: `${indent}px` }}>{'}'}</div>
+                );
+              })}
+              <div className="text-foreground min-h-[20px] flex items-center" style={{ paddingLeft: `${indent}px` }}>
+                {'}'}
+              </div>
             </>
           )}
         </div>
