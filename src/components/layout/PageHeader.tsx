@@ -24,7 +24,7 @@ export const PageHeader = ({ title, description, badge, stats, actions }: PageHe
   const hasRightContent = (stats && stats.length > 0) || actions;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm mb-8 animate-in fade-in duration-500">
+    <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm mb-4 animate-in fade-in duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/5 pointer-events-none" />
       <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.12)_0%,transparent_60%)] pointer-events-none" />
       <div
@@ -35,20 +35,20 @@ export const PageHeader = ({ title, description, badge, stats, actions }: PageHe
           backgroundSize: '32px 32px',
         }}
       />
-      <div className="relative px-6 py-8 md:px-8 md:py-10 lg:px-10 lg:py-12">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div className="space-y-3">
+      <div className="relative px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="space-y-1.5">
             {badge && (
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
                 {badge.icon && <badge.icon className="h-3.5 w-3.5" />}
                 {badge.label}
               </div>
             )}
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
               {title}
             </h1>
             {description && (
-              <p className="text-muted-foreground max-w-xl text-base md:text-lg leading-relaxed">
+              <p className="text-muted-foreground max-w-xl text-sm md:text-base leading-relaxed">
                 {description}
               </p>
             )}
