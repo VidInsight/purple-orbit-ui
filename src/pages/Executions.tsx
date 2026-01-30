@@ -49,6 +49,13 @@ const Executions = () => {
         };
       });
 
+      // En yeni tarih en üstte: startedAt'e göre azalan sıralama
+      mappedExecutions.sort((a, b) => {
+        const dateA = new Date(a.startedAt).getTime();
+        const dateB = new Date(b.startedAt).getTime();
+        return dateB - dateA;
+      });
+
       setExecutions(mappedExecutions);
     } catch (error) {
       console.error('Error loading executions:', error);

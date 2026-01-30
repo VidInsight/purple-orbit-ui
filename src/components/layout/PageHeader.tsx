@@ -24,37 +24,60 @@ export const PageHeader = ({ title, description, badge, stats, actions }: PageHe
   const hasRightContent = (stats && stats.length > 0) || actions;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm mb-4 animate-in fade-in duration-500">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/5 pointer-events-none" />
-      <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--primary)/0.12)_0%,transparent_60%)] pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm mb-4 animate-in fade-in duration-500 group">
+      {/* Full-card animated gradient shine */}
       <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none"
+        className="absolute inset-0 animate-header-shine pointer-events-none"
         style={{
           backgroundImage:
-            'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
+            'linear-gradient(110deg, transparent 0%, transparent 35%, hsl(var(--primary) / 0.08) 50%, transparent 65%, transparent 100%)',
+          backgroundSize: '200% 100%',
         }}
       />
+      {/* Background layers with subtle pulse */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsl(var(--primary)/0.15),transparent)] pointer-events-none animate-header-glow" />
       <div className="relative px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="space-y-1.5">
             {badge && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+              <div
+                className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary animate-header-slide-up opacity-0"
+                style={{ animationDelay: '0.05s', animationFillMode: 'forwards' }}
+              >
                 {badge.icon && <badge.icon className="h-3.5 w-3.5" />}
                 {badge.label}
               </div>
             )}
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            <h1
+              className="text-2xl md:text-3xl font-bold text-foreground tracking-tight animate-header-slide-up opacity-0"
+              style={{
+                animationDelay: badge ? '0.1s' : '0.05s',
+                animationFillMode: 'forwards',
+              }}
+            >
               {title}
             </h1>
             {description && (
-              <p className="text-muted-foreground max-w-xl text-sm md:text-base leading-relaxed">
+              <p
+                className="text-muted-foreground max-w-xl text-sm md:text-base leading-relaxed animate-header-slide-up opacity-0"
+                style={{
+                  animationDelay: badge ? '0.15s' : '0.1s',
+                  animationFillMode: 'forwards',
+                }}
+              >
                 {description}
               </p>
             )}
           </div>
           {hasRightContent && (
-            <div className="flex flex-wrap gap-3 items-center">
+            <div
+              className="flex flex-wrap gap-3 items-center animate-header-slide-up opacity-0"
+              style={{
+                animationDelay: '0.2s',
+                animationFillMode: 'forwards',
+              }}
+            >
               {stats?.map((stat) => (
                 <div
                   key={stat.label}
