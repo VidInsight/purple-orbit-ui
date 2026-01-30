@@ -392,7 +392,7 @@ const UserManagement = () => {
   if (!currentWorkspace) {
     return (
       <PageLayout>
-        <div className="container mx-auto max-w-[1400px] px-6 py-8">
+        <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">Please select a workspace first</p>
           </div>
@@ -403,7 +403,7 @@ const UserManagement = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
           title="User Management"
           description="Manage workspace members and permissions"

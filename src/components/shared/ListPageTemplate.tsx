@@ -130,7 +130,7 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px]">
+      <div className="container mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
           title={pageTitle}
           description={pageDescription}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -160,24 +161,21 @@ const WorkspaceSettings = () => {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto space-y-8 pb-12">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Workspace Settings</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your workspace configuration and subscription plan
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8 pb-12">
+        <PageHeader
+          title="Workspace Settings"
+          description="Manage your workspace configuration and subscription plan"
+          actions={
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          }
+        />
 
         <Separator />
 

@@ -403,65 +403,83 @@ const WorkspaceSelection = () => {
 
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-200">
+    <div className="min-h-screen bg-background transition-colors duration-200 relative overflow-hidden">
+      {/* Premium tech background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.4)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.4)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,black_40%,transparent_100%)]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-primary/5 blur-3xl animate-pulse" style={{ animationDuration: '8s', animationDelay: '1s' }} />
+      </div>
+
       {/* Main Content */}
-      <div className="container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
-        {/* User Card at Top - Enhanced spacing */}
-        <div className="mb-12 sm:mb-16">
-          <UserCard
-            onSettings={handleSettings}
-            onLogout={handleLogout}
-          />
-        </div>
-
-        {/* Header with Create Button */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Your Workspaces</h1>
-            <p className="text-sm text-muted-foreground mt-1">Select a workspace to continue</p>
+      <div className="relative container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-10 sm:py-14 lg:py-16">
+        {/* User Card - glass style */}
+        <div className="mb-10 sm:mb-12 animate-fade-in-up">
+          <div className="glass rounded-2xl p-1 shadow-lg shadow-primary/5">
+            <UserCard
+              onSettings={handleSettings}
+              onLogout={handleLogout}
+            />
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="group flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed border-border hover:border-primary transition-all duration-200 hover:bg-surface/50"
-          >
-            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
-              New Workspace
-            </span>
-          </button>
         </div>
 
-        {/* Tabs for Workspaces and My Invitations */}
+        {/* Header with Create Button - premium typography */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              Your <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Workspaces</span>
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5">Select a workspace to continue or create a new one</p>
+          </div>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="default"
+            className="shadow-lg shadow-primary/20 hover:shadow-glow-primary transition-all duration-300"
+          >
+            <Plus className="h-4 w-4" />
+            New Workspace
+          </Button>
+        </div>
+
+        {/* Tabs - modern pill style */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 bg-muted/50">
-            <TabsTrigger value="workspaces" className="text-sm">
-              Workspaces <span className="ml-1.5 text-xs text-muted-foreground">({workspaces.length})</span>
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12 p-1 rounded-xl bg-muted/40 border border-border/50 backdrop-blur-sm shadow-inner">
+            <TabsTrigger
+              value="workspaces"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
+            >
+              Workspaces <span className="ml-1.5 text-xs opacity-70">({workspaces.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="my-invitations" className="text-sm">
-              My Invitations <span className="ml-1.5 text-xs text-muted-foreground">({myInvitations.length})</span>
+            <TabsTrigger
+              value="my-invitations"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
+            >
+              Invitations <span className="ml-1.5 text-xs opacity-70">({myInvitations.length})</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="workspaces" className="mt-6">
+          <TabsContent value="workspaces" className="mt-8 animate-fade-in">
             {/* Owned Workspaces Section */}
             {ownedWorkspaces.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <Crown className="h-5 w-5 text-amber-500" />
-                  <h2 className="text-lg font-semibold text-foreground">Owned Workspaces</h2>
-                  <span className="text-sm text-muted-foreground">({ownedWorkspaces.length})</span>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <Crown className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-foreground">Owned Workspaces</h2>
+                    <span className="text-xs text-muted-foreground">{ownedWorkspaces.length} workspace{ownedWorkspaces.length !== 1 ? 's' : ''}</span>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {ownedWorkspaces.map((workspace, index) => (
-                    <div
+                <div className="space-y-3">
+                  {ownedWorkspaces.map((workspace) => (
+                    <WorkspaceCard
                       key={workspace.id}
-                    >
-                      <WorkspaceCard
-                        workspace={workspace}
-                        onClick={handleWorkspaceSelect}
-                        onDelete={handleDeleteWorkspace}
-                      />
-                    </div>
+                      workspace={workspace}
+                      onClick={handleWorkspaceSelect}
+                      onDelete={handleDeleteWorkspace}
+                    />
                   ))}
                 </div>
               </div>
@@ -470,44 +488,49 @@ const WorkspaceSelection = () => {
             {/* Joined Workspaces Section */}
             {joinedWorkspaces.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <Users className="h-5 w-5 text-blue-500" />
-                  <h2 className="text-lg font-semibold text-foreground">Member Workspaces</h2>
-                  <span className="text-sm text-muted-foreground">({joinedWorkspaces.length})</span>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-foreground">Member Workspaces</h2>
+                    <span className="text-xs text-muted-foreground">{joinedWorkspaces.length} workspace{joinedWorkspaces.length !== 1 ? 's' : ''}</span>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {joinedWorkspaces.map((workspace, index) => (
-                    <div
+                <div className="space-y-3">
+                  {joinedWorkspaces.map((workspace) => (
+                    <WorkspaceCard
                       key={workspace.id}
-                    >
-                      <WorkspaceCard
-                        workspace={workspace}
-                        onClick={handleWorkspaceSelect}
-                        onDelete={handleDeleteWorkspace}
-                      />
-                    </div>
+                      workspace={workspace}
+                      onClick={handleWorkspaceSelect}
+                      onDelete={handleDeleteWorkspace}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Loading State */}
+            {/* Loading State - premium skeleton */}
             {isLoading && (
-              <div className="text-center py-16">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>
-                <p className="text-sm text-muted-foreground">Loading workspaces...</p>
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-xl border-2 border-primary/30 border-t-primary animate-spin" />
+                  <div className="absolute inset-0 h-12 w-12 rounded-xl bg-primary/5 animate-pulse" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 font-medium">Loading workspaces...</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Fetching your teams</p>
               </div>
             )}
 
-            {/* Empty State */}
+            {/* Empty State - premium CTA */}
             {!isLoading && workspaces.length === 0 && (
-              <div className="text-center py-16">
-                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                  <Plus className="h-8 w-8 text-muted-foreground" />
+              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-12 sm:p-16 text-center">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-6">
+                  <Plus className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">No workspaces yet</h3>
-                <p className="text-sm text-muted-foreground mb-6">Create your first workspace to get started</p>
-                <Button onClick={() => setIsModalOpen(true)} size="lg">
+                <h3 className="text-xl font-semibold text-foreground mb-2">No workspaces yet</h3>
+                <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">Create your first workspace to collaborate, automate workflows, and get started.</p>
+                <Button onClick={() => setIsModalOpen(true)} size="lg" className="shadow-lg shadow-primary/20">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Workspace
                 </Button>
@@ -515,8 +538,8 @@ const WorkspaceSelection = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="my-invitations" className="mt-6">
-            <div className="rounded-lg border border-border overflow-hidden bg-card">
+          <TabsContent value="my-invitations" className="mt-8 animate-fade-in">
+            <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
               {myInvitations.length > 0 ? (
                 <MyInvitationsTab
                   invitations={myInvitations}
@@ -524,25 +547,24 @@ const WorkspaceSelection = () => {
                   onDecline={handleDeclineInvitation}
                 />
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-sm text-muted-foreground">No invitations found</p>
+                <div className="text-center py-16 px-6">
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-muted/50 mb-4">
+                    <Users className="h-7 w-7 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground mb-1">No pending invitations</p>
+                  <p className="text-xs text-muted-foreground">When someone invites you to a workspace, it will appear here.</p>
                 </div>
               )}
             </div>
           </TabsContent>
         </Tabs>
 
-        {/* Footer Info - Better spacing and typography */}
-        <div className="text-center pt-10 mt-10 border-t border-border">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Need help?{' '}
-            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
-              View documentation
-            </a>
-            {' '}or{' '}
-            <a href="#" className="text-primary hover:text-accent font-medium transition-colors inline-flex items-center gap-1">
-              contact support
-            </a>
+        {/* Footer - minimal tech style */}
+        <div className="text-center pt-8 mt-8 border-t border-border/50 animate-fade-in">
+          <p className="text-xs text-muted-foreground">
+            <a href="#" className="text-primary/90 hover:text-primary font-medium transition-colors">Documentation</a>
+            <span className="mx-2">·</span>
+            <a href="#" className="text-primary/90 hover:text-primary font-medium transition-colors">Support</a>
           </p>
         </div>
       </div>

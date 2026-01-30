@@ -312,7 +312,11 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] space-y-8">
+      <div className="container mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8">
+        <PageHeader
+          title="Dashboard"
+          description="Overview of your workspace activity and executions"
+        />
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Executions */}

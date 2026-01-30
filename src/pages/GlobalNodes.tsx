@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { NodeGrid, NodeItem } from '@/components/nodes/NodeGrid';
+import { NodeItem } from '@/components/nodes/NodeGrid';
+import { GlobalNodeList } from '@/components/nodes/GlobalNodeList';
 import { 
-  Globe, 
   Mail, 
   Database, 
   Code, 
@@ -17,12 +17,23 @@ import {
   Repeat,
   Calculator,
   Send,
-  LucideIcon
+  LucideIcon,
+  Globe,
+  Layers,
+  Cpu,
+  AlertCircle,
+  RefreshCw,
+  Sparkles,
+  Braces,
+  ArrowRightLeft,
+  FileCode
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { getScripts, getScriptContent, Script } from '@/services/scriptsApi';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // Icon mapping based on category and subcategory
 const getIconForScript = (script: Script): LucideIcon => {
@@ -178,6 +189,11 @@ const GlobalNodes = () => {
     }
   };
 
+  const categoryCount = useMemo(() => {
+    const categories = new Set(nodes.map((n) => n.category));
+    return categories.size;
+  }, [nodes]);
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -189,19 +205,24 @@ const GlobalNodes = () => {
   if (error) {
     return (
       <PageLayout>
-        <div className="container mx-auto max-w-[1400px] px-6 py-8">
-          <PageHeader
-            title="Global Nodes"
-            description="Pre-built nodes available across all workflows"
-          />
-          <div className="text-center py-12">
-            <p className="text-destructive mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-primary hover:underline"
-            >
-              Try again
-            </button>
+        <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm p-8 md:p-12 text-center animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+            <div className="relative">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-destructive/10 text-destructive mb-6">
+                <AlertCircle className="h-7 w-7" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Could not load global nodes</h2>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">{error}</p>
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Try again
+              </Button>
+            </div>
           </div>
         </div>
       </PageLayout>
@@ -210,30 +231,45 @@ const GlobalNodes = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1400px] px-6 py-8">
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
           title="Global Nodes"
-          description="Pre-built nodes available across all workflows"
+          description="Pre-built nodes available across all workflows. Drag & drop into your flows."
+          badge={{ label: 'System library', icon: Globe }}
+          stats={[
+            { icon: Layers, value: nodes.length, label: 'nodes' },
+            { icon: Cpu, value: categoryCount, label: 'categories' },
+          ]}
         />
-        
+
+        {/* Content */}
         {nodes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No global nodes found.</p>
+          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm p-12 md:p-16 text-center animate-in fade-in duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+            <div className="relative">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
+                <Sparkles className="h-8 w-8" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">No global nodes yet</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Global nodes will appear here once they are available from the system.
+              </p>
+            </div>
           </div>
         ) : (
-          <div>
-            <NodeGrid 
-              nodes={nodes}
-              onDocumentation={handleDocumentation}
-              readOnly={true}
-              columns={5}
-              buttonLabel="Details"
-            />
+          <div className="rounded-2xl border border-border/60 bg-surface/50 backdrop-blur-sm overflow-hidden animate-in fade-in-up duration-500">
+            <div className="p-6 md:p-8">
+              <GlobalNodeList
+                nodes={nodes}
+                onDocumentation={handleDocumentation}
+                buttonLabel="Details"
+              />
+            </div>
           </div>
         )}
       </div>
 
-      {/* Script Details Modal */}
+      {/* Script Details Modal - Premium styling */}
       <Modal
         isOpen={detailsModalOpen}
         onClose={() => {
@@ -243,21 +279,41 @@ const GlobalNodes = () => {
           setInputSchema(null);
           setOutputSchema(null);
         }}
-        title={selectedNode ? `Details: ${selectedNode.name}` : 'Script Details'}
+        title={selectedNode ? selectedNode.name : 'Script Details'}
         size="xl"
       >
         {isLoadingContent ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading script details…</p>
           </div>
         ) : (
           <div className="space-y-6">
+            {selectedNode && (
+              <div className="flex flex-wrap gap-2">
+                <span className={cn(
+                  'inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium',
+                  'bg-primary/10 text-primary border border-primary/20'
+                )}>
+                  {selectedNode.category}
+                </span>
+                {selectedNode.subcategory && (
+                  <span className="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground">
+                    {selectedNode.subcategory}
+                  </span>
+                )}
+              </div>
+            )}
+
             {/* Code Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-2">Python Code</h3>
-              <div className="relative">
-                <pre className="bg-muted/50 rounded-lg p-4 overflow-x-auto text-sm font-mono border border-border max-h-96 overflow-y-auto">
-                  <code className="text-foreground whitespace-pre-wrap break-words">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <FileCode className="h-4 w-4 text-primary" />
+                Python Code
+              </div>
+              <div className="relative rounded-xl border border-border/80 bg-[hsl(var(--background))] overflow-hidden shadow-inner">
+                <pre className="p-4 overflow-x-auto text-sm font-mono text-foreground max-h-80 overflow-y-auto custom-scrollbar">
+                  <code className="whitespace-pre-wrap break-words">
                     {scriptContent || 'No code available'}
                   </code>
                 </pre>
@@ -266,10 +322,13 @@ const GlobalNodes = () => {
 
             {/* Input Schema Section */}
             {inputSchema && (
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-2">Input Schema</h3>
-                <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                  <pre className="text-sm font-mono text-foreground overflow-x-auto">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <ArrowRightLeft className="h-4 w-4 text-primary" />
+                  Input Schema
+                </div>
+                <div className="relative rounded-xl border border-border/80 bg-muted/30 overflow-hidden">
+                  <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto custom-scrollbar">
                     {JSON.stringify(inputSchema, null, 2)}
                   </pre>
                 </div>
@@ -278,10 +337,13 @@ const GlobalNodes = () => {
 
             {/* Output Schema Section */}
             {outputSchema && (
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-2">Output Schema</h3>
-                <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                  <pre className="text-sm font-mono text-foreground overflow-x-auto">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Braces className="h-4 w-4 text-primary" />
+                  Output Schema
+                </div>
+                <div className="relative rounded-xl border border-border/80 bg-muted/30 overflow-hidden">
+                  <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto custom-scrollbar">
                     {JSON.stringify(outputSchema, null, 2)}
                   </pre>
                 </div>
