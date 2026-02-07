@@ -588,6 +588,44 @@ export interface TriggerDetail {
   created_by: string;
 }
 
+export const stopExecution = async (
+  workspaceId: string,
+  executionId: string
+): Promise<WorkflowApiResponse> => {
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!executionId || executionId.trim() === '') {
+    throw new Error('Execution ID is required.');
+  }
+
+  console.log('Stopping execution:', { workspaceId, executionId });
+
+
+  const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}/cancel`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(errorData.message || errorData.error || `Failed to stop execution: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('Stop execution API response:', data);
+  return data;
+};
+
+
 /**
  * Get workflow trigger detail by ID
  */

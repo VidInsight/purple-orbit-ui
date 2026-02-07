@@ -2,9 +2,7 @@
  * API Client with automatic token refresh and 401 error handling
  */
 
-const BASE_URL = import.meta.env.DEV 
-  ? '/api' // Development'ta Vite proxy kullan
-  : 'https://miniflow.vidinsight.com.tr'; // Production'da direkt API
+const BASE_URL = 'https://miniflow.vidinsight.com.tr';
 
 import { getAccessToken, getRefreshToken, isTokenExpired, logout } from './tokenUtils';
 import { refreshToken } from '@/services/authApi';

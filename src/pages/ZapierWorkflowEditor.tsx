@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle, Loader2, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Pause, Zap, MessageSquare, Image, Hash, FileJson, Type, Calendar, GitBranch, Repeat, Settings, LucideIcon, Play, CheckCircle, Loader2, XCircle, AlertCircle, StopCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useWorkspace } from '@/context/WorkspaceContext';
-import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution, insertNodeBetween } from '@/services/workflowApi';
+import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, stopExecution, getNodeFormSchema, deleteNodeFromWorkflow, testWorkflowExecution, getExecution, insertNodeBetween } from '@/services/workflowApi';
 import { toast } from '@/hooks/use-toast';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
@@ -14,6 +14,16 @@ import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
 import { PathProvider } from '@/components/workflow-builder/PathContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ExecutionTimeline } from '@/components/workflow-builder/ExecutionTimeline';
 import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
 import { DefaultTriggerCard } from '@/components/workflow-builder/DefaultTriggerCard';
@@ -66,11 +76,11 @@ export default function ZapierWorkflowEditor() {
   const [showOutputsPanel, setShowOutputsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState('editor');
   const [isActive, setIsActive] = useState(false);
-  
+
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  
+
   // Pan and Zoom state
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -81,7 +91,7 @@ export default function ZapierWorkflowEditor() {
   // Load workflow from localStorage if editing existing workflow
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [isLoadingWorkflow, setIsLoadingWorkflow] = useState(false);
-  
+
   // Node output data from API
   const [nodeOutputs, setNodeOutputs] = useState<Record<string, {
     nodeId: string;
@@ -94,7 +104,9 @@ export default function ZapierWorkflowEditor() {
   const [executionId, setExecutionId] = useState<string | null>(null);
   const [executionData, setExecutionData] = useState<any>(null);
   const [isLoadingExecution, setIsLoadingExecution] = useState(false);
-  
+  const [showStopConfirmDialog, setShowStopConfirmDialog] = useState(false);
+  const [isStoppingExecution, setIsStoppingExecution] = useState(false);
+
   // Trigger data for OutputsPanel
   const [triggerData, setTriggerData] = useState<{ input_mapping: Record<string, { type: string; value: any }> } | null>(null);
 
@@ -128,20 +140,20 @@ export default function ZapierWorkflowEditor() {
       setIsLoadingWorkflow(true);
       try {
         const response = await getWorkflowGraph(currentWorkspace.id, id);
-        
+
         if (response.status === 'success' && response.data) {
           const workflowData = response.data;
-          
+
           // Set workflow name
           if (workflowData.workflow_name) {
             setWorkflowName(workflowData.workflow_name);
           }
-          
+
           // Set workflow status
           if (workflowData.status) {
             setIsActive(workflowData.status === 'ACTIVE' || workflowData.status === 'active');
           }
-          
+
           // Map API nodes to WorkflowNode format
           if (workflowData.nodes && Array.isArray(workflowData.nodes)) {
             const nodeMap = new Map<string, WorkflowNode>();
@@ -150,7 +162,7 @@ export default function ZapierWorkflowEditor() {
               let nodeType: 'trigger' | 'action' | 'conditional' | 'loop' = 'action';
               let icon: LucideIcon = Settings;
               let title = apiNode.name || 'Unnamed Node';
-              
+
               // Try to determine node type from name
               const nodeNameLower = title.toLowerCase();
               if (nodeNameLower.includes('trigger') || nodeNameLower.includes('webhook')) {
@@ -176,10 +188,10 @@ export default function ZapierWorkflowEditor() {
                   icon = Calendar;
                 }
               }
-              
+
               // Extract category from description if available
               const category = apiNode.description || '';
-              
+
               // Build node object
               const workflowNode: WorkflowNode = {
                 id: apiNode.id,
@@ -199,7 +211,7 @@ export default function ZapierWorkflowEditor() {
                 },
                 parameters: [], // Will be populated if needed
               };
-              
+
               // Add branches for conditional nodes
               if (nodeType === 'conditional') {
                 workflowNode.branches = {
@@ -207,43 +219,43 @@ export default function ZapierWorkflowEditor() {
                   false: [],
                 };
               }
-              
+
               // Add loopBody for loop nodes
               if (nodeType === 'loop') {
                 workflowNode.loopBody = [];
               }
-              
+
               nodeMap.set(apiNode.id, workflowNode);
               return workflowNode;
             });
-            
+
             // Sort nodes based on edges if edges are available
             let sortedNodes = mappedNodes;
             if (workflowData.edges && Array.isArray(workflowData.edges) && workflowData.edges.length > 0) {
               // Build adjacency list: nodeId -> [nextNodeIds]
               const adjacencyList = new Map<string, string[]>();
               const inDegree = new Map<string, number>();
-              
+
               // Initialize in-degree for all nodes
               mappedNodes.forEach(node => {
                 inDegree.set(node.id, 0);
                 adjacencyList.set(node.id, []);
               });
-              
+
               // Build graph from edges
               workflowData.edges.forEach((edge: any) => {
                 const fromId = edge.from_node_id || edge.from;
                 const toId = edge.to_node_id || edge.to;
-                
+
                 if (fromId && toId && nodeMap.has(fromId) && nodeMap.has(toId)) {
                   const current = adjacencyList.get(fromId) || [];
                   current.push(toId);
                   adjacencyList.set(fromId, current);
-                  
+
                   inDegree.set(toId, (inDegree.get(toId) || 0) + 1);
                 }
               });
-              
+
               // Topological sort: find nodes with no incoming edges first
               const queue: string[] = [];
               inDegree.forEach((degree, nodeId) => {
@@ -251,41 +263,41 @@ export default function ZapierWorkflowEditor() {
                   queue.push(nodeId);
                 }
               });
-              
+
               const sorted: WorkflowNode[] = [];
               const visited = new Set<string>();
-              
+
               while (queue.length > 0) {
                 const currentNodeId = queue.shift()!;
                 if (visited.has(currentNodeId)) continue;
-                
+
                 const currentNode = nodeMap.get(currentNodeId);
                 if (currentNode) {
                   sorted.push(currentNode);
                   visited.add(currentNodeId);
                 }
-                
+
                 const nextNodes = adjacencyList.get(currentNodeId) || [];
                 nextNodes.forEach(nextNodeId => {
                   const currentInDegree = (inDegree.get(nextNodeId) || 0) - 1;
                   inDegree.set(nextNodeId, currentInDegree);
-                  
+
                   if (currentInDegree === 0 && !visited.has(nextNodeId)) {
                     queue.push(nextNodeId);
                   }
                 });
               }
-              
+
               // Add any remaining nodes that weren't connected (shouldn't happen, but just in case)
               mappedNodes.forEach(node => {
                 if (!visited.has(node.id)) {
                   sorted.push(node);
                 }
               });
-              
+
               sortedNodes = sorted;
             }
-            
+
             // If no nodes from API, keep default trigger node
             if (sortedNodes.length > 0) {
               setNodes(sortedNodes);
@@ -299,7 +311,7 @@ export default function ZapierWorkflowEditor() {
           description: error instanceof Error ? error.message : 'Failed to load workflow from API',
           variant: 'destructive',
         });
-        
+
         // Fallback to localStorage
         const savedWorkflows = localStorage.getItem('workflows');
         if (savedWorkflows) {
@@ -335,9 +347,9 @@ export default function ZapierWorkflowEditor() {
       if (!scrollContainerRef.current) {
         scrollContainerRef.current = document.querySelector('.overflow-auto');
       }
-      
+
       const nodeElement = document.querySelector(`[data-node-id="${nodeId}"]`);
-      
+
       if (scrollContainerRef.current && nodeElement) {
         nodeElement.scrollIntoView({
           behavior: 'smooth',
@@ -362,7 +374,7 @@ export default function ZapierWorkflowEditor() {
     };
 
     // Find the index where the new node should be inserted
-    const insertIndex = afterNodeId 
+    const insertIndex = afterNodeId
       ? nodes.findIndex(n => n.id === afterNodeId) + 1
       : nodes.length;
 
@@ -503,7 +515,7 @@ export default function ZapierWorkflowEditor() {
           },
         ];
       }
-      
+
       if (nodeType === 'JSON Parse') {
         return [
           {
@@ -550,7 +562,7 @@ export default function ZapierWorkflowEditor() {
     // Prepare node data for API
     const nodeName = `Node${nodes.length} - ${nodeType}`;
     const nodeDescription = `${nodeType} node from ${category} > ${subcategory}`;
-    
+
     // Extract input_params from parameters (default empty object for now)
     const inputParams: Record<string, any> = {};
     const nodeParams = getNodeParameters(nodeType);
@@ -570,7 +582,7 @@ export default function ZapierWorkflowEditor() {
     try {
       // Call API to add node
       const response = await addNodeToWorkflow(currentWorkspace.id, id, nodeData);
-      
+
       // Create node from API response
       const apiNodeId = response.data?.id || response.data?.node_id || `node-${Date.now()}`;
       const newNode: WorkflowNode = {
@@ -594,7 +606,7 @@ export default function ZapierWorkflowEditor() {
       try {
         // Determine from_node_id: if afterNodeId is provided, use it; otherwise use the last node before insertIndex
         let fromNodeId: string | null = null;
-        
+
         if (afterNodeId) {
           // Use the node specified by afterNodeId
           fromNodeId = afterNodeId;
@@ -705,7 +717,7 @@ export default function ZapierWorkflowEditor() {
           },
         ];
       }
-      
+
       if (nodeType === 'JSON Parse') {
         return [
           {
@@ -730,7 +742,7 @@ export default function ZapierWorkflowEditor() {
     // Prepare node data for API
     const nodeName = `Node${nodes.length} - ${nodeType}`;
     const nodeDescription = `${nodeType} node from ${category} > ${subcategory}`;
-    
+
     // Extract input_params from parameters (default empty object for now)
     const inputParams: Record<string, any> = {};
     const nodeParams = getNodeParameters(nodeType);
@@ -756,7 +768,7 @@ export default function ZapierWorkflowEditor() {
     try {
       // Call API to insert node between
       const response = await insertNodeBetween(currentWorkspace.id, id, nodeData);
-      
+
       // Create node from API response
       const apiNodeId = response.data?.id || response.data?.node_id || `node-${Date.now()}`;
       const newNode: WorkflowNode = {
@@ -774,7 +786,7 @@ export default function ZapierWorkflowEditor() {
       // Find the index of toNodeId and insert before it
       const toNodeIndex = nodes.findIndex(n => n.id === toNodeId);
       const insertIndex = toNodeIndex >= 0 ? toNodeIndex : nodes.length;
-      
+
       const newNodes = [...nodes];
       newNodes.splice(insertIndex, 0, newNode);
       setNodes(newNodes);
@@ -813,13 +825,13 @@ export default function ZapierWorkflowEditor() {
     setNodes(prevNodes => prevNodes.map(node => {
       if (node.id === selectedNode.id) {
         const updatedParameters = node.parameters?.map(param =>
-          param.id === parameterId 
-            ? { 
-                ...param, 
-                value, 
-                isDynamic,
-                dynamicPath: isDynamic ? value : undefined 
-              } 
+          param.id === parameterId
+            ? {
+              ...param,
+              value,
+              isDynamic,
+              dynamicPath: isDynamic ? value : undefined
+            }
             : param
         );
         const updatedNode = { ...node, parameters: updatedParameters };
@@ -910,10 +922,10 @@ export default function ZapierWorkflowEditor() {
         } else if (value && typeof value === 'object' && value.type === 'array' && value.items) {
           example[key] = value.value && Array.isArray(value.value)
             ? value.value.map((item: any) =>
-                item && typeof item === 'object' && item.properties
-                  ? buildExampleFromObjectSchema(item)
-                  : item
-              )
+              item && typeof item === 'object' && item.properties
+                ? buildExampleFromObjectSchema(item)
+                : item
+            )
             : [buildExampleFromSchemaNode(value.items)];
         } else if (typeof value === 'string') {
           example[key] = `example_${key}`;
@@ -966,7 +978,7 @@ export default function ZapierWorkflowEditor() {
               if (response.status === 'success' && response.data) {
                 const outputSchema = response.data.output_schema;
                 const exampleOutput = generateExampleOutputFromSchema(outputSchema);
-                
+
                 outputs[node.id] = {
                   nodeId: node.id,
                   nodeName: response.data.node_name || node.title,
@@ -1010,7 +1022,7 @@ export default function ZapierWorkflowEditor() {
       if (nodeOutputs[node.id]) {
         return nodeOutputs[node.id];
       }
-      
+
       // Fallback for nodes without API data
       return {
         nodeId: node.id,
@@ -1032,10 +1044,10 @@ export default function ZapierWorkflowEditor() {
     try {
       // Call API to delete node
       await deleteNodeFromWorkflow(currentWorkspace.id, id, nodeId);
-      
+
       // Remove node from local state
       setNodes(nodes.filter(node => node.id !== nodeId));
-      
+
       // If deleted node was selected, clear selection
       if (selectedNode?.id === nodeId) {
         setSelectedNode(null);
@@ -1069,14 +1081,14 @@ export default function ZapierWorkflowEditor() {
     const savedWorkflows = localStorage.getItem('workflows');
     const workflows = savedWorkflows ? JSON.parse(savedWorkflows) : [];
     const existingIndex = workflows.findIndex((w: any) => w.id === workflowId);
-    
+
     if (existingIndex >= 0) {
       workflows[existingIndex] = workflow;
     } else {
       workflow.createdAt = new Date().toISOString();
       workflows.push(workflow);
     }
-    
+
     localStorage.setItem('workflows', JSON.stringify(workflows));
 
     // If new workflow, navigate to edit URL
@@ -1091,7 +1103,7 @@ export default function ZapierWorkflowEditor() {
 
     // Map execution data to test results format
     const nodeResults: Record<string, any> = {};
-    
+
     // executionData.results is an object with node IDs as keys
     Object.entries(executionData.results).forEach(([nodeId, result]: [string, any]) => {
       nodeResults[nodeId] = {
@@ -1130,7 +1142,7 @@ export default function ZapierWorkflowEditor() {
   // Mock test results (memoized) - fallback when no execution data
   const mockTestResults = useMemo(() => {
     const nodeResults: Record<string, any> = {};
-    
+
     nodes.forEach((node, index) => {
       if (node.type === 'trigger') {
         nodeResults[node.id] = {
@@ -1216,6 +1228,8 @@ export default function ZapierWorkflowEditor() {
     };
   }, [nodes]);
 
+
+
   // Fetch execution details
   const fetchExecutionDetails = useCallback(async (execId: string) => {
     if (!currentWorkspace?.id) return;
@@ -1223,7 +1237,7 @@ export default function ZapierWorkflowEditor() {
     setIsLoadingExecution(true);
     try {
       const response = await getExecution(currentWorkspace.id, execId);
-      
+
       if (response.status === 'success' && response.data) {
         setExecutionData(response.data);
       }
@@ -1239,6 +1253,34 @@ export default function ZapierWorkflowEditor() {
     }
   }, [currentWorkspace?.id]);
 
+  const handleStopExecution = useCallback(async () => {
+    if (!currentWorkspace?.id || !executionId) return;
+
+    setIsStoppingExecution(true);
+    setShowStopConfirmDialog(false);
+    try {
+      const response = await stopExecution(currentWorkspace.id, executionId);
+      if (response.status === 'success') {
+        setActiveTab('test');
+        setExecutionData((prev: any) => (prev ? { ...prev, status: 'CANCELLED' } : { id: executionId, status: 'CANCELLED' }));
+        fetchExecutionDetails(executionId).then(() => { });
+        toast({
+          title: 'Çalıştırma durduruldu',
+          description: 'İşlem başarıyla sonlandırıldı.',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to stop execution:', error);
+      toast({
+        title: 'Hata',
+        description: error instanceof Error ? error.message : 'Çalıştırma durdurulamadı.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsStoppingExecution(false);
+    }
+  }, [currentWorkspace?.id, executionId, fetchExecutionDetails]);
+
   const handleTest = useCallback(async () => {
     // Check if we have workspace and workflow IDs for API call
     if (!currentWorkspace?.id || !id || id === 'new') {
@@ -1253,11 +1295,11 @@ export default function ZapierWorkflowEditor() {
     setIsRunningTest(true);
     // Switch to test tab immediately to show loading
     setActiveTab('test');
-    
+
     try {
       // Build input_data from trigger's input_mapping parameters
       const inputData: Record<string, any> = {};
-      
+
       if (triggerData && triggerData.input_mapping) {
         // Extract values from input_mapping format: { paramKey: { type: string, value: any } }
         Object.entries(triggerData.input_mapping).forEach(([paramKey, mappingValue]) => {
@@ -1265,7 +1307,7 @@ export default function ZapierWorkflowEditor() {
           inputData[paramKey] = mappingValue.value;
         });
       }
-      
+
       // If no trigger data or empty input_mapping, use default test data
       if (Object.keys(inputData).length === 0) {
         inputData.test = 'data';
@@ -1276,10 +1318,10 @@ export default function ZapierWorkflowEditor() {
       };
 
       const response = await testWorkflowExecution(currentWorkspace.id, id, testData);
-      
+
       // Extract execution_id from response
       const executionIdFromResponse = response.data?.execution_id || response.data?.id || response.data?.executionId;
-      
+
       if (executionIdFromResponse) {
         setExecutionId(executionIdFromResponse);
         // Fetch execution details immediately
@@ -1291,7 +1333,7 @@ export default function ZapierWorkflowEditor() {
           variant: 'default',
         });
       }
-      
+
       toast({
         title: 'Success',
         description: 'Workflow test execution started successfully',
@@ -1440,7 +1482,6 @@ export default function ZapierWorkflowEditor() {
                 ) : (
                   <h1
                     className="text-xl font-bold cursor-pointer hover:text-primary transition-all duration-200 group flex items-center gap-2"
-                    onClick={() => setIsEditingName(true)}
                   >
                     <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent group-hover:from-primary group-hover:to-primary/80">
                       {workflowName}
@@ -1463,12 +1504,57 @@ export default function ZapierWorkflowEditor() {
                   <Play className="h-4 w-4" />
                   Run
                 </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowStopConfirmDialog(true)}
+                  disabled={
+                    !executionId ||
+                    isStoppingExecution ||
+                    executionData?.status === 'COMPLETED' ||
+                    executionData?.status === 'completed' ||
+                    executionData?.status === 'FAILED' ||
+                    executionData?.status === 'failed' ||
+                    executionData?.status === 'CANCELLED' ||
+                    executionData?.status === 'cancelled' ||
+                    executionData?.status === 'STOPPED' ||
+                    executionData?.status === 'stopped'
+                  }
+                  className="gap-1 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  {isStoppingExecution ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <StopCircle className="h-4 w-4" />
+                  )}
+                  Durdur
+                </Button>
+                <AlertDialog open={showStopConfirmDialog} onOpenChange={setShowStopConfirmDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Çalıştırmayı durdurmak istiyor musunuz?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Devam eden işlem iptal edilecek ve Test sekmesinde durduruldu olarak görüntülenecektir.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleStopExecution}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Durdur
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <div className="flex items-center gap-3 px-4 py-2 bg-surface/80 border border-border/50 rounded-lg backdrop-blur-sm hover:border-primary/30 transition-all duration-200 group">
                   <Label htmlFor="workflow-active" className="text-sm font-medium cursor-pointer flex items-center gap-2">
                     <div className={`h-2 w-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
                     <span className={isActive ? 'text-success' : 'text-muted-foreground'}>{isActive ? 'Active' : 'Inactive'}</span>
                   </Label>
-                  <Switch 
+                  <Switch
                     id="workflow-active"
                     checked={isActive}
                     onCheckedChange={setIsActive}
@@ -1485,15 +1571,15 @@ export default function ZapierWorkflowEditor() {
           <div className="border-b border-border/50 bg-gradient-to-b from-surface/40 via-surface/30 to-transparent backdrop-blur-sm">
             <div className="container mx-auto px-6 flex justify-center">
               <TabsList className="bg-transparent border-0 p-0 h-14 gap-1">
-                <TabsTrigger 
-                  value="editor" 
+                <TabsTrigger
+                  value="editor"
                   className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-8 h-full font-semibold text-sm transition-all duration-200 data-[state=active]:text-primary data-[state=active]:shadow-[0_-2px_8px_rgba(0,0,0,0.1)] relative group"
                 >
                   <span className="relative z-10">Editor</span>
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="test" 
+                <TabsTrigger
+                  value="test"
                   className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-8 h-full font-semibold text-sm transition-all duration-200 data-[state=active]:text-primary data-[state=active]:shadow-[0_-2px_8px_rgba(0,0,0,0.1)] relative group"
                 >
                   <span className="relative z-10 flex items-center gap-2">
@@ -1511,7 +1597,7 @@ export default function ZapierWorkflowEditor() {
           {/* Editor Tab Content */}
           <TabsContent value="editor" className="mt-0">
             {/* Workflow Canvas */}
-            <div 
+            <div
               className="relative h-[calc(100vh-144px)] overflow-auto bg-gradient-to-br from-background via-background to-surface/10"
               onWheel={handleWheel}
               onMouseDown={handleMouseDown}
@@ -1556,7 +1642,7 @@ export default function ZapierWorkflowEditor() {
               </div>
 
               {/* Canvas Content */}
-              <div 
+              <div
                 className="absolute inset-0 flex items-start justify-center py-8"
                 style={{
                   transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
@@ -1569,8 +1655,8 @@ export default function ZapierWorkflowEditor() {
                   <div className="space-y-0">
                     {/* Default Trigger Card */}
                     <div className="mb-6">
-                      <DefaultTriggerCard 
-                        workspaceId={currentWorkspace?.id} 
+                      <DefaultTriggerCard
+                        workspaceId={currentWorkspace?.id}
                         workflowId={id}
                         onTriggerDataChange={setTriggerData}
                       />
@@ -1593,8 +1679,8 @@ export default function ZapierWorkflowEditor() {
                                 </p>
                               </div>
                               <div className="flex-shrink-0">
-                                <AddNodeButton 
-                                  onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId)} 
+                                <AddNodeButton
+                                  onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId)}
                                 />
                               </div>
                             </div>
@@ -1650,8 +1736,8 @@ export default function ZapierWorkflowEditor() {
                               <div className="relative w-0.5 h-4">
                                 <div className="absolute inset-0 bg-gradient-to-b from-border via-primary/30 to-border" />
                               </div>
-                              <AddNodeButton 
-                                onAddNode={(cat, sub, type, scriptId) => handleInsertNodeBetween(node.id, nodes[index + 1].id, cat, sub, type, scriptId)} 
+                              <AddNodeButton
+                                onAddNode={(cat, sub, type, scriptId) => handleInsertNodeBetween(node.id, nodes[index + 1].id, cat, sub, type, scriptId)}
                               />
                               <div className="relative w-0.5 h-4">
                                 <div className="absolute inset-0 bg-gradient-to-b from-border via-primary/30 to-border" />
@@ -1663,8 +1749,8 @@ export default function ZapierWorkflowEditor() {
                               <div className="relative w-0.5 h-4">
                                 <div className="absolute inset-0 bg-gradient-to-b from-border to-transparent" />
                               </div>
-                              <AddNodeButton 
-                                onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId, node.id)} 
+                              <AddNodeButton
+                                onAddNode={(cat, sub, type, scriptId) => handleAddNode(cat, sub, type, scriptId, node.id)}
                                 onMenuOpen={() => {
                                   // Scroll to align the menu at the bottom of the viewport
                                   const addNodeElement = document.getElementById(`add-node-${index}`);
@@ -1673,13 +1759,13 @@ export default function ZapierWorkflowEditor() {
                                     const viewportHeight = window.innerHeight - 144; // minus toolbar + tabs height
                                     const elementRect = addNodeElement.getBoundingClientRect();
                                     const scrollContainer = document.querySelector('.overflow-auto');
-                                    
+
                                     if (scrollContainer) {
                                       // Calculate the scroll position to align menu bottom with viewport bottom
                                       const currentScroll = scrollContainer.scrollTop;
                                       const elementTop = elementRect.top + currentScroll - 144; // minus toolbar + tabs
                                       const targetScroll = elementTop + menuHeight - viewportHeight * 0.95;
-                                      
+
                                       scrollContainer.scrollTo({
                                         top: Math.max(0, targetScroll),
                                         behavior: 'smooth'
@@ -1744,7 +1830,7 @@ export default function ZapierWorkflowEditor() {
                         No Test Execution Yet
                       </h3>
                       <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                        Click the "Run" button in the toolbar to start a test execution and see the results here. 
+                        Click the "Run" button in the toolbar to start a test execution and see the results here.
                         Test executions help you verify that your workflow is working correctly before deploying.
                       </p>
                     </div>
@@ -1773,23 +1859,56 @@ export default function ZapierWorkflowEditor() {
                       )}
                     </div>
                   </div>
+                ) : executionData && (executionData.status === 'CANCELLED' || executionData.status === 'cancelled' || executionData.status === 'STOPPED' || executionData.status === 'stopped') ? (
+                  // Çalıştırma durduruldu sayfası
+                  <div className="flex items-center justify-center min-h-[calc(100vh-144px)] py-24">
+                    <div className="text-center max-w-lg flex flex-col items-center">
+                      <div className="relative mb-6 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full" />
+                        <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 border border-amber-500/30 backdrop-blur-sm">
+                          <StopCircle className="h-10 w-10 text-amber-600 dark:text-amber-400 shrink-0" />
+                        </div>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                        Çalıştırma Durduruldu
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                        Bu test çalıştırması sizin tarafınızdan veya sistem tarafından sonlandırıldı. Yeni bir test başlatmak için aşağıdaki butonu kullanabilirsiniz.
+                      </p>
+                      {executionId && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface/80 border border-border/50 rounded-lg backdrop-blur-sm mb-6">
+                          <p className="text-xs font-mono text-muted-foreground">
+                            İşlem ID: {executionId.slice(0, 12)}...
+                          </p>
+                        </div>
+                      )}
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleTest}
+                        disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
+                        className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg hover:shadow-primary/30"
+                      >
+                        <Play className="h-4 w-4" />
+                        Tekrar Çalıştır
+                      </Button>
+                    </div>
+                  </div>
                 ) : executionData && (executionData.status === 'COMPLETED' || executionData.status === 'completed' || executionData.status === 'FAILED' || executionData.status === 'failed') ? (
                   // Show results when execution is completed or failed
                   <>
                     {/* Modern Execution Status Banner */}
                     {executionData && (
-                      <div className={`relative overflow-hidden border-2 rounded-xl p-5 backdrop-blur-sm ${
-                        executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                      <div className={`relative overflow-hidden border-2 rounded-xl p-5 backdrop-blur-sm ${executionData.status === 'COMPLETED' || executionData.status === 'completed'
                           ? 'bg-gradient-to-br from-success/20 via-success/10 to-success/5 border-success/40 shadow-lg shadow-success/10'
                           : 'bg-gradient-to-br from-destructive/20 via-destructive/10 to-destructive/5 border-destructive/40 shadow-lg shadow-destructive/10'
-                      }`}>
+                        }`}>
                         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5" />
                         <div className="relative flex items-center gap-4">
-                          <div className={`flex-shrink-0 p-3 rounded-xl ${
-                            executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                          <div className={`flex-shrink-0 p-3 rounded-xl ${executionData.status === 'COMPLETED' || executionData.status === 'completed'
                               ? 'bg-success/20 border border-success/30'
                               : 'bg-destructive/20 border border-destructive/30'
-                          }`}>
+                            }`}>
                             {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? (
                               <CheckCircle className="h-6 w-6 text-success" />
                             ) : (
@@ -1797,11 +1916,10 @@ export default function ZapierWorkflowEditor() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className={`text-lg font-bold mb-1 ${
-                              executionData.status === 'COMPLETED' || executionData.status === 'completed'
+                            <h3 className={`text-lg font-bold mb-1 ${executionData.status === 'COMPLETED' || executionData.status === 'completed'
                                 ? 'text-success'
                                 : 'text-destructive'
-                            }`}>
+                              }`}>
                               Execution {executionData.status === 'COMPLETED' || executionData.status === 'completed' ? 'Completed' : 'Failed'}
                             </h3>
                             <p className="text-sm text-muted-foreground">
@@ -1829,8 +1947,8 @@ export default function ZapierWorkflowEditor() {
                       averageNodeTime={
                         nodes.length > 0 && executionTestResults
                           ? nodes.reduce((total, node) => {
-                              return total + (executionTestResults.node_results[node.id]?.duration_seconds || 0);
-                            }, 0) / nodes.length
+                            return total + (executionTestResults.node_results[node.id]?.duration_seconds || 0);
+                          }, 0) / nodes.length
                           : 0
                       }
                     />
@@ -1843,7 +1961,7 @@ export default function ZapierWorkflowEditor() {
                           nodes={nodes.map((node, index) => {
                             const nodeResult = executionTestResults?.node_results[node.id];
                             const NodeIcon = node.icon || Settings;
-                            
+
                             // Get input data from previous nodes (simplified)
                             const firstNode = nodes[0];
                             const inputData = node.type === 'trigger' ? undefined : {
@@ -1882,7 +2000,7 @@ export default function ZapierWorkflowEditor() {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="p-6 flex-1 overflow-hidden bg-gradient-to-b from-background/50 to-background">
                           <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 font-mono text-xs h-full overflow-auto border border-border/50 shadow-inner">
                             <div className="space-y-1">
@@ -1899,13 +2017,13 @@ export default function ZapierWorkflowEditor() {
                                   <p className="text-success">[INFO] Executing workflow...</p>
                                   {nodes.map((node) => {
                                     const result = executionTestResults?.node_results[node.id];
-                                    const statusClass = result?.status === 'SUCCESS' || result?.status === 'success' 
-                                      ? 'text-success' 
-                                      : result?.status === 'FAILED' || result?.status === 'failed' 
-                                      ? 'text-destructive' 
-                                      : 'text-muted-foreground';
+                                    const statusClass = result?.status === 'SUCCESS' || result?.status === 'success'
+                                      ? 'text-success'
+                                      : result?.status === 'FAILED' || result?.status === 'failed'
+                                        ? 'text-destructive'
+                                        : 'text-muted-foreground';
                                     return (
-                                      <p 
+                                      <p
                                         key={node.id}
                                         className={statusClass}
                                       >
@@ -1946,7 +2064,7 @@ export default function ZapierWorkflowEditor() {
 
                       // Get the last node's result data
                       let finalResult = null;
-                      
+
                       if (executionData && executionData.results) {
                         // If we have execution data, get the last node's result
                         const lastNode = nodes[nodes.length - 1];
@@ -1961,7 +2079,7 @@ export default function ZapierWorkflowEditor() {
                           }
                         }
                       }
-                      
+
                       if (!finalResult) return null;
 
                       return (
