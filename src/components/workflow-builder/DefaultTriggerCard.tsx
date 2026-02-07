@@ -81,21 +81,15 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
   // Also reinitialize when defaultTrigger changes while edit panel is open
   useEffect(() => {
     if (defaultTrigger && isEditOpen) {
-      console.log('Initializing edit form with trigger:', defaultTrigger);
-      
       // Try to get input_mapping from trigger if available
       const triggerWithMapping = defaultTrigger as Trigger & { input_mapping?: Record<string, any> };
       const inputMapping = triggerWithMapping.input_mapping || {};
-      
-      console.log('Input mapping from trigger:', inputMapping);
       
       // Parse input_mapping - API returns {type, value} format
       const types: Record<string, 'string' | 'number' | 'boolean' | 'object' | 'array'> = {};
       const parsedMapping: Record<string, { type: string; value: any }> = {};
       
       Object.entries(inputMapping).forEach(([key, mappingValue]) => {
-        console.log(`Processing input mapping key: ${key}, value:`, mappingValue);
-        
         // Check if it's already in {type, value} format
         if (mappingValue && typeof mappingValue === 'object' && 'type' in mappingValue && 'value' in mappingValue) {
           types[key] = mappingValue.type as 'string' | 'number' | 'boolean' | 'object' | 'array';
@@ -135,9 +129,6 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
           };
         }
       });
-      
-      console.log('Parsed mapping:', parsedMapping);
-      console.log('Types:', types);
       
       setInputMappingTypes(types);
       setEditForm({
@@ -179,8 +170,6 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
       
       if (response.status === 'success' && response.data) {
         const triggerDetail = response.data;
-        console.log('Trigger detail loaded:', triggerDetail);
-        
         const inputMapping = triggerDetail.input_mapping || {};
         
         // Parse input_mapping - API returns {type, value} format
@@ -228,9 +217,6 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
             };
           }
         });
-        
-        console.log('Parsed mapping:', parsedMapping);
-        console.log('Types:', types);
         
         setInputMappingTypes(types);
         setEditForm({

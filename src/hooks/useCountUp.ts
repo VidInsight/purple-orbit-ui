@@ -77,7 +77,9 @@ export const useCountUp = ({
     };
   }, [isVisible, hasStarted, start, end, duration, delay]);
 
-  const formattedValue = `${prefix}${count.toFixed(decimals)}${suffix}`;
-  
+  // 0 göstermeyi önle: görünür değilken veya animasyon henüz ilerlemediyse hedef değeri göster
+  const displayValue = !isVisible || !hasStarted || count === start ? end : count;
+  const formattedValue = `${prefix}${displayValue.toFixed(decimals)}${suffix}`;
+
   return { count, formattedValue };
 };

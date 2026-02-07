@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Sparkles, Zap, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import { HeroWorkflowPreview } from './HeroWorkflowPreview';
 import { TypewriterText } from './TypewriterText';
@@ -70,8 +75,11 @@ const GlowingOrb = ({ className, delay = 0 }: { className?: string; delay?: numb
   );
 };
 
+const DEMO_VIDEO_URL = 'https://www.youtube.com/embed/3VixMr5ewyg?autoplay=1';
+
 export const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -185,11 +193,28 @@ export const HeroSection = () => {
                 size="lg" 
                 variant="outline" 
                 className="group gap-2 px-10 py-6 text-base font-semibold border-2 hover:bg-primary/10 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 backdrop-blur-sm"
+                onClick={() => setDemoModalOpen(true)}
               >
                 <Play className="h-5 w-5 group-hover:scale-110 transition-transform" />
                 Demo İzle
               </Button>
             </div>
+
+            {/* Demo video modal */}
+            <Dialog open={demoModalOpen} onOpenChange={setDemoModalOpen}>
+              <DialogContent className="max-w-4xl w-[95vw] pt-12 pb-0 px-0 gap-0 overflow-hidden border-primary/20 bg-background/95 backdrop-blur-sm">
+                <DialogTitle className="sr-only">Demo Videosu</DialogTitle>
+                <div className="relative aspect-video w-full">
+                  <iframe
+                    src={demoModalOpen ? DEMO_VIDEO_URL : ''}
+                    title="Demo Videosu"
+                    className="absolute inset-0 w-full h-full rounded-lg"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Integration Logos */}
             <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>

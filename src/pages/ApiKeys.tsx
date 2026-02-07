@@ -104,10 +104,6 @@ const ApiKeys = () => {
       // Call API
       const response = await createApiKey(currentWorkspace.id, requestBody);
 
-      // Log the response to debug
-      console.log('Create API key full response:', response);
-      console.log('Response data:', response.data);
-
       // Try multiple possible field names for the API key
       // Use type assertion to allow checking alternative field names
       const responseData = response.data as any;

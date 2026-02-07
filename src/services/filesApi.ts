@@ -39,17 +39,6 @@ export const uploadFile = async (
     formData.append('tags', JSON.stringify(fileData.tags));
   }
 
-  console.log('Uploading file for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files`);
-  console.log('File data:', {
-    name: fileData.name,
-    description: fileData.description,
-    tags: fileData.tags,
-    fileName: fileData.file.name,
-    fileSize: fileData.file.size,
-    fileType: fileData.file.type,
-  });
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
     method: 'POST',
     body: formData,
@@ -69,7 +58,6 @@ export const uploadFile = async (
   }
 
   const data = await response.json();
-  console.log('Upload file API response:', data);
   return data;
 };
 
@@ -77,9 +65,6 @@ export const uploadFile = async (
  * Get files for a workspace
  */
 export const getFiles = async (workspaceId: string): Promise<FilesApiResponse> => {
-  console.log('Fetching files for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files`, {
     method: 'GET',
   });
@@ -98,7 +83,6 @@ export const getFiles = async (workspaceId: string): Promise<FilesApiResponse> =
   }
 
   const data = await response.json();
-  console.log('Files API response:', data);
   return data;
 };
 
@@ -118,9 +102,6 @@ export const deleteFile = async (
   workspaceId: string,
   fileId: string
 ): Promise<DeleteFileResponse> => {
-  console.log('Deleting file for workspace:', workspaceId, 'file:', fileId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'DELETE',
   });
@@ -139,7 +120,6 @@ export const deleteFile = async (
   }
 
   const data = await response.json();
-  console.log('Delete file API response:', data);
   return data;
 };
 
@@ -173,9 +153,6 @@ export const getFileDetail = async (
   workspaceId: string,
   fileId: string
 ): Promise<FileDetailApiResponse> => {
-  console.log('Fetching file detail for workspace:', workspaceId, 'file:', fileId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'GET',
   });
@@ -194,7 +171,6 @@ export const getFileDetail = async (
   }
 
   const data = await response.json();
-  console.log('File detail API response:', data);
   return data;
 };
 
@@ -221,10 +197,6 @@ export const updateFile = async (
   fileId: string,
   updateData: UpdateFileRequest
 ): Promise<UpdateFileResponse> => {
-  console.log('Updating file for workspace:', workspaceId, 'file:', fileId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`);
-  console.log('Update data:', updateData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/files/${fileId}`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
@@ -244,7 +216,6 @@ export const updateFile = async (
   }
 
   const data = await response.json();
-  console.log('Update file API response:', data);
   return data;
 };
 

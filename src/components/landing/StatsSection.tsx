@@ -27,8 +27,8 @@ const StatCard = ({ icon: Icon, value, suffix = '', prefix = '', label, descript
 
   return (
     <div
-      className={`relative group bg-card border border-border rounded-2xl p-6 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      className={`relative group bg-card border border-border rounded-2xl p-6 transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 opacity-100 ${
+        isVisible ? 'translate-y-0' : 'translate-y-10'
       }`}
       style={{ transitionDelay: `${delay * 100}ms` }}
     >

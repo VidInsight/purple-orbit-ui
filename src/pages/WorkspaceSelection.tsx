@@ -7,7 +7,7 @@ import { Workspace, CreateWorkspaceData } from '@/types/workspace';
 import { getWorkspaces, createWorkspace as createWorkspaceUtil, setCurrentWorkspace, saveWorkspaces } from '@/utils/workspaceStorage';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Crown, Users } from 'lucide-react';
+import { Plus, Crown, Users, LayoutDashboard, Mail, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { getUserWorkspaces, createWorkspace as createWorkspaceApi, deleteWorkspace } from '@/services/workspaceApi';
@@ -57,21 +57,6 @@ const WorkspaceSelection = () => {
     }
   }, [navigate]);
 
-  // Log user information for debugging
-  useEffect(() => {
-    if (currentUser) {
-      console.log('Current logged-in user:', {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email,
-        role: currentUser.role,
-        lastActive: currentUser.lastActive,
-        createdAt: currentUser.createdAt,
-      });
-    }
-  }, [currentUser]);
-
-
   // Separate workspaces into owned and joined
   const ownedWorkspaces = workspaces.filter(ws => ws.role === 'owner');
   const joinedWorkspaces = workspaces.filter(ws => ws.role !== 'owner');
@@ -111,10 +96,7 @@ const WorkspaceSelection = () => {
   const loadPendingInvitations = async () => {
     try {
       const userId = getUserIdFromToken();
-      if (!userId) {
-        console.warn('User ID not found, skipping invitation load');
-        return;
-      }
+      if (!userId) return;
 
       const response = await getUserPendingInvitations(userId);
       
@@ -133,7 +115,6 @@ const WorkspaceSelection = () => {
       setIsLoading(true);
       // getUserWorkspaces artık userId'yi token'dan otomatik alıyor
       const response = await getUserWorkspaces();
-      console.log('Workspaces API response:', response);
 
       // Map API response to Workspace type
       const mappedWorkspaces: Workspace[] = [];
@@ -259,11 +240,7 @@ const WorkspaceSelection = () => {
         requestData.description = data.description.trim();
       }
 
-      console.log('Sending workspace creation request:', requestData);
-      
       const response = await createWorkspaceApi(requestData);
-
-      console.log('Workspace created:', response);
 
       toast({
         title: 'Workspace Created',
@@ -404,19 +381,21 @@ const WorkspaceSelection = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200 relative overflow-hidden">
-      {/* Premium tech background */}
+      {/* Animated background: floating orbs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.4)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.4)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,black_40%,transparent_100%)]" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-primary/5 blur-3xl animate-pulse" style={{ animationDuration: '8s', animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-15%,hsl(var(--primary)/0.12),transparent_50%)]" />
+        <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,black_40%,transparent_100%)]" />
+        <div className="absolute top-1/5 left-1/4 w-[420px] h-[420px] rounded-full bg-primary/[0.08] blur-[100px] animate-orb-float-1" />
+        <div className="absolute bottom-1/4 right-1/3 w-[320px] h-[320px] rounded-full bg-primary/[0.07] blur-[90px] animate-orb-float-2" />
+        <div className="absolute top-1/2 right-1/4 w-[280px] h-[280px] rounded-full bg-primary/[0.05] blur-[80px] animate-orb-float-3" />
+        <div className="absolute bottom-1/3 left-1/3 w-[200px] h-[200px] rounded-full bg-primary/[0.06] blur-[70px] animate-orb-float-1" style={{ animationDelay: '-4s' }} />
       </div>
 
       {/* Main Content */}
       <div className="relative container mx-auto max-w-4xl px-6 sm:px-8 lg:px-12 py-10 sm:py-14 lg:py-16">
-        {/* User Card - glass style */}
+        {/* User card - full width at top */}
         <div className="mb-10 sm:mb-12 animate-fade-in-up">
-          <div className="glass rounded-2xl p-1 shadow-lg shadow-primary/5">
+          <div className="glass rounded-2xl p-1 shadow-lg shadow-primary/5 border-primary/10 tech-glow-line">
             <UserCard
               onSettings={handleSettings}
               onLogout={handleLogout}
@@ -424,38 +403,52 @@ const WorkspaceSelection = () => {
           </div>
         </div>
 
-        {/* Header with Create Button - premium typography */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              Your <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Workspaces</span>
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1.5">Select a workspace to continue or create a new one</p>
+        {/* Header + CTA */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 tech-glow-line">
+                <LayoutDashboard className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Workspace</p>
+                <p className="text-sm font-semibold text-foreground">Select workspace</p>
+              </div>
+            </div>
+            <div>
+              
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
+                Workspaces
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1.5 max-w-md">Choose a workspace to continue or create a new one.</p>
+            </div>
           </div>
           <Button
             onClick={() => setIsModalOpen(true)}
             variant="default"
-            className="shadow-lg shadow-primary/20 hover:shadow-glow-primary transition-all duration-300"
+            className="w-full sm:w-auto shrink-0 shadow-lg shadow-primary/20 hover:shadow-glow-primary hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl"
           >
             <Plus className="h-4 w-4" />
             New Workspace
           </Button>
         </div>
 
-        {/* Tabs - modern pill style */}
+        {/* Tabs - tech underline style */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12 p-1 rounded-xl bg-muted/40 border border-border/50 backdrop-blur-sm shadow-inner">
+          <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 h-12 p-1 rounded-xl bg-muted/40 border border-border/50 backdrop-blur-sm">
             <TabsTrigger
               value="workspaces"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
             >
-              Workspaces <span className="ml-1.5 text-xs opacity-70">({workspaces.length})</span>
+              <LayoutDashboard className="h-4 w-4 mr-2" />
+              Workspaces <span className="ml-1 text-xs opacity-80">({workspaces.length})</span>
             </TabsTrigger>
             <TabsTrigger
               value="my-invitations"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border transition-all duration-200"
             >
-              Invitations <span className="ml-1.5 text-xs opacity-70">({myInvitations.length})</span>
+              <Mail className="h-4 w-4 mr-2" />
+              Invitations <span className="ml-1 text-xs opacity-80">({myInvitations.length})</span>
             </TabsTrigger>
           </TabsList>
 
@@ -463,14 +456,18 @@ const WorkspaceSelection = () => {
             {/* Owned Workspaces Section */}
             {ownedWorkspaces.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <Crown className="h-4 w-4 text-amber-500" />
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="h-px flex-1 max-w-12 bg-gradient-to-r from-amber-500/50 to-transparent rounded-full" />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/25 tech-glow-line">
+                      <Crown className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-foreground">Owned</h2>
+                      <span className="text-xs text-muted-foreground">{ownedWorkspaces.length} workspace{ownedWorkspaces.length !== 1 ? 's' : ''}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-foreground">Owned Workspaces</h2>
-                    <span className="text-xs text-muted-foreground">{ownedWorkspaces.length} workspace{ownedWorkspaces.length !== 1 ? 's' : ''}</span>
-                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-l from-amber-500/30 to-transparent rounded-full" />
                 </div>
                 <div className="space-y-3">
                   {ownedWorkspaces.map((workspace) => (
@@ -488,14 +485,18 @@ const WorkspaceSelection = () => {
             {/* Joined Workspaces Section */}
             {joinedWorkspaces.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                    <Users className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="h-px flex-1 max-w-12 bg-gradient-to-r from-primary/50 to-transparent rounded-full" />
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/25 tech-glow-line">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-foreground">Member</h2>
+                      <span className="text-xs text-muted-foreground">{joinedWorkspaces.length} workspace{joinedWorkspaces.length !== 1 ? 's' : ''}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-foreground">Member Workspaces</h2>
-                    <span className="text-xs text-muted-foreground">{joinedWorkspaces.length} workspace{joinedWorkspaces.length !== 1 ? 's' : ''}</span>
-                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent rounded-full" />
                 </div>
                 <div className="space-y-3">
                   {joinedWorkspaces.map((workspace) => (
@@ -510,7 +511,7 @@ const WorkspaceSelection = () => {
               </div>
             )}
 
-            {/* Loading State - premium skeleton */}
+            {/* Loading State */}
             {isLoading && (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="relative">
@@ -518,28 +519,28 @@ const WorkspaceSelection = () => {
                   <div className="absolute inset-0 h-12 w-12 rounded-xl bg-primary/5 animate-pulse" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-4 font-medium">Loading workspaces...</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Fetching your teams</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Syncing your teams</p>
               </div>
             )}
 
-            {/* Empty State - premium CTA */}
+            {/* Empty State */}
             {!isLoading && workspaces.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-12 sm:p-16 text-center">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-6">
-                  <Plus className="h-8 w-8 text-primary" />
+              <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/[0.03] p-12 sm:p-16 text-center tech-glow-line">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-6">
+                  <Plus className="h-10 w-10 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">No workspaces yet</h3>
-                <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">Create your first workspace to collaborate, automate workflows, and get started.</p>
-                <Button onClick={() => setIsModalOpen(true)} size="lg" className="shadow-lg shadow-primary/20">
+                <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">Create your first workspace to collaborate and automate workflows.</p>
+                <Button onClick={() => setIsModalOpen(true)} size="lg" className="rounded-xl shadow-lg shadow-primary/20 hover:shadow-glow-primary">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Workspace
+                  Create workspace
                 </Button>
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="my-invitations" className="mt-8 animate-fade-in">
-            <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm">
+            <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden shadow-sm tech-glow-line">
               {myInvitations.length > 0 ? (
                 <MyInvitationsTab
                   invitations={myInvitations}
@@ -548,22 +549,22 @@ const WorkspaceSelection = () => {
                 />
               ) : (
                 <div className="text-center py-16 px-6">
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-muted/50 mb-4">
-                    <Users className="h-7 w-7 text-muted-foreground" />
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-muted/50 border border-border/50 mb-4">
+                    <Mail className="h-7 w-7 text-muted-foreground" />
                   </div>
                   <p className="text-sm font-medium text-foreground mb-1">No pending invitations</p>
-                  <p className="text-xs text-muted-foreground">When someone invites you to a workspace, it will appear here.</p>
+                  <p className="text-xs text-muted-foreground">Invitations will appear here when someone invites you.</p>
                 </div>
               )}
             </div>
           </TabsContent>
         </Tabs>
 
-        {/* Footer - minimal tech style */}
+        {/* Footer */}
         <div className="text-center pt-8 mt-8 border-t border-border/50 animate-fade-in">
           <p className="text-xs text-muted-foreground">
-            <a href="#" className="text-primary/90 hover:text-primary font-medium transition-colors">Documentation</a>
-            <span className="mx-2">·</span>
+            <a href="#" className="text-primary/90 hover:text-primary font-medium transition-colors">Docs</a>
+            <span className="mx-2 opacity-50">·</span>
             <a href="#" className="text-primary/90 hover:text-primary font-medium transition-colors">Support</a>
           </p>
         </div>

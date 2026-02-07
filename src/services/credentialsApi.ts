@@ -40,9 +40,6 @@ export interface CredentialDetailApiResponse {
  * Get credentials for a workspace
  */
 export const getCredentials = async (workspaceId: string): Promise<CredentialsApiResponse> => {
-  console.log('Fetching credentials for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials`, {
     method: 'GET',
   });
@@ -61,7 +58,6 @@ export const getCredentials = async (workspaceId: string): Promise<CredentialsAp
   }
 
   const data = await response.json();
-  console.log('Credentials API response:', data);
   return data;
 };
 
@@ -69,9 +65,6 @@ export const getCredentials = async (workspaceId: string): Promise<CredentialsAp
  * Get credential detail by ID
  */
 export const getCredentialDetail = async (workspaceId: string, credentialId: string): Promise<CredentialDetailApiResponse> => {
-  console.log('Fetching credential detail for workspace:', workspaceId, 'credential:', credentialId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'GET',
   });
@@ -90,7 +83,6 @@ export const getCredentialDetail = async (workspaceId: string, credentialId: str
   }
 
   const data = await response.json();
-  console.log('Credential detail API response:', data);
   return data;
 };
 
@@ -117,10 +109,6 @@ export const updateCredential = async (
   credentialId: string,
   updateData: UpdateCredentialRequest
 ): Promise<UpdateCredentialResponse> => {
-  console.log('Updating credential for workspace:', workspaceId, 'credential:', credentialId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
-  console.log('Update data:', updateData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
@@ -140,7 +128,6 @@ export const updateCredential = async (
   }
 
   const data = await response.json();
-  console.log('Update credential API response:', data);
   return data;
 };
 
@@ -160,9 +147,6 @@ export const deleteCredential = async (
   workspaceId: string,
   credentialId: string
 ): Promise<DeleteCredentialResponse> => {
-  console.log('Deleting credential for workspace:', workspaceId, 'credential:', credentialId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/${credentialId}`, {
     method: 'DELETE',
   });
@@ -181,7 +165,6 @@ export const deleteCredential = async (
   }
 
   const data = await response.json();
-  console.log('Delete credential API response:', data);
   return data;
 };
 
@@ -211,10 +194,6 @@ export const createSlackCredential = async (
   workspaceId: string,
   credentialData: CreateSlackCredentialRequest
 ): Promise<CreateCredentialResponse> => {
-  console.log('Creating Slack credential for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/slack`);
-  console.log('Credential data:', credentialData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/slack`, {
     method: 'POST',
     body: JSON.stringify(credentialData),
@@ -234,7 +213,6 @@ export const createSlackCredential = async (
   }
 
   const data = await response.json();
-  console.log('Create credential API response:', data);
   return data;
 };
 
@@ -255,10 +233,6 @@ export const createGoogleCredential = async (
   workspaceId: string,
   credentialData: CreateGoogleCredentialRequest
 ): Promise<CreateCredentialResponse> => {
-  console.log('Creating Google credential for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/google`);
-  console.log('Credential data:', { ...credentialData, oauth_token: '***', refresh_token: '***' });
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/credentials/google`, {
     method: 'POST',
     body: JSON.stringify(credentialData),
@@ -278,7 +252,6 @@ export const createGoogleCredential = async (
   }
 
   const data = await response.json();
-  console.log('Create Google credential API response:', data);
   return data;
 };
 

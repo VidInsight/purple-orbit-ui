@@ -377,4 +377,41 @@ All colors MUST be HSL.
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.5);
   }
+
+  /* Workspace selection – animated orbs */
+  @keyframes orb-float-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    33% { transform: translate(30px, -40px) scale(1.05); opacity: 0.8; }
+    66% { transform: translate(-20px, 20px) scale(0.95); opacity: 0.5; }
+  }
+  @keyframes orb-float-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    50% { transform: translate(-40px, -30px) scale(1.1); opacity: 0.7; }
+  }
+  @keyframes orb-float-3 {
+    0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+    25% { transform: translate(25px, 25px); opacity: 0.6; }
+    75% { transform: translate(-15px, -20px); opacity: 0.3; }
+  }
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .animate-orb-float-1 {
+    animation: orb-float-1 12s ease-in-out infinite;
+  }
+  .animate-orb-float-2 {
+    animation: orb-float-2 15s ease-in-out infinite;
+  }
+  .animate-orb-float-3 {
+    animation: orb-float-3 18s ease-in-out infinite;
+  }
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradient-shift 10s ease infinite;
+  }
+
+  .tech-glow-line {
+    box-shadow: 0 0 1px hsla(var(--primary) / 0.5), 0 0 8px hsla(var(--primary) / 0.15);
+  }
 }

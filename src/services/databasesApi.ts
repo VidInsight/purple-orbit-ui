@@ -65,9 +65,6 @@ export const getDatabases = async (workspaceId: string): Promise<DatabaseApiResp
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
 
-  console.log('Fetching databases for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
     method: 'GET',
   });
@@ -86,7 +83,6 @@ export const getDatabases = async (workspaceId: string): Promise<DatabaseApiResp
   }
 
   const data = await response.json();
-  console.log('Get databases API response:', data);
   return data;
 };
 
@@ -100,10 +96,6 @@ export const createDatabase = async (
   if (!workspaceId || workspaceId.trim() === '') {
     throw new Error('Workspace ID is required. Please select a workspace first.');
   }
-
-  console.log('Creating database for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases`);
-  console.log('Request body:', databaseData);
 
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases`, {
     method: 'POST',
@@ -134,7 +126,6 @@ export const createDatabase = async (
   }
 
   const data = await response.json();
-  console.log('Create database API response:', data);
   return data;
 };
 
@@ -152,9 +143,6 @@ export const getDatabaseDetail = async (
   if (!databaseId || databaseId.trim() === '') {
     throw new Error('Database ID is required.');
   }
-
-  console.log('Fetching database detail:', { workspaceId, databaseId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
 
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'GET',
@@ -174,7 +162,6 @@ export const getDatabaseDetail = async (
   }
 
   const data = await response.json();
-  console.log('Get database detail API response:', data);
   return data;
 };
 
@@ -206,10 +193,6 @@ export const updateDatabase = async (
     throw new Error('Database ID is required.');
   }
 
-  console.log('Updating database:', { workspaceId, databaseId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
-  console.log('Request body:', databaseData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'PUT',
     body: JSON.stringify(databaseData),
@@ -239,7 +222,6 @@ export const updateDatabase = async (
   }
 
   const data = await response.json();
-  console.log('Update database API response:', data);
   return data;
 };
 
@@ -257,9 +239,6 @@ export const deleteDatabase = async (
   if (!databaseId || databaseId.trim() === '') {
     throw new Error('Database ID is required.');
   }
-
-  console.log('Deleting database:', { workspaceId, databaseId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`);
 
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/databases/${databaseId}`, {
     method: 'DELETE',
@@ -279,7 +258,6 @@ export const deleteDatabase = async (
   }
 
   const data = await response.json();
-  console.log('Delete database API response:', data);
   return data;
 };
 

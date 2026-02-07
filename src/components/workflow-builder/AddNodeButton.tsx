@@ -216,6 +216,15 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
   // Selected category for two-panel layout (left: categories, right: nodes)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Show labels with spaces instead of underscores, first letter of each word uppercase
+  const toDisplayLabel = (s: string) =>
+    (s || '')
+      .replace(/_/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
   const handleClose = () => {
     setIsOpen(false);
     setSelectedCategory(null);
@@ -387,7 +396,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
                               <CategoryIcon className="h-4 w-4 text-primary" />
                             </div>
-                            <span className="text-sm font-semibold truncate flex-1">{category.name}</span>
+                            <span className="text-sm font-semibold truncate flex-1">{toDisplayLabel(category.name)}</span>
                             <ChevronRight className={`h-4 w-4 shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
                           </button>
                         );
@@ -435,8 +444,8 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                                     <NodeIcon className="h-5 w-5 text-primary" />
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{item.nodeName}</div>
-                                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.nodeDescription}</div>
+                                    <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{toDisplayLabel(item.nodeName)}</div>
+                                    <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{toDisplayLabel(item.nodeDescription)}</div>
                                   </div>
                                   <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0 mt-0.5 transition-opacity" />
                                 </button>
@@ -471,7 +480,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                                 })()}
                               </div>
                               <div>
-                                <h3 className="text-sm font-bold text-foreground">{category.name}</h3>
+                                <h3 className="text-sm font-bold text-foreground">{toDisplayLabel(category.name)}</h3>
                                 <p className="text-xs text-muted-foreground">{totalNodes} node{totalNodes !== 1 ? 's' : ''} available</p>
                               </div>
                             </div>
@@ -479,7 +488,7 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                               <div key={subcategory.name} className="space-y-2">
                                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                                   <Package className="h-3.5 w-3.5" />
-                                  {subcategory.name}
+                                  {toDisplayLabel(subcategory.name)}
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   {subcategory.nodes.map((node) => {
@@ -494,8 +503,8 @@ export const AddNodeButton = ({ onAddNode, onMenuOpen }: AddNodeButtonProps) => 
                                           <NodeIcon className="h-5 w-5 text-primary" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{node.name}</div>
-                                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{node.description}</div>
+                                          <div className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{toDisplayLabel(node.name)}</div>
+                                          <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{toDisplayLabel(node.description)}</div>
                                         </div>
                                         <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0 mt-0.5 transition-opacity" />
                                       </button>

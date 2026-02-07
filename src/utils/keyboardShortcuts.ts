@@ -28,7 +28,6 @@ export const useKeyboardShortcuts = () => {
         'k': () => {
           event.preventDefault();
           // Command palette would go here
-          console.log('Command palette shortcut');
         },
       };
 

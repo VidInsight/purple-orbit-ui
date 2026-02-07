@@ -161,7 +161,7 @@ export default function ZapierWorkflowEditor() {
               // Determine node type based on name or script_type
               let nodeType: 'trigger' | 'action' | 'conditional' | 'loop' = 'action';
               let icon: LucideIcon = Settings;
-              let title = apiNode.name || 'Unnamed Node';
+              let title = toDisplayLabel(apiNode.name || 'Unnamed Node');
 
               // Try to determine node type from name
               const nodeNameLower = title.toLowerCase();
@@ -359,8 +359,17 @@ export default function ZapierWorkflowEditor() {
     }, 100);
   }, []);
 
+  // Normalize node/category labels: spaces instead of underscores, first letter of each word uppercase
+  const toDisplayLabel = (s: string) =>
+    (s || '')
+      .replace(/_/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
   const handleAddNode = useCallback(async (category: string, subcategory: string, nodeType: string, scriptId: string, afterNodeId?: string) => {
-    // Map node types to icons and configured status
+    // Map node types to icons and configured status (keys may use spaces or underscores)
     const nodeIcons: Record<string, LucideIcon> = {
       'GPT-4 Completion': MessageSquare,
       'DALL-E Image': Image,
@@ -385,9 +394,9 @@ export default function ZapierWorkflowEditor() {
         const newNode: WorkflowNode = {
           id: `node-${Date.now()}`,
           type: 'conditional',
-          title: nodeType,
+          title: toDisplayLabel(nodeType),
           icon: nodeIcons[nodeType],
-          category: `${category} > ${subcategory}`,
+          category: `${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`,
           nodeType: 'Conditional',
           configured: false,
           branches: {
@@ -429,9 +438,9 @@ export default function ZapierWorkflowEditor() {
         const newNode: WorkflowNode = {
           id: `node-${Date.now()}`,
           type: 'loop',
-          title: nodeType,
+          title: toDisplayLabel(nodeType),
           icon: nodeIcons[nodeType],
-          category: `${category} > ${subcategory}`,
+          category: `${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`,
           nodeType: 'Loop',
           configured: false,
           loopBody: [],
@@ -543,9 +552,9 @@ export default function ZapierWorkflowEditor() {
       const newNode: WorkflowNode = {
         id: `node-${Date.now()}`,
         type: 'action',
-        title: nodeType,
+        title: toDisplayLabel(nodeType),
         icon: nodeIcons[nodeType],
-        category: `${category} > ${subcategory}`,
+        category: `${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`,
         nodeType: category,
         configured: false,
         config: {},
@@ -559,9 +568,9 @@ export default function ZapierWorkflowEditor() {
       return;
     }
 
-    // Prepare node data for API
-    const nodeName = `Node${nodes.length} - ${nodeType}`;
-    const nodeDescription = `${nodeType} node from ${category} > ${subcategory}`;
+    // Prepare node data for API (use normal spaces in names, no underscores)
+    const nodeName = `Node ${nodes.length} - ${toDisplayLabel(nodeType)}`;
+    const nodeDescription = `${toDisplayLabel(nodeType)} node from ${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`;
 
     // Extract input_params from parameters (default empty object for now)
     const inputParams: Record<string, any> = {};
@@ -588,9 +597,9 @@ export default function ZapierWorkflowEditor() {
       const newNode: WorkflowNode = {
         id: apiNodeId,
         type: 'action',
-        title: nodeType,
+        title: toDisplayLabel(nodeType),
         icon: nodeIcons[nodeType] || Settings,
-        category: `${category} > ${subcategory}`,
+        category: `${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`,
         nodeType: category,
         configured: false,
         config: {},
@@ -626,7 +635,6 @@ export default function ZapierWorkflowEditor() {
           };
 
           await addEdgeToWorkflow(currentWorkspace.id, id, edgeData);
-          console.log('Edge created successfully:', edgeData);
         }
       } catch (edgeError) {
         console.error('Failed to create edge:', edgeError);
@@ -739,9 +747,9 @@ export default function ZapierWorkflowEditor() {
       return [];
     };
 
-    // Prepare node data for API
-    const nodeName = `Node${nodes.length} - ${nodeType}`;
-    const nodeDescription = `${nodeType} node from ${category} > ${subcategory}`;
+    // Prepare node data for API (use normal spaces in names, no underscores)
+    const nodeName = `Node ${nodes.length} - ${toDisplayLabel(nodeType)}`;
+    const nodeDescription = `${toDisplayLabel(nodeType)} node from ${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`;
 
     // Extract input_params from parameters (default empty object for now)
     const inputParams: Record<string, any> = {};
@@ -774,9 +782,9 @@ export default function ZapierWorkflowEditor() {
       const newNode: WorkflowNode = {
         id: apiNodeId,
         type: 'action',
-        title: nodeType,
+        title: toDisplayLabel(nodeType),
         icon: nodeIcons[nodeType] || Settings,
-        category: `${category} > ${subcategory}`,
+        category: `${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`,
         nodeType: category,
         configured: false,
         config: {},

@@ -118,10 +118,7 @@ export const Register = () => {
   const fetchAgreement = async (agreementType: 'terms' | 'privacy_policy'): Promise<{ id: string } | null> => {
     try {
       const locale = i18n.language || 'en';
-      console.log('Fetching agreement for type:', agreementType, 'locale:', locale);
-      
       const responseData = await fetchAgreementApi(locale);
-      console.log('Agreement response:', responseData);
       
       // agreement_type'a göre doğru agreement'ı bul
       const agreement = responseData.data.items.find(
@@ -132,8 +129,6 @@ export const Register = () => {
         console.error(`Agreement not found for type: ${agreementType}`, responseData.data.items);
         throw new Error(`Agreement not found for type: ${agreementType}`);
       }
-      
-      console.log('Found agreement:', agreement);
       return { id: String(agreement.id) };
     } catch (error) {
       console.error('Error fetching agreement:', error);
@@ -233,8 +228,6 @@ export const Register = () => {
       };
 
       const response = await registerApi(registerPayload);
-
-      console.log('Registration successful:', response);
 
       toast({
         title: t('common:messages.success'),

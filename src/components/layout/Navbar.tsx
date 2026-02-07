@@ -157,14 +157,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'hover:translate-x-1 hover:shadow-lg hover:shadow-primary/10',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName={cn('bg-gradient-to-r from-primary/15 to-primary/5 border-l-4 font-semibold shadow-lg shadow-primary/10 [&>svg]:scale-110 [&>svg]:drop-shadow-[0_0_8px_currentColor] [&>svg]:opacity-100 [&>svg]:brightness-110', item.iconColor, item.borderColor)}
+                    activeClassName={cn('font-semibold', item.iconColor, '[&_.nav-item-dot]:opacity-100 [&_.nav-item-dot>div]:ring-2 [&_.nav-item-dot>div]:ring-primary/40 [&_.nav-item-dot>div]:scale-125 [&_.nav-item-dot>div]:shadow-[0_0_6px_currentColor] [&_.nav-item-dot>div]:transition-all [&_.nav-item-dot>div]:duration-300')}
                   >
                     <item.icon className={cn('h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110', item.iconColor, 'group-hover:drop-shadow-[0_0_8px_currentColor] opacity-70 group-hover:opacity-100')} />
                     {!isCollapsed && (
                       <span className="text-sm truncate font-medium">{item.name}</span>
                     )}
                     {!isCollapsed && (
-                      <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="nav-item-dot absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className={cn('h-1.5 w-1.5 rounded-full', item.dotColor)} />
                       </div>
                     )}
@@ -197,14 +197,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'hover:translate-x-1 hover:shadow-lg hover:shadow-primary/10',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName={cn('bg-gradient-to-r from-primary/15 to-primary/5 border-l-4 font-semibold shadow-lg shadow-primary/10 [&>svg]:scale-110 [&>svg]:drop-shadow-[0_0_8px_currentColor] [&>svg]:opacity-100 [&>svg]:brightness-110', item.iconColor, item.borderColor)}
+                    activeClassName={cn('font-semibold', item.iconColor, '[&_.nav-item-dot]:opacity-100 [&_.nav-item-dot>div]:ring-2 [&_.nav-item-dot>div]:ring-primary/40 [&_.nav-item-dot>div]:scale-125 [&_.nav-item-dot>div]:shadow-[0_0_6px_currentColor] [&_.nav-item-dot>div]:transition-all [&_.nav-item-dot>div]:duration-300')}
                   >
                     <item.icon className={cn('h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110', item.iconColor, 'group-hover:drop-shadow-[0_0_8px_currentColor] opacity-70 group-hover:opacity-100')} />
                     {!isCollapsed && (
                       <span className="text-sm truncate font-medium">{item.name}</span>
                     )}
                     {!isCollapsed && (
-                      <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="nav-item-dot absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className={cn('h-1.5 w-1.5 rounded-full', item.dotColor)} />
                       </div>
                     )}
@@ -237,14 +237,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'hover:translate-x-1 hover:shadow-lg hover:shadow-primary/10',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName={cn('bg-gradient-to-r from-primary/15 to-primary/5 border-l-4 font-semibold shadow-lg shadow-primary/10 [&>svg]:scale-110 [&>svg]:drop-shadow-[0_0_8px_currentColor] [&>svg]:opacity-100 [&>svg]:brightness-110', item.iconColor, item.borderColor)}
+                    activeClassName={cn('font-semibold', item.iconColor, '[&_.nav-item-dot]:opacity-100 [&_.nav-item-dot>div]:ring-2 [&_.nav-item-dot>div]:ring-primary/40 [&_.nav-item-dot>div]:scale-125 [&_.nav-item-dot>div]:shadow-[0_0_6px_currentColor] [&_.nav-item-dot>div]:transition-all [&_.nav-item-dot>div]:duration-300')}
                   >
                     <item.icon className={cn('h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110', item.iconColor, 'group-hover:drop-shadow-[0_0_8px_currentColor] opacity-70 group-hover:opacity-100')} />
                     {!isCollapsed && (
                       <span className="text-sm truncate font-medium">{item.name}</span>
                     )}
                     {!isCollapsed && (
-                      <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="nav-item-dot absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className={cn('h-1.5 w-1.5 rounded-full', item.dotColor)} />
                       </div>
                     )}
@@ -277,14 +277,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'hover:translate-x-1 hover:shadow-lg hover:shadow-primary/10',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName={cn('bg-gradient-to-r from-primary/15 to-primary/5 border-l-4 font-semibold shadow-lg shadow-primary/10 [&>svg]:scale-110 [&>svg]:drop-shadow-[0_0_8px_currentColor] [&>svg]:opacity-100 [&>svg]:brightness-110', item.iconColor, item.borderColor)}
+                    activeClassName={cn('font-semibold', item.iconColor, '[&_.nav-item-dot]:opacity-100 [&_.nav-item-dot>div]:ring-2 [&_.nav-item-dot>div]:ring-primary/40 [&_.nav-item-dot>div]:scale-125 [&_.nav-item-dot>div]:shadow-[0_0_6px_currentColor] [&_.nav-item-dot>div]:transition-all [&_.nav-item-dot>div]:duration-300')}
                   >
                     <item.icon className={cn('h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110', item.iconColor, 'group-hover:drop-shadow-[0_0_8px_currentColor] opacity-70 group-hover:opacity-100')} />
                     {!isCollapsed && (
                       <span className="text-sm truncate font-medium">{item.name}</span>
                     )}
                     {!isCollapsed && (
-                      <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="nav-item-dot absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className={cn('h-1.5 w-1.5 rounded-full', item.dotColor)} />
                       </div>
                     )}
@@ -317,14 +317,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
                       'hover:translate-x-1 hover:shadow-lg hover:shadow-primary/10',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2'
                     )}
-                    activeClassName={cn('bg-gradient-to-r from-primary/15 to-primary/5 border-l-4 font-semibold shadow-lg shadow-primary/10 [&>svg]:scale-110 [&>svg]:drop-shadow-[0_0_8px_currentColor] [&>svg]:opacity-100 [&>svg]:brightness-110', item.iconColor, item.borderColor)}
+                    activeClassName={cn('font-semibold', item.iconColor, '[&_.nav-item-dot]:opacity-100 [&_.nav-item-dot>div]:ring-2 [&_.nav-item-dot>div]:ring-primary/40 [&_.nav-item-dot>div]:scale-125 [&_.nav-item-dot>div]:shadow-[0_0_6px_currentColor] [&_.nav-item-dot>div]:transition-all [&_.nav-item-dot>div]:duration-300')}
                   >
                     <item.icon className={cn('h-5 w-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110', item.iconColor, 'group-hover:drop-shadow-[0_0_8px_currentColor] opacity-70 group-hover:opacity-100')} />
                     {!isCollapsed && (
                       <span className="text-sm truncate font-medium">{item.name}</span>
                     )}
                     {!isCollapsed && (
-                      <div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="nav-item-dot absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className={cn('h-1.5 w-1.5 rounded-full', item.dotColor)} />
                       </div>
                     )}

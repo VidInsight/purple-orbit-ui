@@ -72,9 +72,6 @@ export const getUserWorkspaces = async (userId?: string): Promise<WorkspaceApiRe
  * Create a new workspace
  */
 export const createWorkspace = async (workspaceData: CreateWorkspaceRequest): Promise<CreateWorkspaceResponse> => {
-  console.log('Creating workspace with data:', workspaceData);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces`, {
     method: 'POST',
     body: JSON.stringify(workspaceData),
@@ -118,9 +115,6 @@ export const updateWorkspace = async (
   workspaceId: string,
   workspaceData: UpdateWorkspaceRequest
 ): Promise<UpdateWorkspaceResponse> => {
-  console.log('Updating workspace with data:', workspaceData);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
     method: 'PUT',
     body: JSON.stringify(workspaceData),
@@ -155,9 +149,6 @@ export interface DeleteWorkspaceResponse {
  * Delete a workspace
  */
 export const deleteWorkspace = async (workspaceId: string): Promise<DeleteWorkspaceResponse> => {
-  console.log('Deleting workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}`, {
     method: 'DELETE',
   });

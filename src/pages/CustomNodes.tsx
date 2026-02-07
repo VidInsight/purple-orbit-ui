@@ -83,7 +83,6 @@ const CustomNodes = () => {
       title: 'Create Custom Node',
       description: 'Opening custom node builder...',
     });
-    console.log('Create new custom node');
   };
 
   const handleDocumentation = (node: NodeItem) => {
@@ -91,7 +90,6 @@ const CustomNodes = () => {
       title: 'Documentation',
       description: `Opening documentation for ${node.name}...`,
     });
-    console.log('View documentation:', node);
   };
 
   const handleEdit = (node: NodeItem) => {
@@ -99,7 +97,6 @@ const CustomNodes = () => {
       title: 'Edit Node',
       description: `Editing ${node.name}...`,
     });
-    console.log('Edit node:', node);
   };
 
   const handleDelete = (node: NodeItem) => {
@@ -109,7 +106,6 @@ const CustomNodes = () => {
       variant: 'destructive',
     });
     setNodes(nodes.filter(n => n.id !== node.id));
-    console.log('Delete node:', node);
   };
 
   if (planAccess === 'loading') {

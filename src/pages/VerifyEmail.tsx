@@ -38,8 +38,6 @@ export const VerifyEmail = () => {
           verification_token: tokenFromUrl,
         });
 
-        console.log('Email verification successful:', response);
-
         setVerified(true);
         setUserData(response.data);
 

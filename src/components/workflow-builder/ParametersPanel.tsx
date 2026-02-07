@@ -134,14 +134,6 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
   }, [activePath, waitingForDrop]);
 
   const handleValueChange = (parameterId: string, value: any, isDynamic: boolean = false) => {
-    console.log('Parameter changed:', { 
-      nodeId: node.id, 
-      parameterId, 
-      value, 
-      isDynamic,
-      type: isDynamic ? 'dynamic' : 'static' 
-    });
-
     // Update local state
     setApiParameters(prev => prev.map(param => 
       param.id === parameterId 

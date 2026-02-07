@@ -81,6 +81,4 @@ export const seedDemoData = () => {
 
   // Mark as seeded
   localStorage.setItem('demo_data_seeded', 'true');
-
-  console.log('✅ Demo data seeded successfully');
 };

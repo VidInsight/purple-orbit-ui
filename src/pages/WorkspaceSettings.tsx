@@ -125,34 +125,11 @@ const WorkspaceSettings = () => {
     });
   };
 
-  const handleGetHelp = () => {
-    window.open('https://docs.example.com/help', '_blank');
-  };
-
-  const handleCreateTicket = () => {
+  const handleComingSoon = () => {
     toast({
-      title: 'Create Support Ticket',
-      description: 'Opening support ticket form...',
+      title: 'Coming Soon',
+      description: 'This feature is under development. Stay tuned!',
     });
-  };
-
-  const handleViewDocs = () => {
-    window.open('https://docs.example.com', '_blank');
-  };
-
-  const handleWatchVideos = () => {
-    window.open('https://www.youtube.com/example', '_blank');
-  };
-
-  const handleLiveChat = () => {
-    toast({
-      title: 'Live Chat',
-      description: 'Connecting to support chat...',
-    });
-  };
-
-  const handleEmailSupport = () => {
-    window.location.href = 'mailto:support@example.com';
   };
 
   if (!currentWorkspace) {
@@ -304,7 +281,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleGetHelp}
+                    onClick={handleComingSoon}
                   >
                     <HelpCircle className="h-5 w-5 mr-3" />
                     Get Help
@@ -313,7 +290,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleCreateTicket}
+                    onClick={handleComingSoon}
                   >
                     <Ticket className="h-5 w-5 mr-3" />
                     Create Support Ticket
@@ -322,7 +299,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleViewDocs}
+                    onClick={handleComingSoon}
                   >
                     <BookOpen className="h-5 w-5 mr-3" />
                     Documentation
@@ -331,7 +308,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleWatchVideos}
+                    onClick={handleComingSoon}
                   >
                     <Video className="h-5 w-5 mr-3" />
                     Watch Video Tutorials
@@ -340,7 +317,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleLiveChat}
+                    onClick={handleComingSoon}
                   >
                     <MessageCircle className="h-5 w-5 mr-3" />
                     Live Chat Support
@@ -349,7 +326,7 @@ const WorkspaceSettings = () => {
                   <Button
                     variant="secondary"
                     className="w-full justify-start h-12"
-                    onClick={handleEmailSupport}
+                    onClick={handleComingSoon}
                   >
                     <Mail className="h-5 w-5 mr-3" />
                     Email Support

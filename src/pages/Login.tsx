@@ -104,8 +104,6 @@ export const Login = () => {
         device_type: 'web',
       });
 
-      console.log('Login successful:', response);
-
       // Token'ları ve kullanıcı bilgilerini localStorage'a kaydet
       if (response.data.access_token && response.data.refresh_token) {
         localStorage.setItem('access_token', response.data.access_token);

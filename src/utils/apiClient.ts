@@ -80,7 +80,6 @@ export const apiClient = async (
 
   // Check if token is expired before making request
   if (accessToken && isTokenExpired(accessToken)) {
-    console.log('Access token expired, attempting refresh...');
     accessToken = await attemptTokenRefresh();
     
     if (!accessToken) {
@@ -110,8 +109,6 @@ export const apiClient = async (
 
   // Handle 401 Unauthorized - token might have expired during request
   if (response.status === 401) {
-    console.log('Received 401, attempting token refresh...');
-    
     // Try to refresh token
     const newAccessToken = await attemptTokenRefresh();
     

@@ -162,7 +162,6 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
       formattedPath = nodeIdOrPath;
     }
     
-    console.log('Path selected:', formattedPath);
     setActivePath(formattedPath);
     setCopiedPath(formattedPath);
     setTimeout(() => setCopiedPath(null), 3000);
@@ -170,7 +169,6 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
 
   const handleCopyOutput = (output: any) => {
     navigator.clipboard.writeText(JSON.stringify(output, null, 2));
-    console.log('Copied output to clipboard');
   };
 
   const INDENT_PX = 18;

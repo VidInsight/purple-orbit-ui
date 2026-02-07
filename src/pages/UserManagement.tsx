@@ -9,6 +9,16 @@ import { PendingInvitationsTab } from '@/components/user-management/PendingInvit
 import { InviteUserModal } from '@/components/user-management/InviteUserModal';
 import { User, PendingInvitation, UserRole, InviteUserData } from '@/types/user';
 import { UserPlus, LogOut } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { getWorkspaceMembers, WorkspaceMember, inviteUserByEmail, getUserRoles, leaveWorkspace, removeWorkspaceMember } from '@/services/membersApi';
@@ -52,6 +62,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [invitations, setInvitations] = useState<PendingInvitation[]>([]);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
   const [isLoading, setIsLoading] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -253,7 +264,7 @@ const UserManagement = () => {
     });
   };
 
-  const handleLeaveWorkspace = async () => {
+  const handleLeaveWorkspace = () => {
     if (!currentWorkspace?.id) {
       toast({
         title: 'Error',
@@ -272,12 +283,14 @@ const UserManagement = () => {
       return;
     }
 
-    if (!confirm(`Are you sure you want to leave "${currentWorkspace.name}"? You will need to be invited again to rejoin.`)) {
-      return;
-    }
+    setLeaveConfirmOpen(true);
+  };
 
+  const confirmLeaveWorkspace = async () => {
+    if (!currentWorkspace?.id) return;
     try {
       setIsLeaving(true);
+      setLeaveConfirmOpen(false);
       await leaveWorkspace(currentWorkspace.id);
 
       // Refresh workspace list
@@ -379,7 +392,6 @@ const UserManagement = () => {
     }
   };
 
-
   const existingEmails = [
     ...users.map((u) => u.email),
     ...invitations.map((inv) => inv.email),
@@ -469,6 +481,30 @@ const UserManagement = () => {
             existingEmails={existingEmails}
           />
         )}
+
+        <AlertDialog open={leaveConfirmOpen} onOpenChange={setLeaveConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Workspace&apos;ten ayrılmak istediğinize emin misiniz?</AlertDialogTitle>
+              <AlertDialogDescription>
+                &quot;{currentWorkspace?.name}&quot; workspace&apos;inden ayrılacaksınız. Tekrar katılmak için davet edilmeniz gerekecektir. Bu işlem geri alınamaz.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isLeaving}>Vazgeç</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault();
+                  confirmLeaveWorkspace();
+                }}
+                disabled={isLeaving}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isLeaving ? 'Ayrılıyor...' : 'Workspace\'ten Ayrıl'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PageLayout>
   );

@@ -15,8 +15,6 @@ export interface ApiKeysApiResponse {
  * Get API keys for a workspace
  */
 export const getApiKeys = async (workspaceId: string): Promise<ApiKeysApiResponse> => {
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
     method: 'GET',
   });
@@ -35,7 +33,6 @@ export const getApiKeys = async (workspaceId: string): Promise<ApiKeysApiRespons
   }
 
   const data = await response.json();
-  console.log('API keys API response:', data);
   return data;
 };
 
@@ -78,10 +75,6 @@ export const createApiKey = async (
   workspaceId: string,
   apiKeyData: CreateApiKeyRequest
 ): Promise<CreateApiKeyResponse> => {
-  console.log('Creating API key for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`);
-  console.log('Request data:', apiKeyData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys`, {
     method: 'POST',
     body: JSON.stringify(apiKeyData),
@@ -101,7 +94,6 @@ export const createApiKey = async (
   }
 
   const data = await response.json();
-  console.log('Create API key response:', data);
   return data;
 };
 
@@ -146,9 +138,6 @@ export const getApiKey = async (
     throw new Error('No access token found. Please login again.');
   }
 
-  console.log('Fetching API key:', apiKeyId, 'for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`);
-
   const response = await fetch(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
     method: 'GET',
     headers: {
@@ -171,7 +160,6 @@ export const getApiKey = async (
   }
 
   const data = await response.json();
-  console.log('Get API key response:', data);
   return data;
 };
 
@@ -203,10 +191,6 @@ export const updateApiKey = async (
   apiKeyId: string,
   apiKeyData: UpdateApiKeyRequest
 ): Promise<UpdateApiKeyResponse> => {
-  console.log('Updating API key:', apiKeyId, 'for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`);
-  console.log('Request data:', apiKeyData);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
     method: 'PUT',
     body: JSON.stringify(apiKeyData),
@@ -226,7 +210,6 @@ export const updateApiKey = async (
   }
 
   const data = await response.json();
-  console.log('Update API key response:', data);
   return data;
 };
 
@@ -246,9 +229,6 @@ export const deleteApiKey = async (
   workspaceId: string,
   apiKeyId: string
 ): Promise<DeleteApiKeyResponse> => {
-  console.log('Deleting API key:', apiKeyId, 'for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/api-keys/${apiKeyId}`, {
     method: 'DELETE',
   });
@@ -267,7 +247,6 @@ export const deleteApiKey = async (
   }
 
   const data = await response.json();
-  console.log('Delete API key response:', data);
   return data;
 };
 

@@ -83,10 +83,6 @@ export const createWorkflow = async (
     throw new Error('Workflow name is required.');
   }
 
-  console.log('Creating workflow for workspace:', workspaceId);
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`);
-  console.log('Request body:', workflowData);
-
   try {
     const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows`, {
       method: 'POST',
@@ -113,9 +109,6 @@ export const getWorkflowGraph = async (
   workspaceId: string,
   workflowId: string
 ): Promise<WorkflowApiResponse> => {
-  console.log('Fetching workflow graph:', { workspaceId, workflowId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/graph`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/graph`, {
     method: 'GET',
   });
@@ -134,7 +127,6 @@ export const getWorkflowGraph = async (
   }
 
   const data = await response.json();
-  console.log('Workflow graph API response:', data);
   return data;
 };
 
@@ -146,9 +138,6 @@ export const addNodeToWorkflow = async (
   workflowId: string,
   nodeData: CreateNodeData
 ): Promise<WorkflowApiResponse> => {
-  console.log('Adding node to workflow:', { workspaceId, workflowId, nodeData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes`, {
     method: 'POST',
     body: JSON.stringify(nodeData),
@@ -168,7 +157,6 @@ export const addNodeToWorkflow = async (
   }
 
   const data = await response.json();
-  console.log('Add node API response:', data);
   return data;
 };
 
@@ -185,9 +173,6 @@ export const addEdgeToWorkflow = async (
   workflowId: string,
   edgeData: CreateEdgeData
 ): Promise<WorkflowApiResponse> => {
-  console.log('Adding edge to workflow:', { workspaceId, workflowId, edgeData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges`, {
     method: 'POST',
     body: JSON.stringify(edgeData),
@@ -207,7 +192,6 @@ export const addEdgeToWorkflow = async (
   }
 
   const data = await response.json();
-  console.log('Add edge API response:', data);
   return data;
 };
 
@@ -219,9 +203,6 @@ export const getNodeFormSchema = async (
   workflowId: string,
   nodeId: string
 ): Promise<WorkflowApiResponse & { data: FormSchemaResponse }> => {
-  console.log('Fetching node form schema:', { workspaceId, workflowId, nodeId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
     method: 'GET',
   });
@@ -240,7 +221,6 @@ export const getNodeFormSchema = async (
   }
 
   const data = await response.json();
-  console.log('Node form schema API response:', data);
   return data;
 };
 
@@ -253,9 +233,6 @@ export const updateNodeFormSchema = async (
   nodeId: string,
   formData: UpdateNodeFormSchemaData
 ): Promise<WorkflowApiResponse> => {
-  console.log('Updating node form schema:', { workspaceId, workflowId, nodeId, formData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/form-schema`, {
     method: 'PUT',
     body: JSON.stringify(formData),
@@ -275,7 +252,6 @@ export const updateNodeFormSchema = async (
   }
 
   const data = await response.json();
-  console.log('Update node form schema API response:', data);
   return data;
 };
 
@@ -292,9 +268,6 @@ export const updateNodeInputParams = async (
   nodeId: string,
   inputParams: Record<string, any>
 ): Promise<WorkflowApiResponse> => {
-  console.log('Updating node input params:', { workspaceId, workflowId, nodeId, inputParams });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}/input-params`);
-
   const requestBody: UpdateNodeInputParamsData = {
     input_params: inputParams,
   };
@@ -318,7 +291,6 @@ export const updateNodeInputParams = async (
   }
 
   const data = await response.json();
-  console.log('Update node input params API response:', data);
   return data;
 };
 
@@ -362,9 +334,6 @@ export const getWorkflowDetail = async (
     throw new Error('Workflow ID is required.');
   }
 
-  console.log('Fetching workflow detail:', { workspaceId, workflowId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
     method: 'GET',
   });
@@ -383,7 +352,6 @@ export const getWorkflowDetail = async (
   }
 
   const data = await response.json();
-  console.log('Get workflow detail API response:', data);
   return data;
 };
 
@@ -407,9 +375,6 @@ export const deleteNodeFromWorkflow = async (
     throw new Error('Node ID is required.');
   }
 
-  console.log('Deleting node from workflow:', { workspaceId, workflowId, nodeId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/${nodeId}`, {
     method: 'DELETE',
   });
@@ -428,7 +393,6 @@ export const deleteNodeFromWorkflow = async (
   }
 
   const data = await response.json();
-  console.log('Delete node API response:', data);
   return data;
 };
 
@@ -452,9 +416,6 @@ export const testWorkflowExecution = async (
     throw new Error('Workflow ID is required.');
   }
 
-  console.log('Testing workflow execution:', { workspaceId, workflowId, testData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/executions/test`, {
     method: 'POST',
     body: JSON.stringify(testData),
@@ -474,7 +435,6 @@ export const testWorkflowExecution = async (
   }
 
   const data = await response.json();
-  console.log('Test workflow execution API response:', data);
   return data;
 };
 
@@ -492,9 +452,6 @@ export const getExecution = async (
   if (!executionId || executionId.trim() === '') {
     throw new Error('Execution ID is required.');
   }
-
-  console.log('Fetching execution details:', { workspaceId, executionId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`);
 
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}`, {
     method: 'GET',
@@ -514,7 +471,6 @@ export const getExecution = async (
   }
 
   const data = await response.json();
-  console.log('Get execution API response:', data);
   return data;
 };
 
@@ -548,9 +504,6 @@ export const getWorkflowTriggers = async (
     throw new Error('Workflow ID is required.');
   }
 
-  console.log('Fetching workflow triggers:', { workspaceId, workflowId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers`, {
     method: 'GET',
   });
@@ -569,7 +522,6 @@ export const getWorkflowTriggers = async (
   }
 
   const data = await response.json();
-  console.log('Get workflow triggers API response:', data);
   return data;
 };
 
@@ -600,9 +552,6 @@ export const stopExecution = async (
     throw new Error('Execution ID is required.');
   }
 
-  console.log('Stopping execution:', { workspaceId, executionId });
-
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/executions/${executionId}/cancel`, {
     method: 'POST',
   });
@@ -621,7 +570,6 @@ export const stopExecution = async (
   }
 
   const data = await response.json();
-  console.log('Stop execution API response:', data);
   return data;
 };
 
@@ -646,9 +594,6 @@ export const getWorkflowTrigger = async (
     throw new Error('Trigger ID is required.');
   }
 
-  console.log('Fetching workflow trigger detail:', { workspaceId, workflowId, triggerId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
     method: 'GET',
   });
@@ -667,7 +612,6 @@ export const getWorkflowTrigger = async (
   }
 
   const data = await response.json();
-  console.log('Get workflow trigger API response:', data);
   return data;
 };
 
@@ -700,9 +644,6 @@ export const updateWorkflowTrigger = async (
     throw new Error('Trigger ID is required.');
   }
 
-  console.log('Updating workflow trigger:', { workspaceId, workflowId, triggerId, triggerData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/triggers/${triggerId}`, {
     method: 'PUT',
     body: JSON.stringify(triggerData),
@@ -722,7 +663,6 @@ export const updateWorkflowTrigger = async (
   }
 
   const data = await response.json();
-  console.log('Update workflow trigger API response:', data);
   return data;
 };
 
@@ -740,9 +680,6 @@ export const deleteWorkflow = async (
   if (!workflowId || workflowId.trim() === '') {
     throw new Error('Workflow ID is required.');
   }
-
-  console.log('Deleting workflow:', { workspaceId, workflowId });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`);
 
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}`, {
     method: 'DELETE',
@@ -762,7 +699,6 @@ export const deleteWorkflow = async (
   }
 
   const data = await response.json();
-  console.log('Delete workflow API response:', data);
   return data;
 };
 
@@ -808,9 +744,6 @@ export const insertNodeBetween = async (
     throw new Error('Node name is required.');
   }
 
-  console.log('Inserting node between nodes:', { workspaceId, workflowId, nodeData });
-  console.log('Request URL:', `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/insert-between`);
-
   const response = await apiClient(`${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/nodes/insert-between`, {
     method: 'POST',
     body: JSON.stringify(nodeData),
@@ -830,7 +763,6 @@ export const insertNodeBetween = async (
   }
 
   const data = await response.json();
-  console.log('Insert node between API response:', data);
   return data;
 };
 
