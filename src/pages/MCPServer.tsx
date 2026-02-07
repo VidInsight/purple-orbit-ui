@@ -7,7 +7,7 @@ const MCPServer = () => {
     <PageLayout>
       <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
-          title="MCP Sunucusu"
+          title="MCP Server"
           description="MCP (Model Context Protocol) server management
 "
         />
