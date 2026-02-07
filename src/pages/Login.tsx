@@ -314,12 +314,14 @@ export const Login = () => {
             <span className="relative">{t('auth:login.signIn')}</span>
           </Button>
 
+          {/* Register linki kullanıcıya gizlendi
           <p className="text-center text-sm text-muted-foreground">
             {t('auth:login.noAccount')}{' '}
             <Link to="/register" className="text-primary hover:underline font-medium transition-all duration-200 hover:text-primary/80">
               {t('auth:login.signUp')}
             </Link>
           </p>
+          */}
           </form>
           
           <div className="mt-6 pt-6 border-t border-border/50">

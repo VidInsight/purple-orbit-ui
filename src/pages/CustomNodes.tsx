@@ -131,22 +131,22 @@ const CustomNodes = () => {
               <Lock className="h-10 w-10 text-amber-500" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Custom Nodes özelliği Business plan ile kullanılabilir
+              Custom Nodes is available with the Business plan
             </h1>
             <p className="text-muted-foreground max-w-md mb-2">
-              Custom Nodes sayfasına erişmek için workspace'inizin <strong>Business</strong> plana sahip olması gerekiyor.
+              Your workspace must have a <strong>Business</strong> plan to access the Custom Nodes page.
               {currentPlanName && (
                 <span className="block mt-2">
-                  Mevcut planınız: <strong>{currentPlanName}</strong>
+                  Your current plan: <strong>{currentPlanName}</strong>
                 </span>
               )}
             </p>
             <p className="text-sm text-muted-foreground mb-8">
-              Planınızı yükseltmek için Faturalandırma sayfasına gidin.
+              Go to the Billing page to upgrade your plan.
             </p>
             <Button onClick={() => navigate('/billing')} size="lg">
               <CreditCard className="h-4 w-4 mr-2" />
-              Faturalandırma'ya git
+              Go to Billing
             </Button>
           </div>
         </div>

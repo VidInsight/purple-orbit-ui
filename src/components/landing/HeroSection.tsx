@@ -131,15 +131,7 @@ export const HeroSection = () => {
           
           {/* Left Side - Text Content */}
           <div className="text-center lg:text-left space-y-8">
-            {/* Premium Badge with animation */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/30 rounded-full px-5 py-2 mb-8 animate-fade-in shadow-lg shadow-primary/10 backdrop-blur-sm">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary shadow-glow-primary"></span>
-              </span>
-              <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
-              <span className="text-sm text-primary font-semibold tracking-wide">New: AI Integrations Active</span>
-            </div>
+            <div className="mb-6"></div>
 
             {/* Premium Main Heading with enhanced gradients */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6 animate-fade-in leading-tight" style={{ animationDelay: '0.1s' }}>
@@ -176,14 +168,14 @@ export const HeroSection = () => {
 
             {/* Premium CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10 animate-fade-in" style={{ animationDelay: '0.35s' }}>
-              <Link to="/register">
-                <Button 
-                  size="lg" 
-                  className="group relative gap-2 px-10 py-6 text-base font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300 overflow-hidden"
+              <Link to="/login">
+                <Button
+                  size="lg"
+                  className="group relative gap-2.5 px-10 py-6 text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300 overflow-hidden"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <span className="relative flex items-center gap-2">
-                    Start Free
+                  <span className="relative flex items-center gap-2.5">
+                    Log In
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>

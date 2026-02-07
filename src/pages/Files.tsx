@@ -1,203 +1,40 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ListPageTemplate } from '@/components/shared/ListPageTemplate';
-import { FileItem } from '@/types/common';
-import { toast } from '@/hooks/use-toast';
-import { UploadFileModal } from '@/components/files/UploadFileModal';
-import { EditFileModal } from '@/components/files/EditFileModal';
-import { useWorkspace } from '@/context/WorkspaceContext';
-import { getFiles, deleteFile } from '@/services/filesApi';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { FileText, Sparkles } from 'lucide-react';
 
 const Files = () => {
-  const { currentWorkspace } = useWorkspace();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [files, setFiles] = useState<FileItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingFileId, setEditingFileId] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadFiles();
-  }, [currentWorkspace]);
-
-  // Check for upload query parameter
-  useEffect(() => {
-    const uploadParam = searchParams.get('upload');
-    if (uploadParam === 'true' && currentWorkspace?.id) {
-      setIsUploadModalOpen(true);
-      // Remove query parameter from URL
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, currentWorkspace, setSearchParams]);
-
-  const loadFiles = async () => {
-    if (!currentWorkspace?.id) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await getFiles(currentWorkspace.id);
-
-      // Map API response to FileItem type
-      const mappedFiles: FileItem[] = [];
-      
-      // API response formatına göre files'ları map et
-      const filesData = Array.isArray(response.data) 
-        ? response.data 
-        : response.data?.items || response.data?.files || [];
-
-      filesData.forEach((file: any) => {
-        mappedFiles.push({
-          id: file.id || file.file_id || `file-${Date.now()}`,
-          name: file.name || file.file_name || 'Unnamed File',
-          description: file.description || file.file_description,
-          size: file.size || file.file_size || 0,
-          type: file.type || file.file_type || file.mime_type || 'application/octet-stream',
-          url: file.url || file.file_url || file.download_url || '',
-          createdAt: file.created_at || file.createdAt || new Date().toISOString(),
-          updatedAt: file.updated_at || file.updatedAt || new Date().toISOString(),
-        });
-      });
-
-      setFiles(mappedFiles);
-    } catch (error) {
-      console.error('Error loading files:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to load files',
-        variant: 'destructive',
-      });
-      setFiles([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCreate = () => {
-    if (!currentWorkspace) {
-      toast({
-        title: 'Error',
-        description: 'Please select a workspace first',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setIsUploadModalOpen(true);
-  };
-
-  const handleUploadSuccess = () => {
-    loadFiles();
-  };
-
-  const handleView = (item: FileItem) => {
-    toast({
-      title: 'View File',
-      description: `Opening: ${item.name}`,
-    });
-  };
-
-  const handleEdit = (item: FileItem) => {
-    if (!currentWorkspace?.id) {
-      toast({
-        title: 'Error',
-        description: 'Workspace not selected',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setEditingFileId(item.id);
-    setIsEditModalOpen(true);
-  };
-
-  const handleDelete = async (item: FileItem) => {
-    if (!currentWorkspace?.id) {
-      toast({
-        title: 'Error',
-        description: 'Workspace not selected',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      await deleteFile(currentWorkspace.id, item.id);
-      toast({
-        title: 'Success',
-        description: `${item.name} has been deleted successfully.`,
-      });
-      // Reload files after deletion
-      await loadFiles();
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete file',
-        variant: 'destructive',
-      });
-      throw error; // Re-throw to let ListPageTemplate handle the error state
-    }
-  };
-
-  if (!currentWorkspace) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Please select a workspace first</p>
-      </div>
-    );
-  }
-
   return (
-    <>
-      <ListPageTemplate
-        pageTitle="Files"
-        pageDescription="Manage files and assets for your workflows"
-        items={files}
-        isLoading={isLoading}
-        searchPlaceholder="Search files..."
-        createButtonText="Upload File"
-        itemTypeName="file"
-        emptyMessage="No files uploaded yet"
-        emptyDescription="Upload files to use in your workflows."
-        onCreate={handleCreate}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        itemsPerPage={10}
-      />
-      {currentWorkspace && (
-        <UploadFileModal
-          isOpen={isUploadModalOpen}
-          onClose={() => {
-            setIsUploadModalOpen(false);
-            // Remove query parameter if it exists
-            if (searchParams.get('upload') === 'true') {
-              setSearchParams({}, { replace: true });
-            }
-          }}
-          workspaceId={currentWorkspace.id}
-          onSuccess={handleUploadSuccess}
+    <PageLayout>
+      <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+        <PageHeader
+          title="Files"
+          description="Manage files and assets for your workflows"
         />
-      )}
 
-      {/* Edit File Modal */}
-      {currentWorkspace && editingFileId && (
-        <EditFileModal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingFileId(null);
-          }}
-          workspaceId={currentWorkspace.id}
-          fileId={editingFileId}
-          onSuccess={() => {
-            loadFiles();
-          }}
-        />
-      )}
-    </>
+        <div className="relative mt-12 flex flex-col items-center justify-center min-h-[60vh]">
+          {/* Background glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 rounded-3xl blur-3xl -z-10 max-w-2xl mx-auto" />
+
+          <div className="relative flex flex-col items-center text-center max-w-lg mx-auto p-8 sm:p-12 bg-surface/60 backdrop-blur-xl border border-border/60 rounded-3xl shadow-2xl shadow-primary/5">
+            <div className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20">
+              <FileText className="h-14 w-14 text-primary mx-auto" strokeWidth={1.5} />
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+              Coming Soon
+            </h2>
+            <p className="text-muted-foreground text-base sm:text-lg mb-6">
+              We are working on file management features. You will be able to upload, manage and use files in your workflows shortly.
+            </p>
+
+            <div className="flex items-center gap-2 text-sm text-primary/80">
+              <Sparkles className="h-4 w-4" />
+              <span>To be added soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageLayout>
   );
 };
 

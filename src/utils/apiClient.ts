@@ -136,6 +136,22 @@ export const apiClient = async (
     }
   }
 
+  // Workspace access revoked (e.g. removed from invited workspace) -> redirect to welcome
+  if (response.status === 500) {
+    try {
+      const cloned = response.clone();
+      const text = await cloned.text();
+      const data = text ? JSON.parse(text) : {};
+      const msg = String(data.error_message || data.message || '');
+      if (msg.includes('Workspace access check failed')) {
+        window.location.replace('/');
+        throw new Error('Workspace access revoked');
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Workspace access revoked') throw e;
+    }
+  }
+
   return response;
 };
 
