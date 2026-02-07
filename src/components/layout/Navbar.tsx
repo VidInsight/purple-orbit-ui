@@ -7,10 +7,12 @@ import { useUser } from '@/context/UserContext';
 import {
   Workflow,
   PlayCircle,
+  Bot,
   Key,
   Database,
   Code,
   Folder,
+  Server,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -39,8 +41,10 @@ const navigationSections = {
   workflow: [
     { name: 'Workflows', path: '/workflows', icon: Workflow, iconColor: 'text-blue-400', borderColor: 'border-blue-400', dotColor: 'bg-blue-400' },
     { name: 'Executions', path: '/executions', icon: PlayCircle, iconColor: 'text-cyan-400', borderColor: 'border-cyan-400', dotColor: 'bg-cyan-400' },
+    { name: 'Agents Workflow', path: '/agents-workflow', icon: Bot, iconColor: 'text-green-400', borderColor: 'border-green-400', dotColor: 'bg-green-400' },
   ],
   resources: [
+    { name: 'MCP Sunucusu', path: '/mcp-server', icon: Server, iconColor: 'text-sky-400', borderColor: 'border-sky-400', dotColor: 'bg-sky-400' },
     { name: 'Credentials', path: '/credentials', icon: Key, iconColor: 'text-emerald-400', borderColor: 'border-emerald-400', dotColor: 'bg-emerald-400' },
     { name: 'Databases', path: '/databases', icon: Database, iconColor: 'text-teal-400', borderColor: 'border-teal-400', dotColor: 'bg-teal-400' },
     { name: 'Variables', path: '/variables', icon: Code, iconColor: 'text-indigo-400', borderColor: 'border-indigo-400', dotColor: 'bg-indigo-400' },

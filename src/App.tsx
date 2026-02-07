@@ -26,6 +26,8 @@ import CustomNodes from "@/pages/CustomNodes";
 import ApiKeys from "@/pages/ApiKeys";
 import UserManagement from "@/pages/UserManagement";
 import Billing from "@/pages/Billing";
+import AgentsWorkflow from "@/pages/AgentsWorkflow";
+import MCPServer from "@/pages/MCPServer";
 import NotFound from "@/pages/NotFound";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
@@ -70,6 +72,8 @@ const AppRoutes = () => {
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+      <Route path="/agents-workflow" element={<ProtectedRoute><AgentsWorkflow /></ProtectedRoute>} />
+      <Route path="/mcp-server" element={<ProtectedRoute><MCPServer /></ProtectedRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
