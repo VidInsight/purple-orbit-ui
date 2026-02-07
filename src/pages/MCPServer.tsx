@@ -8,7 +8,8 @@ const MCPServer = () => {
       <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
           title="MCP Sunucusu"
-          description="Model Context Protocol sunucu yönetimi"
+          description="MCP (Model Context Protocol) server management
+"
         />
 
         <div className="relative mt-12 flex flex-col items-center justify-center min-h-[60vh]">
@@ -21,11 +22,10 @@ const MCPServer = () => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-              Yakında Eklenecektir
+              Coming Soon
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg mb-6">
-              MCP (Model Context Protocol) sunucusu yönetimi özellikleri üzerinde çalışıyoruz. Kısa süre içinde MCP sunucularını ekleyip yapılandırabileceksiniz.
-            </p>
+            We are working on the management features for MCP (Model Context Protocol) servers. You will be able to add and configure MCP servers shortly.            </p>
 
             <div className="flex items-center gap-2 text-sm text-primary/80">
               <Sparkles className="h-4 w-4" />

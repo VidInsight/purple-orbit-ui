@@ -7,8 +7,9 @@ const Billing = () => {
     <PageLayout>
       <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
-          title="Faturalandırma"
-          description="Abonelik ve ödeme yönetimi"
+          title="Billing"
+          description="Subscription and payment management
+"
         />
 
         <div className="relative mt-12 flex flex-col items-center justify-center min-h-[60vh]">
@@ -21,11 +22,10 @@ const Billing = () => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-              Yakında Eklenecektir
+              Coming Soon
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg mb-6">
-              Faturalandırma ve abonelik yönetimi özellikleri üzerinde çalışıyoruz. Kısa süre içinde planlar, ödeme yöntemleri ve fatura geçmişi burada olacak.
-            </p>
+            We're working on billing and subscription management features. Plans, payment methods, and billing history will be here shortly.            </p>
 
             <div className="flex items-center gap-2 text-sm text-primary/80">
               <Sparkles className="h-4 w-4" />

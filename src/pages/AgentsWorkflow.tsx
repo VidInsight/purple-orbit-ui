@@ -8,7 +8,8 @@ const AgentsWorkflow = () => {
       <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <PageHeader
           title="Agents Workflow"
-          description="AI ajanları ve otomasyon akışları"
+          description="AI agents and automation flows
+"
         />
 
         <div className="relative mt-12 flex flex-col items-center justify-center min-h-[60vh]">
@@ -21,11 +22,10 @@ const AgentsWorkflow = () => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-              Yakında Eklenecektir
+              Coming Soon
             </h2>
             <p className="text-muted-foreground text-base sm:text-lg mb-6">
-              Agents Workflow özellikleri üzerinde çalışıyoruz. Kısa süre içinde AI ajanları oluşturma, yapılandırma ve otomasyon akışlarını burada yönetebileceksiniz.
-            </p>
+            We are working on the Agents Workflow features. Soon you will be able to manage the workflows for creating, configuring, and automating AI agents here.            </p>
 
             <div className="flex items-center gap-2 text-sm text-primary/80">
               <Sparkles className="h-4 w-4" />

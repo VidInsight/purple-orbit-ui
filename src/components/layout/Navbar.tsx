@@ -1,9 +1,13 @@
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useRef, useEffect } from 'react';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
+
+/** Persist sidebar scroll across route changes (Navbar remounts on each page) */
+let sidebarScrollTop = 0;
 import {
   Workflow,
   PlayCircle,
@@ -67,6 +71,18 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   const { currentWorkspace } = useWorkspace();
   const { theme, toggleTheme } = useTheme();
   const { currentUser } = useUser();
+  const navScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = navScrollRef.current;
+    if (el && sidebarScrollTop > 0) {
+      el.scrollTop = sidebarScrollTop;
+    }
+  }, []);
+
+  const saveSidebarScroll = () => {
+    if (navScrollRef.current) sidebarScrollTop = navScrollRef.current.scrollTop;
+  };
 
   const getUserInitials = (name: string) => {
     return name
@@ -115,7 +131,11 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
+      <div
+        ref={navScrollRef}
+        className="flex-1 py-4 overflow-y-auto custom-scrollbar"
+        onScroll={saveSidebarScroll}
+      >
         <div className="space-y-3 px-3">
           {/* Workspace Section */}
           <div>
