@@ -17,33 +17,33 @@ export const LandingFooter = () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsLoading(false);
     setEmail('');
-    toast.success('Bültene başarıyla abone oldunuz!');
+    toast.success('Successfully subscribed to the newsletter!');
   };
 
   const footerLinks = {
     product: [
-      { label: 'Özellikler', href: '#features' },
-      { label: 'Entegrasyonlar', href: '#integrations' },
-      { label: 'Fiyatlandırma', href: '#pricing' },
+      { label: 'Features', href: '#features' },
+      { label: 'Integrations', href: '#integrations' },
+      { label: 'Pricing', href: '#pricing' },
       { label: 'Changelog', href: '#changelog' },
     ],
     company: [
-      { label: 'Hakkımızda', href: '#about' },
+      { label: 'About', href: '#about' },
       { label: 'Blog', href: '#blog' },
-      { label: 'Kariyer', href: '#careers' },
-      { label: 'İletişim', href: '#contact' },
+      { label: 'Careers', href: '#careers' },
+      { label: 'Contact', href: '#contact' },
     ],
     resources: [
-      { label: 'Dokümantasyon', href: '#docs' },
-      { label: 'API Referansı', href: '#api' },
-      { label: 'Topluluk', href: '#community' },
-      { label: 'Destek', href: '#support' },
+      { label: 'Documentation', href: '#docs' },
+      { label: 'API Reference', href: '#api' },
+      { label: 'Community', href: '#community' },
+      { label: 'Support', href: '#support' },
     ],
     legal: [
-      { label: 'Gizlilik', href: '#privacy' },
-      { label: 'Kullanım Koşulları', href: '#terms' },
-      { label: 'Güvenlik', href: '#security' },
-      { label: 'KVKK', href: '#kvkk' },
+      { label: 'Privacy', href: '#privacy' },
+      { label: 'Terms of Use', href: '#terms' },
+      { label: 'Security', href: '#security' },
+      { label: 'Compliance', href: '#compliance' },
     ],
   };
 
@@ -54,23 +54,23 @@ export const LandingFooter = () => {
         <div className="mb-12 pb-12 border-b border-border">
           <div className="max-w-xl mx-auto text-center">
             <h3 className="text-xl font-bold text-foreground mb-2">
-              Bültene Abone Olun
+              Subscribe to Our Newsletter
             </h3>
             <p className="text-muted-foreground text-sm mb-6">
-              Yeni özellikler, güncellemeler ve otomasyon ipuçları için bültenimize abone olun.
+              Subscribe for new features, updates, and automation tips.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="flex gap-3 max-w-md mx-auto">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-posta adresiniz"
+                placeholder="Your email address"
                 className="flex-1 px-4 py-2.5 rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
                 required
               />
               <Button type="submit" loading={isLoading} className="gap-2">
                 <Send className="h-4 w-4" />
-                Abone Ol
+                Subscribe
               </Button>
             </form>
           </div>
@@ -86,7 +86,7 @@ export const LandingFooter = () => {
               <span className="text-lg font-bold text-foreground">Qbitra</span>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-              İş süreçlerinizi otomatikleştirmek için modern, güçlü ve kullanımı kolay workflow platformu.
+              A modern, powerful, and easy-to-use workflow platform to automate your business processes.
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-3">
@@ -104,7 +104,7 @@ export const LandingFooter = () => {
 
           {/* Links */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Ürün</h4>
+            <h4 className="font-semibold text-foreground mb-4">Product</h4>
             <ul className="space-y-2">
               {footerLinks.product.map(link => (
                 <li key={link.label}>
@@ -117,7 +117,7 @@ export const LandingFooter = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Şirket</h4>
+            <h4 className="font-semibold text-foreground mb-4">Company</h4>
             <ul className="space-y-2">
               {footerLinks.company.map(link => (
                 <li key={link.label}>
@@ -130,7 +130,7 @@ export const LandingFooter = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Kaynaklar</h4>
+            <h4 className="font-semibold text-foreground mb-4">Resources</h4>
             <ul className="space-y-2">
               {footerLinks.resources.map(link => (
                 <li key={link.label}>
@@ -143,7 +143,7 @@ export const LandingFooter = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Yasal</h4>
+            <h4 className="font-semibold text-foreground mb-4">Legal</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map(link => (
                 <li key={link.label}>
@@ -159,14 +159,14 @@ export const LandingFooter = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Qbitra. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Qbitra. All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
             </span>
-            Tüm sistemler çalışıyor
+            All systems operational
           </div>
         </div>
       </div>

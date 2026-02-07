@@ -8,28 +8,28 @@ import {
 
 const faqs = [
   {
-    question: "AutoFlow nedir ve nasıl çalışır?",
-    answer: "AutoFlow, iş süreçlerinizi otomatikleştirmenizi sağlayan güçlü bir no-code platform'dur. Görsel workflow builder ile dakikalar içinde karmaşık otomasyonlar oluşturabilir, 50+ entegrasyon ile sistemlerinizi birbirine bağlayabilirsiniz."
+    question: "What is Qbitra and how does it work?",
+    answer: "Qbitra is a powerful no-code platform that lets you automate your business processes. Create complex automations in minutes with the visual workflow builder and connect your systems with 50+ integrations."
   },
   {
-    question: "Kod yazmadan otomasyon oluşturabilir miyim?",
-    answer: "Evet! AutoFlow tamamen no-code bir platformdur. Sürükle-bırak arayüzü ile herhangi bir programlama bilgisi olmadan workflow'lar oluşturabilirsiniz. Teknik ekip gerektirmeden iş süreçlerinizi optimize edebilirsiniz."
+    question: "Can I create automations without writing code?",
+    answer: "Yes! Qbitra is a fully no-code platform. Build workflows with the drag-and-drop interface without any programming knowledge. Optimize your business processes without needing a technical team."
   },
   {
-    question: "Hangi uygulamalarla entegrasyon yapabilirim?",
-    answer: "AutoFlow, Slack, Google Workspace, Salesforce, HubSpot, Stripe, OpenAI ve daha birçok popüler uygulama ile hazır entegrasyonlar sunar. Ayrıca API ve webhook desteği ile özel entegrasyonlar da oluşturabilirsiniz."
+    question: "What apps can I integrate with?",
+    answer: "Qbitra offers ready integrations with Slack, Google Workspace, Salesforce, HubSpot, Stripe, OpenAI, and many other popular apps. You can also create custom integrations with API and webhook support."
   },
   {
-    question: "Ücretsiz deneme süresi var mı?",
-    answer: "Evet, AutoFlow'u 14 gün boyunca ücretsiz deneyebilirsiniz. Kredi kartı gerektirmez ve tüm özelliklere tam erişim sağlarsınız. Deneme süresinin sonunda planınızı seçebilirsiniz."
+    question: "Is there a free trial?",
+    answer: "Yes, you can try Qbitra free for 14 days. No credit card required, with full access to all features. Choose your plan when the trial ends."
   },
   {
-    question: "Verilerim güvende mi?",
-    answer: "Kesinlikle. AutoFlow, enterprise-grade güvenlik standartlarını karşılar. Verileriniz şifrelenir, GDPR ve SOC 2 uyumluluğu sağlanır. %99.9 uptime garantisi ile kesintisiz hizmet sunuyoruz."
+    question: "Is my data secure?",
+    answer: "Absolutely. Qbitra meets enterprise-grade security standards. Your data is encrypted, with GDPR and SOC 2 compliance. We offer uninterrupted service with a 99.9% uptime guarantee."
   },
   {
-    question: "Destek seçenekleri nelerdir?",
-    answer: "Tüm planlarda email desteği sunuyoruz. Pro ve Business planlarında öncelikli destek, canlı chat ve dedicated account manager seçenekleri mevcuttur. Ayrıca kapsamlı dokümantasyon ve topluluk forumu da aktiftir."
+    question: "What support options are available?",
+    answer: "We offer email support on all plans. Pro and Business plans include priority support, live chat, and dedicated account manager options. Comprehensive documentation and community forum are also available."
   }
 ];
 
@@ -46,13 +46,13 @@ export const FAQSection = () => {
           }`}
         >
           <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            SSS
+            FAQ
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Sık Sorulan Sorular
+            Frequently Asked Questions
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            AutoFlow hakkında merak ettikleriniz
+            Everything you want to know about Qbitra
           </p>
         </div>
 

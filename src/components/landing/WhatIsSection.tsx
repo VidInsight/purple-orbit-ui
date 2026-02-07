@@ -12,15 +12,15 @@ import {
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 const problems = [
-  { icon: Clock, text: 'Tekrarlayan manuel işlemler', color: 'text-destructive' },
-  { icon: TrendingDown, text: 'Düşük verimlilik', color: 'text-destructive' },
-  { icon: XCircle, text: 'İnsan hataları', color: 'text-destructive' },
+  { icon: Clock, text: 'Repetitive manual tasks', color: 'text-destructive' },
+  { icon: TrendingDown, text: 'Low efficiency', color: 'text-destructive' },
+  { icon: XCircle, text: 'Human errors', color: 'text-destructive' },
 ];
 
 const solutions = [
-  { icon: Zap, text: 'Otomatik iş akışları', color: 'text-success' },
-  { icon: TrendingUp, text: 'Yüksek verimlilik', color: 'text-success' },
-  { icon: CheckCircle, text: 'Hatasız süreçler', color: 'text-success' },
+  { icon: Zap, text: 'Automated workflows', color: 'text-success' },
+  { icon: TrendingUp, text: 'High efficiency', color: 'text-success' },
+  { icon: CheckCircle, text: 'Error-free processes', color: 'text-success' },
 ];
 
 export const WhatIsSection = () => {
@@ -47,20 +47,18 @@ export const WhatIsSection = () => {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
             <Workflow className="h-4 w-4 text-primary" />
-            <span className="text-sm text-primary font-medium">Workflow Otomasyon Platformu</span>
+            <span className="text-sm text-primary font-medium">Workflow Automation Platform</span>
           </div>
           <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              İş Süreçlerinizi
+              Automate Your
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Otomatikleştirin
+              Business Processes
             </span>
           </h2>
           <p className={`text-muted-foreground text-lg max-w-3xl mx-auto transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            FlowMaster, tekrarlayan manuel görevleri otomatik iş akışlarına dönüştüren 
-            güçlü bir otomasyon platformudur. Kod yazmadan, sürükle-bırak arayüzüyle 
-            dakikalar içinde karmaşık süreçleri otomatikleştirin.
+            Qbitra is a powerful automation platform that turns repetitive manual tasks into automated workflows. Automate complex processes in minutes with a drag-and-drop interface—no coding required.
           </p>
         </div>
 
@@ -72,7 +70,7 @@ export const WhatIsSection = () => {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-destructive/50 to-destructive/20" />
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <XCircle className="h-5 w-5 text-destructive" />
-              Sorunlar
+              Problems
             </h3>
             <div className="space-y-4">
               {problems.map((problem, index) => {
@@ -121,8 +119,8 @@ export const WhatIsSection = () => {
             </div>
             
             <div className="mt-6 text-center">
-              <div className="text-sm font-semibold text-primary">FlowMaster</div>
-              <div className="text-xs text-muted-foreground">ile dönüştürün</div>
+              <div className="text-sm font-semibold text-primary">Qbitra</div>
+              <div className="text-xs text-muted-foreground">transforms them</div>
             </div>
 
             {/* Animated arrows */}
@@ -138,7 +136,7 @@ export const WhatIsSection = () => {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-success/50 to-success/20" />
             <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-success" />
-              Çözümler
+              Solutions
             </h3>
             <div className="space-y-4">
               {solutions.map((solution, index) => {
@@ -173,9 +171,9 @@ export const WhatIsSection = () => {
         {/* Key Benefits */}
         <div className={`grid sm:grid-cols-3 gap-6 mt-16 transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {[
-            { value: '%80', label: 'Zaman Tasarrufu', desc: 'Manuel işlemlerde' },
-            { value: '0', label: 'Kod Gereksinimi', desc: 'Sürükle-bırak ile' },
-            { value: '24/7', label: 'Otomatik Çalışma', desc: 'Kesintisiz otomasyon' },
+            { value: '80%', label: 'Time Saved', desc: 'On manual tasks' },
+            { value: '0', label: 'Code Required', desc: 'Drag-and-drop only' },
+            { value: '24/7', label: 'Always Running', desc: 'Uninterrupted automation' },
           ].map((stat, index) => (
             <div 
               key={index}

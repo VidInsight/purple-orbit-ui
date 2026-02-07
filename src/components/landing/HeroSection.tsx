@@ -138,35 +138,34 @@ export const HeroSection = () => {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary shadow-glow-primary"></span>
               </span>
               <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
-              <span className="text-sm text-primary font-semibold tracking-wide">Yeni: AI Entegrasyonları Aktif</span>
+              <span className="text-sm text-primary font-semibold tracking-wide">New: AI Integrations Active</span>
             </div>
 
             {/* Premium Main Heading with enhanced gradients */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold mb-6 animate-fade-in leading-tight" style={{ animationDelay: '0.1s' }}>
               <span className="block bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent drop-shadow-2xl">
-                Workflow Otomasyonunu
+                Workflow Automation
               </span>
               <span className="block mt-2 bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
-                Yeniden Keşfedin
+                Reimagined
               </span>
             </h1>
 
             {/* Enhanced Subheading */}
             <p className="text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-6 animate-fade-in leading-relaxed" style={{ animationDelay: '0.2s' }}>
-              Sürükle-bırak arayüzü, <span className="text-primary font-semibold">50+ entegrasyon</span> ve{' '}
-              <span className="text-primary font-semibold">yapay zeka desteği</span>yle 
-              iş süreçlerinizi dakikalar içinde otomatikleştirin.
+              Automate your business processes in minutes with a drag-and-drop interface, <span className="text-primary font-semibold">50+ integrations</span>, and{' '}
+              <span className="text-primary font-semibold">AI support</span>.
             </p>
 
             {/* Premium Stats Row */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mb-8 animate-fade-in" style={{ animationDelay: '0.25s' }}>
               <div className="flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg">
                 <Zap className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Hızlı Kurulum</span>
+                <span className="text-sm font-medium">Quick Setup</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg">
                 <TrendingUp className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium">%80 Verimlilik</span>
+                <span className="text-sm font-medium">80% Efficiency</span>
               </div>
             </div>
 
@@ -184,7 +183,7 @@ export const HeroSection = () => {
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <span className="relative flex items-center gap-2">
-                    Ücretsiz Başla
+                    Start Free
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
@@ -196,18 +195,18 @@ export const HeroSection = () => {
                 onClick={() => setDemoModalOpen(true)}
               >
                 <Play className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                Demo İzle
+                Watch Demo
               </Button>
             </div>
 
             {/* Demo video modal */}
             <Dialog open={demoModalOpen} onOpenChange={setDemoModalOpen}>
               <DialogContent className="max-w-4xl w-[95vw] pt-12 pb-0 px-0 gap-0 overflow-hidden border-primary/20 bg-background/95 backdrop-blur-sm">
-                <DialogTitle className="sr-only">Demo Videosu</DialogTitle>
+                <DialogTitle className="sr-only">Demo Video</DialogTitle>
                 <div className="relative aspect-video w-full">
                   <iframe
                     src={demoModalOpen ? DEMO_VIDEO_URL : ''}
-                    title="Demo Videosu"
+                    title="Demo Video"
                     className="absolute inset-0 w-full h-full rounded-lg"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen

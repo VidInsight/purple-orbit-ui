@@ -43,13 +43,13 @@ export const LandingNavbar = () => {
             <Link to="/login">
               <Button variant="ghost" className="gap-2 hover:bg-primary/10">
                 <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Giriş Yap</span>
+                <span className="hidden sm:inline">Log In</span>
               </Button>
             </Link>
             <Link to="/register">
               <Button className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300">
                 <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Kayıt Ol</span>
+                <span className="hidden sm:inline">Sign Up</span>
               </Button>
             </Link>
           </div>

@@ -54,11 +54,11 @@ export const IntegrationsSection = () => {
               50+
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Entegrasyon
+              Integrations
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Favori araçlarınızla sorunsuz çalışın
+            Work seamlessly with your favorite tools
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export const IntegrationsSection = () => {
         {/* Button */}
         <div className={`text-center mt-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '300ms' }}>
           <button className="text-primary hover:text-primary/80 font-medium transition-colors">
-            Tüm Entegrasyonları Gör →
+            View All Integrations →
           </button>
         </div>
 

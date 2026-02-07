@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 
 const useCases = [
-  'E-posta bildirimleri otomatikleştirin',
-  'Veri senkronizasyonu yapın',
-  'AI ile içerik üretin',
-  'Raporları otomatik gönderin',
-  'CRM entegrasyonları kurun',
+  'Automate email notifications',
+  'Sync data across systems',
+  'Generate content with AI',
+  'Send reports automatically',
+  'Set up CRM integrations',
 ];
 
 export const TypewriterText = () => {
@@ -27,7 +27,7 @@ export const TypewriterText = () => {
 
   return (
     <div className="h-8 flex items-center justify-center lg:justify-start">
-      <span className="text-muted-foreground mr-2">Örneğin:</span>
+      <span className="text-muted-foreground mr-2">For example:</span>
       <span 
         className={`
           text-primary font-medium transition-all duration-500

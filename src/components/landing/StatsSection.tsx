@@ -73,24 +73,24 @@ export const StatsSection = () => {
       icon: Plug,
       value: 50,
       suffix: '+',
-      label: 'Entegrasyon',
-      description: 'Popüler servislerle hazır bağlantılar',
+      label: 'Integrations',
+      description: 'Ready connections with popular services',
       color: 'from-primary to-primary/70',
     },
     {
       icon: TrendingUp,
       value: 340,
       prefix: '%',
-      label: 'Performans Artışı',
-      description: 'Ortalama verimlilik kazanımı',
+      label: 'Performance Boost',
+      description: 'Average efficiency gain',
       color: 'from-success to-success/70',
     },
     {
       icon: Zap,
       value: 1,
       suffix: 'M+',
-      label: 'İşlenen Task',
-      description: 'Her ay milyonlarca görev',
+      label: 'Tasks Processed',
+      description: 'Millions of tasks every month',
       color: 'from-warning to-warning/70',
     },
     {
@@ -98,15 +98,15 @@ export const StatsSection = () => {
       value: 99.9,
       suffix: '%',
       label: 'Uptime',
-      description: 'Kesintisiz güvenilir altyapı',
+      description: 'Reliable infrastructure, no downtime',
       color: 'from-primary to-primary/70',
     },
     {
       icon: Clock,
       value: 0.3,
       suffix: 's',
-      label: 'Ortalama Hız',
-      description: 'Milisaniyede yanıt süresi',
+      label: 'Average Speed',
+      description: 'Response time in milliseconds',
       color: 'from-success to-success/70',
     },
   ];
@@ -120,14 +120,14 @@ export const StatsSection = () => {
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Rakamlarla
+              Qbitra
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Qbitra
+              in Numbers
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Binlerce işletmenin güvendiği performans ve güvenilirlik
+            Performance and reliability trusted by thousands of businesses
           </p>
         </div>
 

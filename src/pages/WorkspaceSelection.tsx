@@ -291,7 +291,7 @@ const WorkspaceSelection = () => {
     });
     
     // Navigate to login page
-    navigate('/login');
+    navigate('/');
   };
 
   const handleAcceptInvitation = async (invitationId: string) => {

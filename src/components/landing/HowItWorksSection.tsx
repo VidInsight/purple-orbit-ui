@@ -64,18 +64,18 @@ export const HowItWorksSection = () => {
   const steps = [
     {
       icon: Zap,
-      title: 'Trigger Oluştur',
-      description: 'Webhook, zamanlayıcı veya event ile workflow\'unuzu başlatın',
+      title: 'Create Trigger',
+      description: 'Start your workflow with webhook, scheduler, or event',
     },
     {
       icon: GitBranch,
-      title: 'Node\'ları Bağla',
-      description: 'Sürükle-bırak ile aksiyonları ve koşulları ekleyin',
+      title: 'Connect Nodes',
+      description: 'Add actions and conditions with drag-and-drop',
     },
     {
       icon: Rocket,
-      title: 'Yayına Al',
-      description: 'Tek tıkla workflow\'unuzu aktifleştirin ve izleyin',
+      title: 'Go Live',
+      description: 'Activate and monitor your workflow with one click',
     },
   ];
 
@@ -95,14 +95,14 @@ export const HowItWorksSection = () => {
         <div className={`text-center mb-20 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Nasıl
+              How It
             </span>{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Çalışır?
+              Works
             </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            3 basit adımda workflow'unuzu oluşturun ve çalıştırın
+            Build and run your workflow in 3 simple steps
           </p>
         </div>
 
