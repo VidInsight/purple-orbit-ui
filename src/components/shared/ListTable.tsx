@@ -75,7 +75,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="group relative flex items-center justify-between px-6 py-4 rounded-xl border border-border/50 bg-gradient-to-r from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 ease-out"
+            className="group relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-xl border border-border/50 min-w-0 bg-gradient-to-r from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 ease-out"
           >
             {/* Hover gradient effect */}
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/0 transition-all duration-300 pointer-events-none" />
@@ -88,7 +88,7 @@ export function ListTable<T extends { id: string; name: string; description?: st
               )}
             </div>
             {hasActions && (
-              <div className="relative flex items-center gap-1 ml-6 opacity-60 group-hover:opacity-100 transition-all duration-300">
+              <div className="relative flex items-center gap-1 ml-2 sm:ml-6 shrink-0 opacity-60 group-hover:opacity-100 transition-all duration-300">
                 {onView && (
                   <Button
                     variant="ghost"

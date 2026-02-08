@@ -37,9 +37,9 @@ export const PageHeader = ({ title, description, badge, stats, actions }: PageHe
       {/* Background layers with subtle pulse */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/5 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsl(var(--primary)/0.15),transparent)] pointer-events-none animate-header-glow" />
-      <div className="relative px-4 py-4 md:px-6 md:py-5 lg:px-8 lg:py-6">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div className="space-y-1.5">
+      <div className="relative px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 lg:px-8 lg:py-6 min-w-0">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 min-w-0">
+          <div className="space-y-1.5 min-w-0">
             {badge && (
               <div
                 className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary animate-header-slide-up opacity-0"
@@ -50,7 +50,7 @@ export const PageHeader = ({ title, description, badge, stats, actions }: PageHe
               </div>
             )}
             <h1
-              className="text-2xl md:text-3xl font-bold text-foreground tracking-tight animate-header-slide-up opacity-0"
+              className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight truncate animate-header-slide-up opacity-0"
               style={{
                 animationDelay: badge ? '0.1s' : '0.05s',
                 animationFillMode: 'forwards',

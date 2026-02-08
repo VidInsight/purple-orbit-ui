@@ -410,10 +410,7 @@ const WorkspaceSelection = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 tech-glow-line">
                 <LayoutDashboard className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Workspace</p>
-                <p className="text-sm font-semibold text-foreground">Select workspace</p>
-              </div>
+              
             </div>
             <div>
               

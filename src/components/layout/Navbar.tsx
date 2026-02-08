@@ -43,15 +43,15 @@ const navigationSections = {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, iconColor: 'text-primary', borderColor: 'border-primary', dotColor: 'bg-primary' },
   ],
   workflow: [
+    { name: 'Agents ', path: '/agents-workflow', icon: Bot, iconColor: 'text-green-400', borderColor: 'border-green-400', dotColor: 'bg-green-400' },
     { name: 'Workflows', path: '/workflows', icon: Workflow, iconColor: 'text-blue-400', borderColor: 'border-blue-400', dotColor: 'bg-blue-400' },
     { name: 'Executions', path: '/executions', icon: PlayCircle, iconColor: 'text-cyan-400', borderColor: 'border-cyan-400', dotColor: 'bg-cyan-400' },
-    { name: 'Agents Workflow', path: '/agents-workflow', icon: Bot, iconColor: 'text-green-400', borderColor: 'border-green-400', dotColor: 'bg-green-400' },
   ],
   resources: [
-    { name: 'MCP Server', path: '/mcp-server', icon: Server, iconColor: 'text-sky-400', borderColor: 'border-sky-400', dotColor: 'bg-sky-400' },
     { name: 'Credentials', path: '/credentials', icon: Key, iconColor: 'text-emerald-400', borderColor: 'border-emerald-400', dotColor: 'bg-emerald-400' },
-    { name: 'Databases', path: '/databases', icon: Database, iconColor: 'text-teal-400', borderColor: 'border-teal-400', dotColor: 'bg-teal-400' },
     { name: 'Variables', path: '/variables', icon: Code, iconColor: 'text-indigo-400', borderColor: 'border-indigo-400', dotColor: 'bg-indigo-400' },
+    { name: 'Databases', path: '/databases', icon: Database, iconColor: 'text-teal-400', borderColor: 'border-teal-400', dotColor: 'bg-teal-400' },
+    { name: 'MCP Server', path: '/mcp-server', icon: Server, iconColor: 'text-sky-400', borderColor: 'border-sky-400', dotColor: 'bg-sky-400' },
     { name: 'Files', path: '/files', icon: Folder, iconColor: 'text-violet-400', borderColor: 'border-violet-400', dotColor: 'bg-violet-400' },
   ],
   nodes: [
@@ -96,14 +96,14 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   return (
     <nav
       className={cn(
-        'fixed left-0 top-0 h-screen bg-gradient-to-b from-surface via-surface/98 to-surface/95 backdrop-blur-xl border-r border-border/50 flex flex-col z-30 transition-all duration-300 ease-in-out shadow-2xl shadow-primary/10',
-        isCollapsed ? 'w-20' : 'w-72'
+        'fixed left-0 top-0 h-screen max-h-screen max-w-[100vw] bg-gradient-to-b from-surface via-surface/98 to-surface/95 backdrop-blur-xl border-r border-border/50 flex flex-col z-30 transition-all duration-300 ease-in-out shadow-2xl shadow-primary/10 overflow-x-hidden',
+        isCollapsed ? 'w-16 sm:w-20' : 'w-64 sm:w-72'
       )}
     >
       {/* Workspace Info */}
-      <div className="p-5 border-b border-border/50 bg-gradient-to-r from-primary/8 via-primary/3 to-transparent transition-all duration-200 relative z-10">
+      <div className="p-3 sm:p-5 border-b border-border/50 bg-gradient-to-r from-primary/8 via-primary/3 to-transparent transition-all duration-200 relative z-10 min-w-0 shrink-0">
         {!isCollapsed ? (
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0">
             <button
               onClick={() => navigate('/workspaces')}
               className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-all duration-200 group px-2 py-1.5 rounded-lg hover:bg-primary/10"
@@ -111,8 +111,8 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
               <ArrowLeft className="h-3.5 w-3.5 flex-shrink-0 group-hover:-translate-x-1 transition-transform duration-200" />
               <span>Back to workspaces</span>
             </button>
-            <div className="px-2">
-              <h2 className="text-xl font-bold text-foreground truncate bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+            <div className="px-2 min-w-0">
+              <h2 className="text-base sm:text-xl font-bold text-foreground truncate bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
                 {currentWorkspace?.name || 'My Workspace'}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">                {currentUser?.email || 'No email'}
@@ -133,10 +133,10 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       {/* Navigation Items */}
       <div
         ref={navScrollRef}
-        className="flex-1 py-4 overflow-y-auto custom-scrollbar"
+        className="flex-1 min-h-0 py-4 overflow-y-auto overflow-x-hidden custom-scrollbar"
         onScroll={saveSidebarScroll}
       >
-        <div className="space-y-3 px-3">
+        <div className="space-y-3 px-2 sm:px-3 min-w-0">
           {/* Workspace Section */}
           <div>
             {!isCollapsed && (
@@ -182,7 +182,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
             {!isCollapsed && (
               <div className="px-3 mb-3">
                 <span className="text-[10px] font-bold text-blue-400/60 uppercase tracking-[0.15em]">
-                  Workflow
+                  Automation
                 </span>
               </div>
             )}
@@ -337,7 +337,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Bottom Section - User Info with Actions */}
-      <div className="px-1 py-2 border-t border-border/50 bg-gradient-to-t from-surface/80 to-transparent">
+      <div className="px-1 py-2 border-t border-border/50 bg-gradient-to-t from-surface/80 to-transparent shrink-0 min-w-0">
         {!isCollapsed && (
           <>
             <div className="flex items-center justify-center gap-2 mb-3">

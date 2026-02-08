@@ -130,7 +130,7 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+      <div className="container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6 overflow-x-auto">
         <PageHeader
           title={pageTitle}
           description={pageDescription}
@@ -154,7 +154,7 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
           
           {/* Main content card */}
-          <div className="relative bg-surface/80 backdrop-blur-xl rounded-3xl border border-border/60 shadow-2xl shadow-primary/5 p-5 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80 ">
+          <div className="relative bg-surface/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-border/60 shadow-2xl shadow-primary/5 p-4 sm:p-5 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80 min-w-0 overflow-x-auto">
             <ListTable
               items={paginatedItems}
               isLoading={isLoading}
@@ -169,8 +169,8 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
         </div>
 
         {filteredItems.length > 0 && (
-          <div className="mt-5">
-            <div className="bg-surface/40 backdrop-blur-sm rounded-2xl border border-border/40 p-3 shadow-md">
+          <div className="mt-4 sm:mt-5 min-w-0 overflow-x-auto">
+            <div className="bg-surface/40 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/40 p-2 sm:p-3 shadow-md">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

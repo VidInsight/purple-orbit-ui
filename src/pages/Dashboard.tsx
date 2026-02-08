@@ -312,13 +312,13 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-8">
+      <div className="container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-6 sm:space-y-8 overflow-x-auto">
         <PageHeader
           title="Dashboard"
           description="Overview of your workspace activity and executions"
         />
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Total Executions */}
           <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -377,15 +377,15 @@ const Dashboard = () => {
         </div>
 
         {/* Charts and Activity Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 min-w-0">
           {/* Execution Trend Chart */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Execution Trends
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+                <div className="min-w-0">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                    <span className="truncate">Execution Trends</span>
                   </CardTitle>
                   <CardDescription>Last 7 days performance</CardDescription>
                 </div>
@@ -394,13 +394,13 @@ const Dashboard = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0 overflow-x-auto">
               {isLoadingExecutions ? (
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[240px] sm:h-[300px] flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               ) : executionTrendData.length > 0 ? (
-                <div className="h-[300px]">
+                <div className="h-[240px] sm:h-[300px] min-w-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={executionTrendData}>
                       <defs>
@@ -462,15 +462,15 @@ const Dashboard = () => {
           </Card>
 
           {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
+          <Card className="min-w-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 Quick Actions
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-3">
+            <CardContent className="min-w-0">
+              <div className="flex flex-col gap-2 sm:gap-3">
                 {quickActions.map((action) => {
                   const Icon = action.icon;
                   return (
@@ -479,7 +479,7 @@ const Dashboard = () => {
                       variant="outline"
                       size="lg"
                       onClick={() => navigate(action.path)}
-                      className="gap-3 h-14 px-6 text-base font-medium w-full justify-start"
+                      className="gap-3 h-12 sm:h-14 px-4 sm:px-6 text-sm sm:text-base font-medium w-full justify-start"
                     >
                       <Icon className={`h-6 w-6 ${action.color}`} />
                       {action.label}
@@ -492,21 +492,21 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Activity & Resources */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 min-w-0">
           {/* Recent Executions */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Recent Executions
+            <CardHeader className="pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
+                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="truncate">Recent Executions</span>
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/executions')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/executions')} className="self-start sm:self-auto shrink-0">
                   View All <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0 overflow-x-auto">
               {isLoadingExecutions ? (
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -567,18 +567,18 @@ const Dashboard = () => {
 
           {/* Recent Workflows */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Workflow className="h-5 w-5" />
-                  Recent Workflows
+            <CardHeader className="pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
+                  <Workflow className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="truncate">Recent Workflows</span>
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/workflows')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/workflows')} className="self-start sm:self-auto shrink-0">
                   View All <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0 overflow-x-auto">
               {isLoadingWorkflows ? (
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -637,19 +637,19 @@ const Dashboard = () => {
         {/* Credentials Section */}
         {credentials.length > 0 && (
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Key className="h-5 w-5" />
-                  Credentials
+            <CardHeader className="pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
+                  <Key className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="truncate">Credentials</span>
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/credentials')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/credentials')} className="self-start sm:self-auto shrink-0">
                   View All <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <CardContent className="min-w-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {credentials.slice(0, 6).map((credential) => (
                   <div
                     key={credential.id}
