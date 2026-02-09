@@ -78,6 +78,12 @@ export const createWorkspace = async (workspaceData: CreateWorkspaceRequest): Pr
   });
 
   if (!response.ok) {
+    // Eğer workspace adı/slug'ı zaten varsa backend genelde 400 dönecektir.
+    // Bu durumda kullanıcıya daha açıklayıcı ve lokalize bir mesaj gösterelim.
+    if (response.status === 400) {
+      throw new Error('Bu isimle workspace oluşturamazsınız. Lütfen farklı bir isim deneyin.');
+    }
+
     const errorText = await response.text();
     console.error('Error response:', errorText);
     let errorData;
