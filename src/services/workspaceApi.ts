@@ -78,12 +78,6 @@ export const createWorkspace = async (workspaceData: CreateWorkspaceRequest): Pr
   });
 
   if (!response.ok) {
-    // Eğer workspace adı/slug'ı zaten varsa backend genelde 400 dönecektir.
-    // Bu durumda kullanıcıya daha açıklayıcı ve lokalize bir mesaj gösterelim.
-    if (response.status === 400) {
-      throw new Error('Bu isimle workspace oluşturamazsınız. Lütfen farklı bir isim deneyin.');
-    }
-
     const errorText = await response.text();
     console.error('Error response:', errorText);
     let errorData;
@@ -93,6 +87,37 @@ export const createWorkspace = async (workspaceData: CreateWorkspaceRequest): Pr
       errorData = { message: errorText };
     }
     console.error('Parsed error data:', errorData);
+
+    // Eğer workspace adı/slug'ı zaten varsa backend genelde 400 dönecektir.
+    // Bu durumda kullanıcıya daha açıklayıcı ve lokalize bir mesaj gösterelim.
+    if (response.status === 400) {
+      const msg = (errorData.message || '').toString().toLowerCase();
+      if (msg.includes('already exists') || msg.includes('unique') || msg.includes('slug')) {
+        throw new Error('Bu isimle workspace oluşturamazsınız. Lütfen farklı bir isim deneyin.');
+      }
+    }
+
+    // Kullanıcının paketine göre izin verilen maksimum workspace sayısını aştığı durum.
+    // Backend bu durumda genellikle 403 döner veya özel bir hata kodu/mesajı iletir.
+    const errorCode = (errorData.code || errorData.error || '').toString();
+    const messageText = (errorData.message || '').toString().toLowerCase();
+    if (
+      response.status === 400 ||
+      response.status === 403 ||
+      response.status === 429 ||
+      errorCode === 'WORKSPACE_LIMIT_EXCEEDED' ||
+      messageText.includes('workspace limit') ||
+      messageText.includes('maximum workspace') ||
+      messageText.includes('workspace sayisi') ||
+      messageText.includes('workspace sayısı') ||
+      messageText.includes('paket') && messageText.includes('workspace')
+    ) {
+      throw new Error(
+        'Paketiniz kapsamında oluşturabileceğiniz maksimum workspace sayısına ulaştınız. ' +
+          'Yeni bir workspace oluşturmak için planınızı yükseltebilir veya mevcut bir workspace\'i silebilirsiniz.'
+      );
+    }
+
     throw new Error(errorData.message || errorData.error || `Failed to create workspace: ${response.status} ${response.statusText}`);
   }
 
