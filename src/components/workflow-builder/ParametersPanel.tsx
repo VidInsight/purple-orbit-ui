@@ -216,7 +216,10 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
       />
 
       {/* Panel */}
-      <div className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 animate-slide-in-right flex flex-col">
+      <div
+        className="fixed right-0 top-0 h-full w-[350px] bg-surface border-l border-border z-50 animate-slide-in-right flex flex-col"
+        data-tour-id="zapier-params-panel"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex items-start justify-between">
           <div>
@@ -250,6 +253,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
                       onClick={() => handleToggleMode(param.id, false)}
                       className="h-7 px-3 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 transition-all text-xs font-medium"
                       title="Add a dynamic value from workspace resources"
+                      data-tour-id="zapier-params-dynamic-toggle"
                     >
                       <Link className="h-3.5 w-3.5" />
                       Add a Dynamic Value
@@ -258,7 +262,10 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
                 </label>
 
                 {waitingForDrop === param.id && !param.isDynamic && (
-                  <div className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary animate-pulse">
+                  <div
+                    className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary animate-pulse"
+                    data-tour-id="zapier-params-drop-hint"
+                  >
                     ← Select a value from the left panel
                   </div>
                 )}

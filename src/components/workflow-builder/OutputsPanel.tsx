@@ -353,9 +353,15 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
   };
 
   return (
-    <div className="fixed left-0 top-0 h-full w-[420px] bg-surface border-r border-border z-[60] flex flex-col">
+    <div
+      className="fixed left-0 top-0 h-full w-[420px] bg-surface border-r border-border z-[60] flex flex-col"
+      data-tour-id="zapier-outputs-panel-root"
+    >
       {/* Header */}
-      <div className="px-5 py-4 border-b border-border">
+      <div
+        className="px-5 py-4 border-b border-border"
+        data-tour-id="zapier-outputs-tabs"
+      >
         <Select value={selectedTab} onValueChange={setSelectedTab}>
           <SelectTrigger className="w-full border-0 bg-transparent hover:bg-accent/50 px-3">
             <SelectValue placeholder="Select resource type" />
@@ -402,7 +408,10 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
           <div className="p-4">
             {/* Trigger Data Section */}
             {triggerData && triggerData.input_mapping && Object.keys(triggerData.input_mapping).length > 0 && (
-              <div className="mb-4 pb-4 border-b border-border">
+              <div
+                className="mb-4 pb-4 border-b border-border"
+                data-tour-id="zapier-outputs-trigger-section"
+              >
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <Zap className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">Trigger Data</span>
@@ -521,7 +530,10 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
             )}
             
             {availableOutputs.length > 0 && (
-              <div className="space-y-1">
+              <div
+                className="space-y-1"
+                data-tour-id="zapier-outputs-prev-outputs"
+              >
                 {availableOutputs.map((output) => (
                   <div key={output.nodeId} className="border-b border-border last:border-b-0">
                     {/* Accordion Header */}

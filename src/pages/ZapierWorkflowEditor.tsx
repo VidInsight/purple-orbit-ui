@@ -29,6 +29,7 @@ import { TestSummaryCard } from '@/components/workflow-builder/TestSummaryCard';
 import { DefaultTriggerCard } from '@/components/workflow-builder/DefaultTriggerCard';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 
 interface Variable {
   name: string;
@@ -77,6 +78,10 @@ export default function ZapierWorkflowEditor() {
   const [activeTab, setActiveTab] = useState('editor');
   const [isActive, setIsActive] = useState(false);
 
+  // Onboarding state (react-joyride)
+  const [tourRun, setTourRun] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+
   // Refs for DOM optimization
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -109,6 +114,172 @@ export default function ZapierWorkflowEditor() {
 
   // Trigger data for OutputsPanel
   const [triggerData, setTriggerData] = useState<{ input_mapping: Record<string, { type: string; value: any }> } | null>(null);
+
+  // Joyride steps (digital onboarding)
+  const tourSteps: Step[] = useMemo(
+    () => [
+      {
+        target: '[data-tour-id="zapier-editor-toolbar"]',
+        title: 'Akış Editörüne Hoş Geldin',
+        content:
+          'Burada workflow adını düzenleyebilir, çalıştırabilir ve aktif/pasif durumunu kontrol edebilirsin. Bu tur, yeni başlayanlar için temel kavramları adım adım anlatacak.',
+        disableBeacon: true,
+      },
+      {
+        target: '[data-tour-id="zapier-editor-run-button"]',
+        title: '"Run" ile Test Çalıştırma',
+        content:
+          'Workflow\'ünü test etmek için "Run" butonunu kullanırsın. Önce tetikleyici (trigger) ve node parametrelerini doldur, sonra burada test çalıştır.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-trigger-card"]',
+        title: 'Trigger (Başlangıç Noktası)',
+        content:
+          'Burası workflow\'ün giriş noktası. Dış sistemlerden veya zamanlayıcıdan gelen veriler burada tanımlanır. Diğer node’lar bu veriyi önceki adımın çıktısı olarak kullanabilir.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-first-add-node"]',
+        title: 'İlk Node\'u Ekleme',
+        content:
+          '"Add Node" ile GPT, JSON Parse, If/Else gibi aksiyonlar ekleyebilirsin. Her node, önceki node’un çıktısını giriş olarak kullanabilecek şekilde tasarlandı.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-node-list"]',
+        title: 'Node Zinciri ve Veri Akışı',
+        content:
+          'Node\'lar yukarıdan aşağıya doğru sırayla çalışır. Her node, kendinden önceki node\'ların çıktılarını kullanabilir; böylece bir akış zinciri oluşturursun.',
+      },
+      {
+        target: '[data-tour-id="zapier-params-dynamic-toggle"]',
+        title: 'Dinamik Değer Ekleme',
+        content:
+          '"Add a Dynamic Value" ile sabit bir metin yazmak yerine, soldaki Outputs panelinden gelen verileri veya workspace kaynaklarını bu parametreye bağlayabilirsin. Bu, önceki node çıktısını veya bir credential/variable bilgisini doğrudan bu alana taşır.',
+      },
+      {
+        target: '[data-tour-id="zapier-params-drop-hint"]',
+        title: 'Soldan Path Seçme Mantığı',
+        content:
+          'Bu uyarıyı gördüğünde soldaki Outputs panelinden bir output veya kaynak seç. Seçtiğin path, bu parametreye otomatik olarak `${...}` formatında yazılacak ve runtime sırasında gerçek değerle doldurulacak.',
+      },
+      {
+        target: '[data-tour-id="zapier-outputs-panel-root"]',
+        title: 'Outputs & Kaynaklar Paneli',
+        content:
+          'Sol taraftaki bu panel, önceki node çıktıları, trigger verisi ve workspace kaynaklarını (variables, credentials, databases, files) tek yerde toplar. Parametreleri doldururken buradan path seçip dinamik değer kullanırsın.',
+      },
+      {
+        target: '[data-tour-id="zapier-outputs-tabs"]',
+        title: 'Kaynak Türü Sekmeleri',
+        content:
+          '"Previous Outputs" ile önceki node sonuçlarını, diğer sekmelerle ortam değişkenlerini (variables), API anahtarlarını (credentials), veritabanı ve dosya bağlantılarını görebilirsin. Her biri parametrelerde kullanabileceğin hazır path üretir.',
+      },
+      {
+        target: '[data-tour-id="zapier-outputs-trigger-section"]',
+        title: 'Trigger Verisini Kullanma',
+        content:
+          'Bu bölümde workflow tetikleyicisinden gelen input değerlerini görürsün. `${trigger:...}` şeklindeki path’leri parametrelere bağlayarak, dış dünyadan gelen veriyi node’larda kullanabilirsin.',
+      },
+      {
+        target: '[data-tour-id="zapier-outputs-prev-outputs"]',
+        title: 'Önceki Node Çıktılarını Kullanma',
+        content:
+          'Her node’un ürettiği JSON çıktıyı burada detaylı olarak görebilir, içindeki alanları `${node:...}` path’leriyle parametrelere bağlayabilirsin. Böylece zincir halinde veri akışı kurulur.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-outputs-panel"]',
+        title: 'Outputs Panelinin Genel Rolü',
+        content:
+          'Outputs paneli, hem örnek/gerçek çıktıları inceleyip debug yapman, hem de bu çıktıları parametrelere dinamik şekilde bağlaman için tasarlandı. Bir node’un ürettiği her alan, sonraki adımlar için yeniden kullanılabilir.',
+      },
+      {
+        target: '[data-tour-id="zapier-params-panel"]',
+        title: 'Parametre Paneli Genel Bakış',
+        content:
+          'Bu sağ panelde seçili node için tüm alanları görürsün. Her satır bir parametreyi temsil eder; istersen düz metin/numara girersin, istersen bir önceki adımın çıktısını veya bir credential/variable bilgisini dinamik path olarak bağlarsın ve en alttaki "Save Changes" ile hepsini kaydedersin.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-test-tab"]',
+        title: 'Test Sonuçları ve Zaman Çizelgesi',
+        content:
+          '"Test" sekmesinde çalıştırma zaman çizelgesini, logları ve son çıktıyı görürsün. Hangi node’un başarısız olduğu, ne kadar sürdüğü gibi teknik detayları burada takip edebilirsin.',
+      },
+      {
+        target: '[data-tour-id="zapier-editor-test-empty"]',
+        title: 'Test Sekmesi – İlk Durum',
+        content:
+          'İlk açılışta burada henüz bir test sonucu yok. Üstteki "Run" butonuna basarak workflow’ü test ettiğinde, bu ekranda zaman çizelgesi, loglar ve final output gibi detayları görebilirsin.',
+      },
+    ],
+    []
+  );
+
+  const handleJoyrideCallback = useCallback(
+    (data: CallBackProps) => {
+      const { status, index, type } = data;
+      const finished = status === STATUS.FINISHED || STATUS.SKIPPED === status;
+
+      if (finished) {
+        setTourRun(false);
+        localStorage.setItem('zapier_editor_tour_completed', 'true');
+        return;
+      }
+
+      // Adım tamamlandığında veya hedef bulunamadığında bir sonrakine geç
+      if (type === 'step:after' || type === 'error:target_not_found') {
+        const nextIndex = index + 1;
+        const nextStep = tourSteps[nextIndex];
+
+        if (nextStep?.target) {
+          // Parametre paneli ile ilgili adımlara girerken otomatik olarak bir node seç ve paneli aç
+          if (
+            nextStep.target === '[data-tour-id="zapier-params-dynamic-toggle"]' ||
+            nextStep.target === '[data-tour-id="zapier-params-drop-hint"]' ||
+            nextStep.target === '[data-tour-id="zapier-editor-parameters-panel"]'
+          ) {
+            const nodeForParams =
+              nodes.find((n) => n.type !== 'trigger') || nodes[0] || null;
+
+            if (nodeForParams) {
+              setSelectedNode(nodeForParams);
+            }
+          }
+
+          // Outputs paneli ile ilgili adımlara girerken paneli aç
+          if (
+            nextStep.target === '[data-tour-id="zapier-outputs-panel-root"]' ||
+            nextStep.target === '[data-tour-id="zapier-outputs-tabs"]' ||
+            nextStep.target === '[data-tour-id="zapier-outputs-trigger-section"]' ||
+            nextStep.target === '[data-tour-id="zapier-outputs-prev-outputs"]' ||
+            nextStep.target === '[data-tour-id="zapier-editor-outputs-panel"]'
+          ) {
+            setShowOutputsPanel(true);
+          }
+
+          // Test sekmesiyle ilgili adımlara geçerken sekmeyi aç
+          if (
+            nextStep.target === '[data-tour-id="zapier-editor-test-tab"]' ||
+            nextStep.target === '[data-tour-id="zapier-editor-test-empty"]'
+          ) {
+            setActiveTab('test');
+          }
+        }
+
+        setTourStepIndex(nextIndex);
+      }
+    },
+    [tourSteps, nodes, setActiveTab]
+  );
+
+  // Auto-start tour only for users who have not completed it
+  useEffect(() => {
+    const completed = localStorage.getItem('zapier_editor_tour_completed');
+    if (!completed) {
+      setTimeout(() => {
+        setTourRun(true);
+        setTourStepIndex(0);
+      }, 500);
+    }
+  }, []);
 
   // Load workflow from API when editing existing workflow
   useEffect(() => {
@@ -1457,8 +1628,41 @@ export default function ZapierWorkflowEditor() {
   return (
     <PathProvider>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-surface/20">
+        {/* Onboarding Tour (react-joyride) */}
+        <Joyride
+          steps={tourSteps}
+          run={tourRun}
+          stepIndex={tourStepIndex}
+          continuous
+          showSkipButton
+          scrollToFirstStep
+          callback={handleJoyrideCallback}
+          styles={{
+            options: {
+              zIndex: 9999,
+              arrowColor: '#020617',
+              backgroundColor: '#020617',
+              primaryColor: '#6366f1',
+              textColor: '#e5e7eb',
+              overlayColor: 'rgba(15,23,42,0.85)',
+            },
+            spotlight: {
+              borderRadius: 12,
+            },
+          }}
+          locale={{
+            back: 'Geri',
+            close: 'Kapat',
+            last: 'Bitir',
+            next: 'İleri',
+            skip: 'Turu Geç',
+          }}
+        />
         {/* Modern Toolbar */}
-        <div className="sticky top-0 z-50 border-b border-border/50 bg-gradient-to-r from-surface/95 via-surface/90 to-surface/95 backdrop-blur-xl shadow-lg shadow-primary/5">
+        <div
+          className="sticky top-0 z-50 border-b border-border/50 bg-gradient-to-r from-surface/95 via-surface/90 to-surface/95 backdrop-blur-xl shadow-lg shadow-primary/5"
+          data-tour-id="zapier-editor-toolbar"
+        >
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Left Side */}
@@ -1502,12 +1706,26 @@ export default function ZapierWorkflowEditor() {
               {/* Right Side */}
               <div className="flex items-center gap-3">
                 <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    localStorage.removeItem('zapier_editor_tour_completed');
+                    setTourStepIndex(0);
+                    setTourRun(true);
+                  }}
+                  className="gap-2 text-xs"
+                >
+                  <span>Yeni Başlayanlar İçin Tur</span>
+                </Button>
+
+                <Button
                   variant="default"
                   size="sm"
                   onClick={handleTest}
                   disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
                   loading={isRunningTest}
                   className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg hover:shadow-primary/30 transition-all duration-200"
+                  data-tour-id="zapier-editor-run-button"
                 >
                   <Play className="h-4 w-4" />
                   Run
@@ -1575,7 +1793,7 @@ export default function ZapierWorkflowEditor() {
         </div>
 
         {/* Modern Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
           <div className="border-b border-border/50 bg-gradient-to-b from-surface/40 via-surface/30 to-transparent backdrop-blur-sm">
             <div className="container mx-auto px-6 flex justify-center">
               <TabsList className="bg-transparent border-0 p-0 h-14 gap-1">
@@ -1588,6 +1806,7 @@ export default function ZapierWorkflowEditor() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="test"
+                  data-tour-id="zapier-editor-test-tab"
                   className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-8 h-full font-semibold text-sm transition-all duration-200 data-[state=active]:text-primary data-[state=active]:shadow-[0_-2px_8px_rgba(0,0,0,0.1)] relative group"
                 >
                   <span className="relative z-10 flex items-center gap-2">
@@ -1662,7 +1881,7 @@ export default function ZapierWorkflowEditor() {
                 <div className="max-w-3xl w-full px-6">
                   <div className="space-y-0">
                     {/* Default Trigger Card */}
-                    <div className="mb-6">
+                    <div className="mb-6" data-tour-id="zapier-editor-trigger-card">
                       <DefaultTriggerCard
                         workspaceId={currentWorkspace?.id}
                         workflowId={id}
@@ -1672,7 +1891,7 @@ export default function ZapierWorkflowEditor() {
 
                     {nodes.length === 0 ? (
                       // Modern Empty state
-                      <div className="flex flex-col items-center justify-center py-8 px-6">
+                      <div className="flex flex-col items-center justify-center py-8 px-6" data-tour-id="zapier-editor-first-add-node">
                         <div className="relative w-full max-w-4xl">
                           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
                           <div className="relative bg-gradient-to-br from-surface/80 to-surface/40 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl">
@@ -1696,46 +1915,47 @@ export default function ZapierWorkflowEditor() {
                         </div>
                       </div>
                     ) : (
-                      nodes.map((node, index) => (
-                        <div key={node.id} className="relative" data-node-id={node.id}>
-                          {/* Node */}
-                          {node.type === 'trigger' ? (
-                            <TriggerNode
-                              node={node}
-                              onUpdate={(updates) => {
-                                setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                              }}
-                              onClick={() => handleNodeClick(node)}
-                            />
-                          ) : node.type === 'conditional' ? (
-                            <ConditionalNode
-                              node={node}
-                              onUpdate={(updates) => {
-                                setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                              }}
-                              onDelete={() => handleDeleteNode(node.id)}
-                              onClick={() => handleNodeClick(node)}
-                              onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
-                            />
-                          ) : node.type === 'loop' ? (
-                            <LoopNode
-                              node={node}
-                              onUpdate={(updates) => {
-                                setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                              }}
-                              onDelete={() => handleDeleteNode(node.id)}
-                              onClick={() => handleNodeClick(node)}
-                            />
-                          ) : (
-                            <ActionNode
-                              node={node}
-                              onUpdate={(updates) => {
-                                setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                              }}
-                              onDelete={() => handleDeleteNode(node.id)}
-                              onClick={() => handleNodeClick(node)}
-                            />
-                          )}
+                      <div data-tour-id="zapier-editor-node-list">
+                        {nodes.map((node, index) => (
+                          <div key={node.id} className="relative" data-node-id={node.id}>
+                            {/* Node */}
+                            {node.type === 'trigger' ? (
+                              <TriggerNode
+                                node={node}
+                                onUpdate={(updates) => {
+                                  setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                                }}
+                                onClick={() => handleNodeClick(node)}
+                              />
+                            ) : node.type === 'conditional' ? (
+                              <ConditionalNode
+                                node={node}
+                                onUpdate={(updates) => {
+                                  setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                                }}
+                                onDelete={() => handleDeleteNode(node.id)}
+                                onClick={() => handleNodeClick(node)}
+                                onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
+                              />
+                            ) : node.type === 'loop' ? (
+                              <LoopNode
+                                node={node}
+                                onUpdate={(updates) => {
+                                  setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                                }}
+                                onDelete={() => handleDeleteNode(node.id)}
+                                onClick={() => handleNodeClick(node)}
+                              />
+                            ) : (
+                              <ActionNode
+                                node={node}
+                                onUpdate={(updates) => {
+                                  setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
+                                }}
+                                onDelete={() => handleDeleteNode(node.id)}
+                                onClick={() => handleNodeClick(node)}
+                              />
+                            )}
 
                           {/* Modern Connection line between nodes */}
                           {index < nodes.length - 1 ? (
@@ -1787,8 +2007,9 @@ export default function ZapierWorkflowEditor() {
                               </div>
                             </div>
                           )}
-                        </div>
-                      ))
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1808,6 +2029,7 @@ export default function ZapierWorkflowEditor() {
                 onSaveSuccess={handleNodeConfigured}
                 workspaceId={currentWorkspace?.id}
                 workflowId={id}
+                data-tour-id="zapier-editor-parameters-panel"
               />
             )}
 
@@ -1817,6 +2039,7 @@ export default function ZapierWorkflowEditor() {
               isOpen={showOutputsPanel}
               currentNodeId={selectedNode?.id}
               triggerData={triggerData}
+              data-tour-id="zapier-editor-outputs-panel"
             />
           </TabsContent>
 
@@ -1826,7 +2049,10 @@ export default function ZapierWorkflowEditor() {
               <div className="container mx-auto px-6 py-8 space-y-6">
                 {!executionId && !isRunningTest ? (
                   // Modern Empty state
-                  <div className="flex items-center justify-center min-h-[calc(100vh-144px)] py-24">
+                  <div
+                    className="flex items-center justify-center min-h-[calc(100vh-144px)] py-24"
+                    data-tour-id="zapier-editor-test-empty"
+                  >
                     <div className="text-center max-w-lg flex flex-col items-center">
                       <div className="relative mb-6 flex items-center justify-center">
                         <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
