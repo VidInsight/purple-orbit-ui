@@ -312,35 +312,43 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-6 sm:space-y-8 overflow-x-auto">
-        <PageHeader
-          title="Dashboard"
-          description="Overview of your workspace activity and executions"
-        />
+      <div className="min-h-screen relative overflow-hidden transition-colors duration-300">
+         
+
+        {/* Main Content */}
+        <div className="relative container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-6 sm:space-y-8 overflow-x-auto">
+          <PageHeader
+            title="Dashboard"
+            description="Overview of your workspace activity and executions"
+          />
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Total Executions */}
-          <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Executions</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <div className="h-8 w-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shadow-sm">
+                <Activity className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{totalCount}</div>
+              <div className="text-3xl font-bold text-foreground tracking-tight">{totalCount}</div>
               <p className="text-xs text-muted-foreground mt-1">All time executions</p>
             </CardContent>
           </Card>
 
           {/* Success Rate */}
-          <Card className="relative overflow-hidden border-2 hover:border-success/50 transition-all duration-300 group">
-            <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-emerald-400/60 hover:bg-white/10 hover:shadow-xl hover:shadow-emerald-400/25 transition-all duration-300 group rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-success" />
+              <div className="h-8 w-8 rounded-xl bg-emerald-400/15 border border-emerald-400/30 flex items-center justify-center shadow-sm">
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-success">{executionStats.successRate}%</div>
+              <div className="text-3xl font-bold text-emerald-400 tracking-tight">{executionStats.successRate}%</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {successCount} successful, {failedCount} failed
               </p>
@@ -348,27 +356,31 @@ const Dashboard = () => {
           </Card>
 
           {/* Running Executions */}
-          <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Running Now</CardTitle>
-              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+              <div className="h-8 w-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shadow-sm">
+                <Loader2 className="h-4 w-4 text-primary animate-spin" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{runningCount}</div>
+              <div className="text-3xl font-bold text-primary tracking-tight">{runningCount}</div>
               <p className="text-xs text-muted-foreground mt-1">Active executions</p>
             </CardContent>
           </Card>
 
           {/* Average Duration */}
-          <Card className="relative overflow-hidden border-2 hover:border-warning/50 transition-all duration-300 group">
-            <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-amber-400/60 hover:bg-white/10 hover:shadow-xl hover:shadow-amber-400/25 transition-all duration-300 group rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-400/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Avg Duration</CardTitle>
-              <Clock className="h-4 w-4 text-warning" />
+              <div className="h-8 w-8 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center shadow-sm">
+                <Clock className="h-4 w-4 text-amber-300" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">
+              <div className="text-3xl font-bold text-foreground tracking-tight">
                 {executionStats.avgDuration > 0 ? formatDuration(executionStats.avgDuration) : '0s'}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Per execution</p>
@@ -379,13 +391,15 @@ const Dashboard = () => {
         {/* Charts and Activity Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 min-w-0">
           {/* Execution Trend Chart */}
-          <Card className="lg:col-span-2 min-w-0 overflow-hidden">
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <div className="min-w-0">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
-                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                    <span className="truncate">Execution Trends</span>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
+                      <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    </span>
+                    <span className="truncate">Execution trends</span>
                   </CardTitle>
                   <CardDescription>Last 7 days performance</CardDescription>
                 </div>
@@ -462,10 +476,12 @@ const Dashboard = () => {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="min-w-0">
+          <Card className="min-w-0 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </span>
                 Quick Actions
               </CardTitle>
             </CardHeader>
@@ -494,11 +510,13 @@ const Dashboard = () => {
         {/* Recent Activity & Resources */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 min-w-0">
           {/* Recent Executions */}
-          <Card>
+          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
-                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
+                    <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </span>
                   <span className="truncate">Recent Executions</span>
                 </CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/executions')} className="self-start sm:self-auto shrink-0">
@@ -532,7 +550,7 @@ const Dashboard = () => {
                     <div
                       key={execution.id}
                       onClick={() => navigate(`/executions/${execution.id}`)}
-                      className="flex items-center justify-between p-3 rounded-lg bg-surface/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/8 hover:border-primary/40 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {getStatusIcon(execution.status)}
@@ -566,11 +584,13 @@ const Dashboard = () => {
           </Card>
 
           {/* Recent Workflows */}
-          <Card>
+          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
-                  <Workflow className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
+                    <Workflow className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </span>
                   <span className="truncate">Recent Workflows</span>
                 </CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/workflows')} className="self-start sm:self-auto shrink-0">
@@ -604,7 +624,7 @@ const Dashboard = () => {
                     <div
                       key={workflow.id}
                       onClick={() => navigate(`/workflows/${workflow.id}/edit`)}
-                      className="flex items-center justify-between p-3 rounded-lg bg-surface/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/8 hover:border-primary/40 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="p-2 rounded bg-primary/10">
@@ -636,11 +656,13 @@ const Dashboard = () => {
 
         {/* Credentials Section */}
         {credentials.length > 0 && (
-          <Card>
+          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
-                  <Key className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
+                    <Key className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </span>
                   <span className="truncate">Credentials</span>
                 </CardTitle>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/credentials')} className="self-start sm:self-auto shrink-0">
@@ -654,7 +676,7 @@ const Dashboard = () => {
                   <div
                     key={credential.id}
                     onClick={() => navigate('/credentials')}
-                    className="p-4 rounded-lg border bg-surface/50 hover:bg-accent/50 cursor-pointer transition-all group"
+                    className="p-4 rounded-xl border border-white/10 bg-white/4 hover:border-primary/50 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
                   >
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded bg-success/10 group-hover:bg-success/20 transition-colors">
@@ -675,6 +697,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
     </PageLayout>
   );

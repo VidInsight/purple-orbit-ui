@@ -380,15 +380,17 @@ const WorkspaceSelection = () => {
 
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-200 relative overflow-hidden">
-      {/* Animated background: floating orbs */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-15%,hsl(var(--primary)/0.12),transparent_50%)]" />
-        <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,black_40%,transparent_100%)]" />
-        <div className="absolute top-1/5 left-1/4 w-[420px] h-[420px] rounded-full bg-primary/[0.08] blur-[100px] animate-orb-float-1" />
-        <div className="absolute bottom-1/4 right-1/3 w-[320px] h-[320px] rounded-full bg-primary/[0.07] blur-[90px] animate-orb-float-2" />
-        <div className="absolute top-1/2 right-1/4 w-[280px] h-[280px] rounded-full bg-primary/[0.05] blur-[80px] animate-orb-float-3" />
-        <div className="absolute bottom-1/3 left-1/3 w-[200px] h-[200px] rounded-full bg-primary/[0.06] blur-[70px] animate-orb-float-1" style={{ animationDelay: '-4s' }} />
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300 bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008]">
+      {/* Animated background: floating orbs / glow layers */}
+      <div className="pointer-events-none absolute inset-0">
+        {/* Soft purple radial glow center */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.15),_transparent_60%)]" />
+        {/* Dark vignette edges */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.9))]" />
+        {/* Accent orbs */}
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-purple-700/30 blur-3xl opacity-60 animate-pulse" />
+        <div className="absolute -bottom-40 -right-24 h-80 w-80 rounded-full bg-fuchsia-600/25 blur-3xl opacity-70 animate-[pulse_5s_ease-in-out_infinite]" />
+        <div className="absolute top-1/3 -right-24 h-56 w-56 rounded-full bg-indigo-500/25 blur-3xl opacity-60" />
       </div>
 
       {/* Main Content */}

@@ -11,7 +11,7 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
   const { isCollapsed, toggleCollapsed } = useNavbar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+    <div className="min-h-screen  bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008]">
       <Navbar isCollapsed={isCollapsed} onToggle={toggleCollapsed} />
       
       <main

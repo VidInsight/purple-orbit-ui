@@ -31,9 +31,14 @@ export const WorkspaceCard = ({ workspace, onClick, onDelete }: WorkspaceCardPro
       role="button"
       tabIndex={0}
       className={cn(
-        'group relative w-full px-5 py-4 rounded-xl border border-border bg-surface/80 backdrop-blur-sm',
-        'hover:border-primary/50 hover:bg-surface hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5',
-        'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background',
+        'group relative w-full px-5 py-4 rounded-xl',
+        // Glassmorphism: şeffaf ve blurlu kart
+        'border border-white/10 bg-white/5 backdrop-blur-xl',
+        // Hover efekti
+        'hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5',
+        // Focus durumu
+        'focus:outline-none focus:ring-2 focus:ring-primary/60 focus:ring-offset-2 focus:ring-offset-transparent',
+        // Transition ve layout
         'transition-all duration-300 ease-out',
         'flex items-center gap-4 sm:gap-5 cursor-pointer'
       )}

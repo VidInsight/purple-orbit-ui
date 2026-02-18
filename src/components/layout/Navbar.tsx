@@ -96,7 +96,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
   return (
     <nav
       className={cn(
-        'fixed left-0 top-0 h-screen max-h-screen max-w-[100vw] bg-gradient-to-b from-surface via-surface/98 to-surface/95 backdrop-blur-xl border-r border-border/50 flex flex-col z-30 transition-all duration-300 ease-in-out shadow-2xl shadow-primary/10 overflow-x-hidden',
+        'fixed left-0 top-0 h-screen max-h-screen max-w-[100vw] bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008] backdrop-blur-xl border-r border-primary/30 flex flex-col z-30 transition-all duration-300 ease-in-out shadow-2xl shadow-primary/20 overflow-x-hidden',
         isCollapsed ? 'w-16 sm:w-20' : 'w-64 sm:w-72'
       )}
     >
@@ -337,7 +337,7 @@ export const Navbar = ({ isCollapsed, onToggle }: NavbarProps) => {
       </div>
 
       {/* Bottom Section - User Info with Actions */}
-      <div className="px-1 py-2 border-t border-border/50 bg-gradient-to-t from-surface/80 to-transparent shrink-0 min-w-0">
+      <div className="px-1 py-2 border-t border-primary/30 bg-gradient-to-t from-[#05010d]/90 via-[#060015]/80 to-transparent shrink-0 min-w-0">
         {!isCollapsed && (
           <>
             <div className="flex items-center justify-center gap-2 mb-3">
