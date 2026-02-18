@@ -130,68 +130,77 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
   return (
     <PageLayout>
-      <div className="container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-6 overflow-x-auto">
-        <PageHeader
-          title={pageTitle}
-          description={pageDescription}
-          actions={headerActions}
-        />
-
-        <div className="mb-4 relative z-50">
-          <SearchFilterBar
-            searchPlaceholder={searchPlaceholder}
-            createButtonText={createButtonText}
-            filterOptions={filterOptions}
-            showFilter={!!filterOptions}
-            onSearch={handleSearch}
-            onFilterChange={handleFilterChange}
-            onCreateClick={onCreate}
-          />
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Global glass / glow background - subtle white + brand colors */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-32 -left-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)]" />
         </div>
 
-        <div className="relative">
-          {/* Background gradient effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
-          
-          {/* Main content card */}
-          <div className="relative rounded-2xl sm:rounded-3xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/8 dark:backdrop-blur-2xl dark:shadow-2xl dark:shadow-black/40 p-4 sm:p-5 transition-all duration-300 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/12 dark:hover:shadow-primary/30 min-w-0 overflow-x-auto">
-            <ListTable
-              items={paginatedItems}
-              isLoading={isLoading}
-              error={error}
-              emptyMessage={emptyMessage}
-              emptyDescription={emptyDescription}
-              onView={onView}
-              onEdit={onEdit}
-              onDelete={onDelete ? handleDeleteClick : undefined}
+        <div className="container mx-auto max-w-[1600px] w-full min-w-0 px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 overflow-x-auto space-y-4 sm:space-y-6">
+          <PageHeader
+            title={pageTitle}
+            description={pageDescription}
+            actions={headerActions}
+          />
+
+          <div className="relative z-20">
+            <SearchFilterBar
+              searchPlaceholder={searchPlaceholder}
+              createButtonText={createButtonText}
+              filterOptions={filterOptions}
+              showFilter={!!filterOptions}
+              onSearch={handleSearch}
+              onFilterChange={handleFilterChange}
+              onCreateClick={onCreate}
             />
           </div>
-        </div>
 
-        {filteredItems.length > 0 && (
-          <div className="mt-4 sm:mt-5 min-w-0 overflow-x-auto">
-            <div className="rounded-xl sm:rounded-2xl border border-border bg-muted/60 shadow-sm dark:bg-white/6 dark:border-white/10 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/30 p-2 sm:p-3">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                itemsPerPage={itemsPerPage}
-                totalItems={filteredItems.length}
-                onPageChange={setCurrentPage}
+          <div className="relative">
+            {/* Background gradient effect behind table */}
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-primary/10 to-slate-900 opacity-80 blur-3xl -z-10" />
+
+            {/* Main content glass card */}
+            <div className="relative rounded-2xl sm:rounded-3xl border border-white/15 bg-slate-950/80 shadow-2xl shadow-black/70 backdrop-blur-3xl p-4 sm:p-5 transition-all duration-300   min-w-0 overflow-x-auto">
+              <ListTable
+                items={paginatedItems}
+                isLoading={isLoading}
+                error={error}
+                emptyMessage={emptyMessage}
+                emptyDescription={emptyDescription}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete ? handleDeleteClick : undefined}
               />
             </div>
           </div>
-        )}
 
-        {onDelete && (
-          <DeleteConfirmModal
-            isOpen={deleteModalOpen}
-            onClose={handleDeleteCancel}
-            onConfirm={handleDeleteConfirm}
-            itemName={itemToDelete?.name || ''}
-            itemType={itemTypeName}
-            isDeleting={isDeleting}
-          />
-        )}
+          {filteredItems.length > 0 && (
+            <div className="min-w-0 overflow-x-auto">
+              <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-slate-950/80 shadow-xl shadow-black/70 backdrop-blur-2xl p-2 sm:p-3">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredItems.length}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            </div>
+          )}
+
+          {onDelete && (
+            <DeleteConfirmModal
+              isOpen={deleteModalOpen}
+              onClose={handleDeleteCancel}
+              onConfirm={handleDeleteConfirm}
+              itemName={itemToDelete?.name || ''}
+              itemType={itemTypeName}
+              isDeleting={isDeleting}
+            />
+          )}
+        </div>
       </div>
     </PageLayout>
   );

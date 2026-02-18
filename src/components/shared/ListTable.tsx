@@ -75,7 +75,14 @@ export function ListTable<T extends { id: string; name: string; description?: st
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="group relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-xl border border-border/50 min-w-0 bg-gradient-to-r from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 ease-out"
+            className="group relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-xl border border-border/50 min-w-0 bg-gradient-to-r from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 ease-out cursor-pointer"
+            onClick={() => {
+              if (onEdit) {
+                onEdit(item);
+              } else if (onView) {
+                onView(item);
+              }
+            }}
           >
             {/* Hover gradient effect */}
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/0 transition-all duration-300 pointer-events-none" />
@@ -93,7 +100,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onView(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView(item);
+                    }}
                     aria-label="View details"
                     className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                   >
@@ -104,7 +114,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onEdit(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(item);
+                    }}
                     aria-label="Edit"
                     className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                   >
@@ -115,7 +128,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onShare(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShare(item);
+                    }}
                     aria-label="Share"
                     className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
                   >
@@ -126,7 +142,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onDelete(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(item);
+                    }}
                     aria-label="Delete"
                     className="h-10 w-10 p-0 hover:bg-destructive/10 hover:text-destructive transition-colors"
                   >
@@ -144,7 +163,14 @@ export function ListTable<T extends { id: string; name: string; description?: st
         {items.map((item) => (
           <div
             key={item.id}
-            className="relative p-4 rounded-xl border border-border/50 bg-gradient-to-br from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300"
+            className="relative p-4 rounded-xl border border-border/50 bg-gradient-to-br from-surface/50 to-surface/30 hover:from-surface/70 hover:to-surface/50 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
+            onClick={() => {
+              if (onEdit) {
+                onEdit(item);
+              } else if (onView) {
+                onView(item);
+              }
+            }}
           >
             <div className="space-y-1.5 mb-3">
               <p className="text-[10px] font-mono text-muted-foreground/40 tracking-wider uppercase">{item.id.substring(0, 8)}</p>
@@ -159,7 +185,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => onView(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView(item);
+                    }}
                     className="flex-1 h-9 text-xs font-medium"
                   >
                     <Eye className="h-4 w-4 mr-1.5" />
@@ -170,7 +199,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => onEdit(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(item);
+                    }}
                     className="flex-1 h-9 text-xs font-medium"
                   >
                     <Edit className="h-4 w-4 mr-1.5" />
@@ -181,7 +213,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="secondary"
                     size="sm"
-                    onClick={() => onShare(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShare(item);
+                    }}
                     className="flex-1 h-9 text-xs font-medium"
                   >
                     <Share2 className="h-4 w-4 mr-1.5" />
@@ -192,7 +227,10 @@ export function ListTable<T extends { id: string; name: string; description?: st
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => onDelete(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(item);
+                    }}
                     className="flex-1 h-9 text-xs font-medium"
                   >
                     <Trash2 className="h-4 w-4 mr-1.5" />

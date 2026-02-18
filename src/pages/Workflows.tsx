@@ -165,7 +165,7 @@ const Workflows = () => {
 
   if (!currentWorkspace) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center min-h-screen">
         <p className="text-muted-foreground">Please select a workspace first</p>
       </div>
     );
@@ -173,34 +173,35 @@ const Workflows = () => {
 
   return (
     <>
-      <ListPageTemplate
-        pageTitle="Workflows"
-        pageDescription="Manage and monitor your automation workflows"
-        items={workflows}
-        isLoading={isLoading}
-        searchPlaceholder="Search workflows..."
-        createButtonText="New Workflow"
-        itemTypeName="workflow"
-        filterOptions={[
-          { value: 'all', label: 'All Workflows' },
-          { value: 'active', label: 'Active' },
-          { value: 'inactive', label: 'Inactive' },
-          { value: 'draft', label: 'Draft' },
-        ]}
-        emptyMessage="No workflows yet"
-        emptyDescription="Create your first automation workflow to get started."
-        onCreate={handleCreate}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        headerActions={
-          <Button variant="ghost" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
-        }
-        itemsPerPage={10}
-      />
+  <ListPageTemplate
+    pageTitle="Workflows"
+    pageDescription="Manage and monitor your automation workflows"
+    items={workflows}
+    isLoading={isLoading}
+    searchPlaceholder="Search workflows..."
+    createButtonText="New Workflow"
+    itemTypeName="workflow"
+    filterOptions={[
+      { value: 'all', label: 'All Workflows' },
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'draft', label: 'Draft' },
+    ]}
+    emptyMessage="No workflows yet"
+    emptyDescription="Create your first automation workflow to get started."
+    onCreate={handleCreate}
+    onView={handleView}
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+    headerActions={
+      <Button variant="ghost" size="sm">
+        <Settings className="h-4 w-4 mr-2" />
+        Settings
+      </Button>
+    }
+    itemsPerPage={10}
+  />
+
       {currentWorkspace && currentWorkspace.id && (
         <CreateWorkflowModal
           isOpen={isCreateModalOpen}
