@@ -1,130 +1,36 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Play, Sparkles, Zap, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, Zap, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MatrixBackground } from '@/components/auth/MatrixBackground';
 import { HeroWorkflowPreview } from './HeroWorkflowPreview';
 import { TypewriterText } from './TypewriterText';
 import { IntegrationLogos } from './IntegrationLogos';
-
-// Floating particles component
-const FloatingParticles = () => {
-  const particlesRef = useRef<HTMLDivElement>(null);
-  const [particles] = useState(() => 
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 10 + 10,
-      delay: Math.random() * 5,
-    }))
-  );
-
-  return (
-    <div ref={particlesRef} className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className="absolute rounded-full bg-primary/30 blur-sm"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-            animation: `float ${particle.duration}s ease-in-out infinite`,
-            animationDelay: `${particle.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Animated grid pattern
-const AnimatedGrid = () => {
-  return (
-    <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-      <div className="absolute inset-0" style={{
-        backgroundImage: `
-          linear-gradient(hsla(var(--primary) / 0.1) 1px, transparent 1px),
-          linear-gradient(90deg, hsla(var(--primary) / 0.1) 1px, transparent 1px)
-        `,
-        backgroundSize: '50px 50px',
-        animation: 'grid-move 20s linear infinite',
-      }} />
-    </div>
-  );
-};
-
-// Glowing orb component
-const GlowingOrb = ({ className, delay = 0 }: { className?: string; delay?: number }) => {
-  return (
-    <div
-      className={`absolute rounded-full blur-3xl animate-pulse ${className}`}
-      style={{
-        animationDelay: `${delay}s`,
-        animationDuration: '4s',
-      }}
-    />
-  );
-};
+import DarkVeil from '../ui/DarkVeil';
 
 const DEMO_VIDEO_URL = 'https://www.youtube.com/embed/3VixMr5ewyg?autoplay=1';
 
 export const HeroSection = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Enhanced Matrix Background */}
-      <MatrixBackground />
-      
-      {/* Animated Grid Pattern */}
-      <AnimatedGrid />
-      
-      {/* Floating Particles */}
-      <FloatingParticles />
-      
-      {/* Dynamic Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background pointer-events-none" />
-      <div 
-        className="absolute inset-0 bg-gradient-radial from-primary/10 via-primary/5 to-transparent pointer-events-none transition-opacity duration-1000"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, hsla(var(--primary) / 0.15) 0%, transparent 50%)`,
-        }}
-      />
-      
-      {/* Premium Glow Effects - Multiple orbs */}
-      <GlowingOrb className="top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/25" delay={0} />
-      <GlowingOrb className="bottom-1/4 right-1/4 w-[600px] h-[600px] bg-primary/15" delay={1} />
-      <GlowingOrb className="top-1/2 right-1/3 w-[400px] h-[400px] bg-primary/20" delay={2} />
-      <GlowingOrb className="bottom-1/3 left-1/3 w-[450px] h-[450px] bg-primary/10" delay={1.5} />
-
-      {/* Animated gradient border effect */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-shimmer" />
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-shimmer" style={{ animationDelay: '1s' }} />
+      {/* DarkVeil as full-page animated background */}
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <DarkVeil
+            hueShift={326}
+            noiseIntensity={0}
+            scanlineIntensity={1}
+            speed={1.6}
+            scanlineFrequency={0}
+            warpAmount={0.05}
+            resolutionScale={1.25}
+        />
       </div>
-
       {/* Content - Split Layout */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -138,7 +44,7 @@ export const HeroSection = () => {
               <span className="block bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent drop-shadow-2xl">
                 Workflow Automation
               </span>
-              <span className="block mt-2 bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
+              <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
                 Reimagined
               </span>
             </h1>
@@ -213,23 +119,15 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right Side - Animated Workflow Preview with enhanced effects */}
+          {/* Right Side - Workflow Preview */}
           <div className="hidden lg:block animate-fade-in relative" style={{ animationDelay: '0.5s' }}>
-            {/* Glow effect behind preview */}
-            <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-3xl scale-110 animate-pulse" />
-            <div className="relative transform hover:scale-105 transition-transform duration-500">
+            <div className="relative">
               <HeroWorkflowPreview />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-primary/30 rounded-full flex items-start justify-center p-2">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-        </div>
-      </div>
     </section>
   );
 };
