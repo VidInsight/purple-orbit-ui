@@ -32,10 +32,12 @@ export const WorkspaceCard = ({ workspace, onClick, onDelete }: WorkspaceCardPro
       tabIndex={0}
       className={cn(
         'group relative w-full px-5 py-4 rounded-xl',
-        // Glassmorphism: şeffaf ve blurlu kart
-        'border border-white/10 bg-white/5 backdrop-blur-xl',
+        // Light mode: solid card; Dark mode: glass
+        'border border-border bg-card shadow-sm',
+        'dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl dark:shadow-black/40',
         // Hover efekti
-        'hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5',
+        'hover:border-primary/60 hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5',
+        'dark:hover:bg-white/10 dark:hover:shadow-xl',
         // Focus durumu
         'focus:outline-none focus:ring-2 focus:ring-primary/60 focus:ring-offset-2 focus:ring-offset-transparent',
         // Transition ve layout

@@ -15,7 +15,7 @@ const Files = () => {
           {/* Background glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 rounded-3xl blur-3xl -z-10 max-w-2xl mx-auto" />
 
-          <div className="relative flex flex-col items-center text-center w-full max-w-lg mx-auto p-6 sm:p-8 md:p-12 bg-surface/60 backdrop-blur-xl border border-border/60 rounded-2xl sm:rounded-3xl shadow-2xl shadow-primary/5 min-w-0">
+          <div className="relative flex flex-col items-center text-center w-full max-w-lg mx-auto p-6 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl border border-border bg-card shadow-md hover:border-primary/60 hover:shadow-primary/20 transition-all duration-300 min-w-0 dark:border-white/10 dark:bg-white/8 dark:backdrop-blur-2xl dark:shadow-2xl dark:shadow-black/40 dark:hover:bg-white/12 dark:hover:shadow-primary/30">
             <div className="mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20">
               <FileText className="h-14 w-14 text-primary mx-auto" strokeWidth={1.5} />
             </div>

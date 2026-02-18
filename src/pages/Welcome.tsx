@@ -11,9 +11,9 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
-      {/* Premium background effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-background via-background to-background pointer-events-none z-0" />
+    <div className="min-h-screen bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008] text-slate-100 relative overflow-hidden">
+      {/* Premium background effects - always dark */}
+      <div className="fixed inset-0 bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008] pointer-events-none z-0" />
       
       <LandingNavbar />
       <main className="relative z-10">

@@ -26,7 +26,7 @@ export const UserCard = ({ onSettings, onLogout }: UserCardProps) => {
   // Eğer kullanıcı yüklenmediyse veya yoksa, placeholder göster
   if (!currentUser) {
     return (
-      <div className="rounded-2xl p-6 border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/40 transition-all">
+      <div className="rounded-2xl p-6 border border-border bg-card shadow-sm dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 transition-all">
         <div className="flex items-center gap-4">
           <div className="h-14 w-14 rounded-full bg-white/10 animate-pulse" />
           <div className="flex-1">
@@ -39,7 +39,7 @@ export const UserCard = ({ onSettings, onLogout }: UserCardProps) => {
   }
 
   return (
-    <div className="rounded-2xl p-6 border border-white/12 bg-white/8 backdrop-blur-2xl shadow-xl shadow-black/40 transition-all hover:border-primary/60 hover:bg-white/12 hover:shadow-primary/30 hover:-translate-y-0.5">
+    <div className="rounded-2xl p-6 border border-border bg-card shadow-md dark:border-white/12 dark:bg-white/8 dark:backdrop-blur-2xl dark:shadow-xl dark:shadow-black/40 transition-all hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/12 dark:hover:shadow-primary/30 hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-4">
         {/* User Info */}
         <div className="flex items-center gap-4 flex-1">

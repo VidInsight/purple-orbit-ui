@@ -324,7 +324,7 @@ const Dashboard = () => {
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Total Executions */}
-          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group rounded-2xl">
+          <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl hover:border-primary/60 hover:shadow-md hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-xl transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Executions</CardTitle>
@@ -339,7 +339,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Success Rate */}
-          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-emerald-400/60 hover:bg-white/10 hover:shadow-xl hover:shadow-emerald-400/25 transition-all duration-300 group rounded-2xl">
+          <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl hover:border-emerald-400/60 hover:shadow-md hover:shadow-emerald-400/25 dark:hover:bg-white/10 dark:hover:shadow-xl transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
@@ -356,7 +356,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Running Executions */}
-          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-primary/60 hover:bg-white/10 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group rounded-2xl">
+          <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl hover:border-primary/60 hover:shadow-md hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-xl transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Running Now</CardTitle>
@@ -371,7 +371,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Average Duration */}
-          <Card className="relative overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl hover:border-amber-400/60 hover:bg-white/10 hover:shadow-xl hover:shadow-amber-400/25 transition-all duration-300 group rounded-2xl">
+          <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl hover:border-amber-400/60 hover:shadow-md hover:shadow-amber-400/25 dark:hover:bg-white/10 dark:hover:shadow-xl transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-400/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Avg Duration</CardTitle>
@@ -391,7 +391,7 @@ const Dashboard = () => {
         {/* Charts and Activity Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 min-w-0">
           {/* Execution Trend Chart */}
-          <Card className="lg:col-span-2 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
+          <Card className="lg:col-span-2 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <div className="min-w-0">
@@ -476,7 +476,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="min-w-0 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
+          <Card className="min-w-0 rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 border border-primary/30 shadow-sm flex-shrink-0">
@@ -510,7 +510,7 @@ const Dashboard = () => {
         {/* Recent Activity & Resources */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 min-w-0">
           {/* Recent Executions */}
-          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
+          <Card className="rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
@@ -550,7 +550,7 @@ const Dashboard = () => {
                     <div
                       key={execution.id}
                       onClick={() => navigate(`/executions/${execution.id}`)}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/8 hover:border-primary/40 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25 dark:border-white/8 dark:bg-white/5 dark:hover:bg-primary/10"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {getStatusIcon(execution.status)}
@@ -584,7 +584,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Recent Workflows */}
-          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
+          <Card className="rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
@@ -624,7 +624,7 @@ const Dashboard = () => {
                     <div
                       key={workflow.id}
                       onClick={() => navigate(`/workflows/${workflow.id}/edit`)}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/8 hover:border-primary/40 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25 dark:border-white/8 dark:bg-white/5 dark:hover:bg-primary/10"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="p-2 rounded bg-primary/10">
@@ -656,7 +656,7 @@ const Dashboard = () => {
 
         {/* Credentials Section */}
         {credentials.length > 0 && (
-          <Card className="rounded-2xl border border-white/10 bg-white/6 backdrop-blur-xl shadow-lg shadow-black/40 hover:border-primary/60 hover:bg-white/10 hover:shadow-primary/30 transition-all duration-300">
+          <Card className="rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg truncate">
@@ -676,7 +676,7 @@ const Dashboard = () => {
                   <div
                     key={credential.id}
                     onClick={() => navigate('/credentials')}
-                    className="p-4 rounded-xl border border-white/10 bg-white/4 hover:border-primary/50 hover:bg-primary/10 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25"
+                    className="p-4 rounded-xl border border-border bg-muted hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25 dark:border-white/10 dark:bg-white/4 dark:hover:bg-primary/10"
                   >
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded bg-success/10 group-hover:bg-success/20 transition-colors">

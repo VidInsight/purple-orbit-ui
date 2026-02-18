@@ -151,10 +151,10 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
         <div className="relative">
           {/* Background gradient effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 rounded-3xl blur-3xl -z-10" />
           
           {/* Main content card */}
-          <div className="relative bg-surface/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-border/60 shadow-2xl shadow-primary/5 p-4 sm:p-5 transition-all duration-300 hover:shadow-primary/10 hover:border-border/80 min-w-0 overflow-x-auto">
+          <div className="relative rounded-2xl sm:rounded-3xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/8 dark:backdrop-blur-2xl dark:shadow-2xl dark:shadow-black/40 p-4 sm:p-5 transition-all duration-300 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/12 dark:hover:shadow-primary/30 min-w-0 overflow-x-auto">
             <ListTable
               items={paginatedItems}
               isLoading={isLoading}
@@ -170,7 +170,7 @@ export function ListPageTemplate<T extends { id: string; name: string; descripti
 
         {filteredItems.length > 0 && (
           <div className="mt-4 sm:mt-5 min-w-0 overflow-x-auto">
-            <div className="bg-surface/40 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-border/40 p-2 sm:p-3 shadow-md">
+            <div className="rounded-xl sm:rounded-2xl border border-border bg-muted/60 shadow-sm dark:bg-white/6 dark:border-white/10 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/30 p-2 sm:p-3">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

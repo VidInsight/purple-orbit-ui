@@ -14,6 +14,7 @@ import { getUserWorkspaces, createWorkspace as createWorkspaceApi, deleteWorkspa
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useUser } from '@/context/UserContext';
 import { getAccessToken, clearAllLocalStorage, getUserIdFromToken, getUserData } from '@/utils/tokenUtils';
+import { useTheme } from '@/context/ThemeContext';
 import { MyInvitationsTab } from '@/components/user-management/MyInvitationsTab';
 import { PendingInvitation, UserRole } from '@/types/user';
 import { getUserPendingInvitations, PendingInvitationItem, acceptInvitation, declineInvitation } from '@/services/membersApi';
@@ -39,6 +40,7 @@ const WorkspaceSelection = () => {
   const navigate = useNavigate();
   const { refreshWorkspaces } = useWorkspace();
   const { currentUser } = useUser();
+  const { setTheme } = useTheme();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -284,6 +286,8 @@ const WorkspaceSelection = () => {
   const handleLogout = () => {
     // Tüm localStorage verilerini temizle
     clearAllLocalStorage();
+    // Tema durumunu anında dark moda çek
+    setTheme('dark');
     
     toast({
       title: 'Logged Out',
@@ -380,17 +384,17 @@ const WorkspaceSelection = () => {
 
 
   return (
-    <div className="min-h-screen relative overflow-hidden transition-colors duration-300 bg-gradient-to-b from-[#05010d] via-[#060015] to-[#020008]">
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300 bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-[#05010d] dark:via-[#060015] dark:to-[#020008]">
       {/* Animated background: floating orbs / glow layers */}
       <div className="pointer-events-none absolute inset-0">
         {/* Soft purple radial glow center */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.15),_transparent_60%)]" />
-        {/* Dark vignette edges */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.9))]" />
-        {/* Accent orbs */}
-        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-purple-700/30 blur-3xl opacity-60 animate-pulse" />
-        <div className="absolute -bottom-40 -right-24 h-80 w-80 rounded-full bg-fuchsia-600/25 blur-3xl opacity-70 animate-[pulse_5s_ease-in-out_infinite]" />
-        <div className="absolute top-1/3 -right-24 h-56 w-56 rounded-full bg-indigo-500/25 blur-3xl opacity-60" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.10),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.18),_transparent_60%)]" />
+        {/* Dark vignette edges only in dark mode */}
+        <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_center,_transparent_40%,_rgba(0,0,0,0.9))]" />
+        {/* Accent orbs - subtle in light, stronger in dark */}
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-purple-400/15 dark:bg-purple-700/30 blur-3xl opacity-60 animate-pulse" />
+        <div className="absolute -bottom-40 -right-24 h-80 w-80 rounded-full bg-fuchsia-400/15 dark:bg-fuchsia-600/25 blur-3xl opacity-70 animate-[pulse_5s_ease-in-out_infinite]" />
+        <div className="absolute top-1/3 -right-24 h-56 w-56 rounded-full bg-indigo-400/15 dark:bg-indigo-500/25 blur-3xl opacity-60" />
       </div>
 
       {/* Main Content */}

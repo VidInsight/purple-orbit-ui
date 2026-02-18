@@ -33,7 +33,7 @@ export const RecentWorkflowsList = ({ workflows }: RecentWorkflowsListProps) => 
   const navigate = useNavigate();
 
   return (
-    <Card>
+    <Card className="rounded-2xl border border-border bg-card shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 hover:border-primary/60 hover:shadow-primary/20 dark:hover:bg-white/10 dark:hover:shadow-primary/30 transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-semibold">Son Workflow'lar</CardTitle>
         <Button variant="ghost" size="sm" onClick={() => navigate('/workflows')}>
@@ -51,7 +51,7 @@ export const RecentWorkflowsList = ({ workflows }: RecentWorkflowsListProps) => 
               <div
                 key={workflow.id}
                 onClick={() => navigate(`/workflows/${workflow.id}/edit`)}
-                className="flex items-center justify-between p-3 rounded-lg bg-surface/50 hover:bg-accent/50 cursor-pointer transition-colors"
+                className="flex items-center justify_between p-3 rounded-xl border border-border bg-muted hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group shadow-sm hover:shadow-primary/25 dark:border-white/8 dark:bg-white/5 dark:hover:bg-primary/10"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-foreground truncate max-w-[180px]">

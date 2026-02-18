@@ -244,8 +244,8 @@ const GlobalNodes = () => {
 
         {/* Content */}
         {nodes.length === 0 ? (
-          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-surface/80 backdrop-blur-sm p-12 md:p-16 text-center animate-in fade-in duration-500">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-12 md:p-16 text-center shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 animate-in fade-in duration-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none" />
             <div className="relative">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
                 <Sparkles className="h-8 w-8" />
@@ -257,7 +257,7 @@ const GlobalNodes = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-border/60 bg-surface/50 backdrop-blur-sm overflow-hidden animate-in fade-in-up duration-500">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40 animate-in fade-in-up duration-500">
             <div className="p-6 md:p-8">
               <GlobalNodeList
                 nodes={nodes}

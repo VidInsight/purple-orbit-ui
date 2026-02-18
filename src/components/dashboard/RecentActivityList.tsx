@@ -46,7 +46,7 @@ export const RecentActivityList = ({
   };
 
   return (
-    <div className="bg-surface rounded-lg border border-border p-6">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-md dark:border-white/10 dark:bg-white/6 dark:backdrop-blur-xl dark:shadow-lg dark:shadow-black/40">
       <h3 className="text-lg font-semibold text-foreground mb-4">{title}</h3>
 
       {items.length === 0 ? (
@@ -59,7 +59,7 @@ export const RecentActivityList = ({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer shadow-sm hover:shadow-primary/25 dark:border-white/8 dark:bg-white/4 dark:hover:bg-primary/10"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
