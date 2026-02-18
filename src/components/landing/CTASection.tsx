@@ -43,14 +43,13 @@ export const CTASection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* Register butonu kullanıcıya gizlendi
             <Link to="/register">
               <Button size="lg" className="gap-2 px-8 shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
                 Create Free Account
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            */}
+            
             <Link to="/login">
               <Button size="lg" variant="outline" className="gap-2 px-8 hover:bg-primary/5 hover:border-primary/50 transition-all duration-300">
                 Log In
