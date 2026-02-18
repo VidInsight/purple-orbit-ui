@@ -45,6 +45,8 @@ export const IntegrationsSection = () => {
 
   return (
     <section ref={ref} className="py-24 relative overflow-hidden">
+      {/* Background + Blur */}
+
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}

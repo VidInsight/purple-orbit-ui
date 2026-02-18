@@ -81,12 +81,11 @@ export const HowItWorksSection = () => {
 
   return (
     <section ref={ref} className="py-24 relative overflow-hidden">
-      {/* Background Pattern */}
+      {/* Background Pattern + Blur */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-background to-muted/50" />
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-72 h-72 bg-primary/10 rounded-full blur-xl" />
         </div>
       </div>
 

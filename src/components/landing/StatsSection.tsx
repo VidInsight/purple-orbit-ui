@@ -112,8 +112,8 @@ export const StatsSection = () => {
   ];
 
   return (
-    <section ref={ref} className="py-24 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
+    <section ref={ref} className="py-24 relative overflow-hidden">
+      {/* Background + Blur */}
       
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Section Header */}

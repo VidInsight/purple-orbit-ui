@@ -11,12 +11,12 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon: Icon, title, description, features, delay, isVisible }: FeatureCardProps) => (
-  <div
-    className={`group relative bg-card border border-border rounded-2xl p-6 transition-all duration-500 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 ${
-      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-    }`}
-    style={{ transitionDelay: `${delay * 150}ms` }}
-  >
+    <div
+      className={`group relative bg-card border border-border rounded-2xl p-6 transition-all duration-500 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      }`}
+      style={{ transitionDelay: `${delay * 150}ms` }}
+    >
     {/* Hover Glow */}
     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     
@@ -99,7 +99,9 @@ export const FeaturesSection = () => {
   ];
 
   return (
-    <section ref={ref} className="py-24 relative">
+    <section ref={ref} className="py-24 relative overflow-hidden">
+      {/* Background + Blur */}
+
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>

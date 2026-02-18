@@ -48,7 +48,7 @@ export const LandingFooter = () => {
   };
 
   return (
-    <footer className="border-t border-border bg-card/50">
+    <footer >
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Newsletter Section */}
         <div className="mb-12 pb-12 border-b border-border">

@@ -37,7 +37,9 @@ export const FAQSection = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section className="py-24 bg-background" id="faq">
+    <section className="py-24 relative overflow-hidden " id="faq">
+      {/* Background + Blur */}
+
       <div className="container max-w-4xl mx-auto px-6">
         <div
           ref={ref}
