@@ -7,8 +7,7 @@ import { addNodeToWorkflow, getWorkflowGraph, addEdgeToWorkflow, stopExecution, 
 import { toast } from '@/hooks/use-toast';
 import { TriggerNode } from '@/components/workflow-builder/TriggerNode';
 import { ActionNode } from '@/components/workflow-builder/ActionNode';
-import { ConditionalNode } from '@/components/workflow-builder/ConditionalNode';
-import { LoopNode } from '@/components/workflow-builder/LoopNode';
+ import { LoopNode } from '@/components/workflow-builder/LoopNode';
 import { AddNodeButton } from '@/components/workflow-builder/AddNodeButton';
 import { ParametersPanel } from '@/components/workflow-builder/ParametersPanel';
 import { OutputsPanel } from '@/components/workflow-builder/OutputsPanel';
@@ -985,9 +984,7 @@ export default function ZapierWorkflowEditor() {
     }
   }, [nodes, scrollToNewNode, currentWorkspace, id]);
 
-  const handleAddBranch = useCallback((conditionalNodeId: string, branchType: 'true' | 'false') => {
-    // In a real implementation, this would open a node selector
-  }, []);
+
 
   const handleNodeClick = useCallback((node: WorkflowNode) => {
     setSelectedNode(node);
@@ -1927,16 +1924,7 @@ export default function ZapierWorkflowEditor() {
                                 }}
                                 onClick={() => handleNodeClick(node)}
                               />
-                            ) : node.type === 'conditional' ? (
-                              <ConditionalNode
-                                node={node}
-                                onUpdate={(updates) => {
-                                  setNodes(nodes.map(n => n.id === node.id ? { ...n, ...updates } : n));
-                                }}
-                                onDelete={() => handleDeleteNode(node.id)}
-                                onClick={() => handleNodeClick(node)}
-                                onAddBranch={(branchType) => handleAddBranch(node.id, branchType)}
-                              />
+                            
                             ) : node.type === 'loop' ? (
                               <LoopNode
                                 node={node}

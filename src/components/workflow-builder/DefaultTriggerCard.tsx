@@ -11,9 +11,13 @@ interface DefaultTriggerCardProps {
   workspaceId?: string;
   workflowId?: string;
   onTriggerDataChange?: (triggerData: { input_mapping: Record<string, { type: string; value: any }> } | null) => void;
+  /** When true, only the Edit dialog is shown and opened automatically (no card). */
+  openEditImmediately?: boolean;
+  /** Called when the Edit dialog is closed. Use with openEditImmediately to reset parent state. */
+  onEditClose?: () => void;
 }
 
-export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChange }: DefaultTriggerCardProps) => {
+export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChange, openEditImmediately, onEditClose }: DefaultTriggerCardProps) => {
   const MAX_NESTING_DEPTH = 4;
   const [defaultTrigger, setDefaultTrigger] = useState<Trigger | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,6 +80,12 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
 
     fetchDefaultTrigger();
   }, [workspaceId, workflowId]);
+
+  // When openEditImmediately is true, open the edit dialog once trigger is loaded
+  useEffect(() => {
+    if (!openEditImmediately || !defaultTrigger || !workspaceId || !workflowId) return;
+    handleEdit();
+  }, [openEditImmediately, defaultTrigger?.id, workspaceId, workflowId]);
 
   // Initialize edit form when trigger is loaded or edit panel opens
   // Also reinitialize when defaultTrigger changes while edit panel is open
@@ -896,6 +906,7 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
   };
 
   if (isLoading) {
+    if (openEditImmediately) return null;
     return (
       <div className="bg-surface rounded-lg shadow-md overflow-hidden border-2 border-border">
         <div className="px-5 py-4">
@@ -914,6 +925,7 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
   }
 
   if (error) {
+    if (openEditImmediately) return null;
     return (
       <div className="bg-surface rounded-lg shadow-md overflow-hidden border-2 border-destructive/20">
         <div className="px-5 py-4">
@@ -937,6 +949,7 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
 
   return (
     <>
+      {!openEditImmediately && (
       <div className="bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-200 border-2 border-primary/50 hover:border-primary hover:shadow-lg">
         {/* Header */}
         <div className="px-5 py-3">
@@ -1005,9 +1018,13 @@ export const DefaultTriggerCard = ({ workspaceId, workflowId, onTriggerDataChang
         </div>
         </div>
       </div>
+      )}
 
       {/* Edit Panel - Modal/Popup */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+      <Dialog open={isEditOpen} onOpenChange={(open) => {
+        setIsEditOpen(open);
+        if (!open) onEditClose?.();
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Edit Trigger</DialogTitle>

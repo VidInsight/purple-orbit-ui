@@ -173,21 +173,18 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
     setIsSaving(true);
     try {
       const inputParams: Record<string, any> = {};
-      
+
       apiParameters.forEach(param => {
-        // Use dynamic path if it's a dynamic value, otherwise use the static value
-        inputParams[param.id] = param.isDynamic && param.dynamicPath 
-          ? param.dynamicPath 
-          : param.value;
+        inputParams[param.id] = param.isDynamic && param.dynamicPath ? param.dynamicPath : param.value;
       });
 
       await updateNodeInputParams(workspaceId, workflowId, node.id, inputParams);
-      
+
       toast({
         title: 'Success',
         description: 'All parameters saved successfully',
       });
-      
+
       onSaveSuccess?.(node.id);
       onClose();
     } catch (error) {
@@ -225,7 +222,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
           <div>
             <h2 className="text-lg font-semibold text-foreground">Node Configuration</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Configure parameters for this node
+              Configure parameters. Use &quot;Add a Dynamic Value&quot; to reference outputs from previous nodes.
             </p>
           </div>
           <button
@@ -266,7 +263,7 @@ export const ParametersPanel = ({ node, isOpen, onClose, onParameterChange, onSa
                     className="px-3 py-2 bg-primary/10 border border-dashed border-primary/40 rounded text-xs text-primary animate-pulse"
                     data-tour-id="zapier-params-drop-hint"
                   >
-                    ← Select a value from the left panel
+                    ← Select a value from the Previous Outputs panel (left)
                   </div>
                 )}
 

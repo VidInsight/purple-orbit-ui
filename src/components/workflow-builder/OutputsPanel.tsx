@@ -1,8 +1,12 @@
-import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon, Variable, Key, Database as DatabaseIcon, File, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ChevronDown, ChevronRight, GripVertical, Copy, Zap, MessageSquare, FileText, Settings, LucideIcon, Variable, Key, Database as DatabaseIcon, File, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathContext } from './PathContext';
 import { useWorkspace } from '@/context/WorkspaceContext';
+import { CreateVariableModal } from '@/components/variables/CreateVariableModal';
+import { CreateCredentialModal } from '@/components/credentials/CreateCredentialModal';
+import { CreateDatabaseModal } from '@/components/databases/CreateDatabaseModal';
+import { UploadFileModal } from '@/components/files/UploadFileModal';
 import { getVariables, VariableDetail } from '@/services/variablesApi';
 import { getCredentials, CredentialDetail } from '@/services/credentialsApi';
 import { getDatabases, DatabaseDetail } from '@/services/databasesApi';
@@ -46,6 +50,74 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
   const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
   const [isLoadingDatabases, setIsLoadingDatabases] = useState(false);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [showCreateVariableModal, setShowCreateVariableModal] = useState(false);
+  const [showCreateCredentialModal, setShowCreateCredentialModal] = useState(false);
+  const [showCreateDatabaseModal, setShowCreateDatabaseModal] = useState(false);
+  const [showUploadFileModal, setShowUploadFileModal] = useState(false);
+
+  const fetchVariablesList = useCallback(async () => {
+    if (!currentWorkspace?.id) return;
+    setIsLoadingVariables(true);
+    try {
+      const response = await getVariables(currentWorkspace.id);
+      const variablesData = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || response.data?.variables || [];
+      setVariables(variablesData);
+    } catch (error) {
+      console.error('Error loading variables:', error);
+    } finally {
+      setIsLoadingVariables(false);
+    }
+  }, [currentWorkspace?.id]);
+
+  const fetchCredentialsList = useCallback(async () => {
+    if (!currentWorkspace?.id) return;
+    setIsLoadingCredentials(true);
+    try {
+      const response = await getCredentials(currentWorkspace.id);
+      const credentialsData = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || response.data?.credentials || [];
+      setCredentials(credentialsData);
+    } catch (error) {
+      console.error('Error loading credentials:', error);
+    } finally {
+      setIsLoadingCredentials(false);
+    }
+  }, [currentWorkspace?.id]);
+
+  const fetchDatabasesList = useCallback(async () => {
+    if (!currentWorkspace?.id) return;
+    setIsLoadingDatabases(true);
+    try {
+      const response = await getDatabases(currentWorkspace.id);
+      const databasesData = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || response.data?.databases || [];
+      setDatabases(databasesData);
+    } catch (error) {
+      console.error('Error loading databases:', error);
+    } finally {
+      setIsLoadingDatabases(false);
+    }
+  }, [currentWorkspace?.id]);
+
+  const fetchFilesList = useCallback(async () => {
+    if (!currentWorkspace?.id) return;
+    setIsLoadingFiles(true);
+    try {
+      const response = await getFiles(currentWorkspace.id);
+      const filesData = Array.isArray(response.data)
+        ? response.data
+        : response.data?.items || response.data?.files || [];
+      setFiles(filesData);
+    } catch (error) {
+      console.error('Error loading files:', error);
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  }, [currentWorkspace?.id]);
 
   // Load data when tab changes or workspace changes
   useEffect(() => {
@@ -54,50 +126,29 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
     const loadData = async () => {
       try {
         if (selectedTab === 'variables') {
-          setIsLoadingVariables(true);
-          const response = await getVariables(currentWorkspace.id);
-          // Handle different response formats
-          const variablesData = Array.isArray(response.data) 
-            ? response.data 
-            : response.data?.items || response.data?.variables || [];
-          setVariables(variablesData);
+          await fetchVariablesList();
         } else if (selectedTab === 'credentials') {
-          setIsLoadingCredentials(true);
-          const response = await getCredentials(currentWorkspace.id);
-          // Handle different response formats
-          const credentialsData = Array.isArray(response.data) 
-            ? response.data 
-            : response.data?.items || response.data?.credentials || [];
-          setCredentials(credentialsData);
+          await fetchCredentialsList();
         } else if (selectedTab === 'databases') {
-          setIsLoadingDatabases(true);
-          const response = await getDatabases(currentWorkspace.id);
-          // Handle different response formats
-          const databasesData = Array.isArray(response.data) 
-            ? response.data 
-            : response.data?.items || response.data?.databases || [];
-          setDatabases(databasesData);
+          await fetchDatabasesList();
         } else if (selectedTab === 'files') {
-          setIsLoadingFiles(true);
-          const response = await getFiles(currentWorkspace.id);
-          // Handle different response formats
-          const filesData = Array.isArray(response.data) 
-            ? response.data 
-            : response.data?.items || response.data?.files || [];
-          setFiles(filesData);
+          await fetchFilesList();
         }
       } catch (error) {
         console.error(`Error loading ${selectedTab}:`, error);
-      } finally {
-        setIsLoadingVariables(false);
-        setIsLoadingCredentials(false);
-        setIsLoadingDatabases(false);
-        setIsLoadingFiles(false);
       }
     };
 
     loadData();
-  }, [selectedTab, isOpen, currentWorkspace?.id]);
+  }, [
+    selectedTab,
+    isOpen,
+    currentWorkspace?.id,
+    fetchVariablesList,
+    fetchCredentialsList,
+    fetchDatabasesList,
+    fetchFilesList,
+  ]);
 
   const handleToggleNode = (nodeId: string) => {
     setExpandedNode(expandedNode === nodeId ? null : nodeId);
@@ -591,56 +642,101 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
 
         {/* Environment Variables */}
         {selectedTab === 'variables' && (
-          <div className="divide-y divide-border">
-            {isLoadingVariables ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : variables.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                No variables found
-              </div>
-            ) : (
-              variables.map((variable) => (
-                <div 
-                  key={variable.id}
-                  className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
-                  onClick={() => handleDragClick(variable.id, undefined, 'variable')}
-                >
-                  <div className="flex items-center gap-3">
-                    <Variable className="h-4 w-4 text-primary flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{variable.key}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {getVariableType(variable.value)}
-                        </span>
-                        {variable.is_secret && (
-                          <span className="text-xs text-warning">Secret</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {variable.is_secret ? '••••••••' : variable.value}
-                      </p>
-                    </div>
-                    <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                  </div>
+          <div className="flex flex-col min-h-0">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 shrink-0">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Workspace variables
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8"
+                onClick={() => setShowCreateVariableModal(true)}
+                disabled={!currentWorkspace?.id}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add variable
+              </Button>
+            </div>
+            <div className="divide-y divide-border flex-1 min-h-0">
+              {isLoadingVariables ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
-              ))
+              ) : variables.length === 0 ? (
+                <div className="py-8 px-4 text-center text-muted-foreground text-sm">
+                  No variables yet. Click &quot;Add variable&quot; to create one.
+                </div>
+              ) : (
+                variables.map((variable) => (
+                  <div
+                    key={variable.id}
+                    className="px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group"
+                    onClick={() => handleDragClick(variable.id, undefined, 'variable')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Variable className="h-4 w-4 text-primary flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">{variable.key}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {getVariableType(variable.value)}
+                          </span>
+                          {variable.is_secret && (
+                            <span className="text-xs text-warning">Secret</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {variable.is_secret ? '••••••••' : variable.value}
+                        </p>
+                      </div>
+                      <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {currentWorkspace?.id && (
+              <CreateVariableModal
+                isOpen={showCreateVariableModal}
+                onClose={() => setShowCreateVariableModal(false)}
+                workspaceId={currentWorkspace.id}
+                onSuccess={() => {
+                  void fetchVariablesList();
+                }}
+              />
             )}
           </div>
         )}
 
         {/* Credentials */}
         {selectedTab === 'credentials' && (
-          <div className="p-4 space-y-3">
+          <div className="flex flex-col min-h-0">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 shrink-0">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Credentials
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8"
+                onClick={() => setShowCreateCredentialModal(true)}
+                disabled={!currentWorkspace?.id}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add credential
+              </Button>
+            </div>
+            <div className="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto">
             {isLoadingCredentials ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : credentials.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                No credentials found
+              <div className="py-8 text-center text-muted-foreground text-sm px-2">
+                No credentials yet. Click &quot;Add credential&quot; to create one.
               </div>
             ) : (
               credentials.map((credential) => {
@@ -694,19 +790,47 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
                 );
               })
             )}
+            </div>
+            {currentWorkspace?.id && (
+              <CreateCredentialModal
+                isOpen={showCreateCredentialModal}
+                onClose={() => setShowCreateCredentialModal(false)}
+                workspaceId={currentWorkspace.id}
+                onSuccess={() => {
+                  void fetchCredentialsList();
+                }}
+              />
+            )}
           </div>
         )}
 
         {/* Databases */}
         {selectedTab === 'databases' && (
-          <div className="p-4 space-y-3">
+          <div className="flex flex-col min-h-0">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 shrink-0">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Databases
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8"
+                onClick={() => setShowCreateDatabaseModal(true)}
+                disabled={!currentWorkspace?.id}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add database
+              </Button>
+            </div>
+            <div className="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto">
             {isLoadingDatabases ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : databases.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                No databases found
+              <div className="py-8 text-center text-muted-foreground text-sm px-2">
+                No databases yet. Click &quot;Add database&quot; to create one.
               </div>
             ) : (
               databases.map((database) => (
@@ -741,19 +865,47 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
                 </div>
               ))
             )}
+            </div>
+            {currentWorkspace?.id && (
+              <CreateDatabaseModal
+                isOpen={showCreateDatabaseModal}
+                onClose={() => setShowCreateDatabaseModal(false)}
+                workspaceId={currentWorkspace.id}
+                onSuccess={() => {
+                  void fetchDatabasesList();
+                }}
+              />
+            )}
           </div>
         )}
 
         {/* Files */}
         {selectedTab === 'files' && (
-          <div className="p-4 space-y-3">
+          <div className="flex flex-col min-h-0">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2 shrink-0">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Files
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8"
+                onClick={() => setShowUploadFileModal(true)}
+                disabled={!currentWorkspace?.id}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Upload file
+              </Button>
+            </div>
+            <div className="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto">
             {isLoadingFiles ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : files.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                No files found
+              <div className="py-8 text-center text-muted-foreground text-sm px-2">
+                No files yet. Click &quot;Upload file&quot; to add one.
               </div>
             ) : (
               files.map((file) => (
@@ -786,6 +938,17 @@ export const OutputsPanel = ({ outputs, isOpen, currentNodeId, triggerData }: Ou
                   </div>
                 </div>
               ))
+            )}
+            </div>
+            {currentWorkspace?.id && (
+              <UploadFileModal
+                isOpen={showUploadFileModal}
+                onClose={() => setShowUploadFileModal(false)}
+                workspaceId={currentWorkspace.id}
+                onSuccess={() => {
+                  void fetchFilesList();
+                }}
+              />
             )}
           </div>
         )}

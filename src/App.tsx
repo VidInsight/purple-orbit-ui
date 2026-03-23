@@ -14,10 +14,10 @@ import WorkspaceSelection from "@/pages/WorkspaceSelection";
 import WorkspaceSettings from "@/pages/WorkspaceSettings";
 import Dashboard from "@/pages/Dashboard";
 import Workflows from "@/pages/Workflows";
-import ZapierWorkflowEditor from "@/pages/ZapierWorkflowEditor";
+import TreeWorkflowEditor from "@/pages/TreeWorkflowEditor";
 import Executions from "@/pages/Executions";
 import ExecutionDetails from "@/pages/ExecutionDetails";
-import Credentials from "@/pages/Credentials";
+import Credentials from "@/pages/Credentials";  
 import Databases from "@/pages/Databases";
 import Variables from "@/pages/Variables";
 import Files from "@/pages/Files";
@@ -59,8 +59,10 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/workspace/settings" element={<ProtectedRoute><WorkspaceSettings /></ProtectedRoute>} />
       <Route path="/workflows" element={<ProtectedRoute><Workflows /></ProtectedRoute>} />
-      <Route path="/workflows/new" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />
-      <Route path="/workflows/:id/edit" element={<ProtectedRoute><ZapierWorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/new" element={<ProtectedRoute><TreeWorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/:id/edit" element={<ProtectedRoute><TreeWorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/new-tree" element={<ProtectedRoute><TreeWorkflowEditor /></ProtectedRoute>} />
+      <Route path="/workflows/:id/edit-tree" element={<ProtectedRoute><TreeWorkflowEditor /></ProtectedRoute>} />
       <Route path="/executions" element={<ProtectedRoute><Executions /></ProtectedRoute>} />
       <Route path="/executions/:id" element={<ProtectedRoute><ExecutionDetails /></ProtectedRoute>} />
       <Route path="/credentials" element={<ProtectedRoute><Credentials /></ProtectedRoute>} />

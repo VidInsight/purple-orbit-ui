@@ -5,6 +5,16 @@
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
+/* Tree workflow node — dönen ışık halkası (conic gradient) */
+@keyframes node-border-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
 @keyframes scroll-left {
   0% {
     transform: translateX(0);
@@ -411,7 +421,29 @@ All colors MUST be HSL.
     animation: gradient-shift 10s ease infinite;
   }
 
+  .animate-node-border-spin {
+    animation: node-border-spin 5s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-node-border-spin {
+      animation: none;
+    }
+  }
+
   .tech-glow-line {
     box-shadow: 0 0 1px hsla(var(--primary) / 0.5), 0 0 8px hsla(var(--primary) / 0.15);
+  }
+
+  /* React Flow / XYFlow: bağlantı noktaları (handle) görünür ve tıklanabilir */
+  .react-flow__handle,
+  .xyflow__handle {
+    width: 1rem !important;
+    height: 1rem !important;
+    min-width: 1rem !important;
+    min-height: 1rem !important;
+    border-radius: 9999px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }

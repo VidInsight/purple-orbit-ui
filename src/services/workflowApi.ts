@@ -196,6 +196,54 @@ export const addEdgeToWorkflow = async (
 };
 
 /**
+ * Delete an edge from a workflow
+ */
+export const deleteEdgeFromWorkflow = async (
+  workspaceId: string,
+  workflowId: string,
+  edgeId: string
+): Promise<WorkflowApiResponse> => {
+  if (!workspaceId || workspaceId.trim() === '') {
+    throw new Error('Workspace ID is required. Please select a workspace first.');
+  }
+
+  if (!workflowId || workflowId.trim() === '') {
+    throw new Error('Workflow ID is required.');
+  }
+
+  if (!edgeId || edgeId.trim() === '') {
+    throw new Error('Edge ID is required.');
+  }
+
+  const response = await apiClient(
+    `${BASE_URL}/frontend/workspaces/${workspaceId}/workflows/${workflowId}/edges/${edgeId}`,
+    {
+      method: 'DELETE',
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Error response:', errorText);
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    console.error('Parsed error data:', errorData);
+    throw new Error(
+      errorData.message ||
+        errorData.error ||
+        `Failed to delete edge: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+/**
  * Get node form schema
  */
 export const getNodeFormSchema = async (
