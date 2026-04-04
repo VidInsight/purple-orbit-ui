@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useId, type CSSProperties } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, useId, type CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ReactFlow,
@@ -21,6 +21,7 @@ import {
   type Connection,
   type NodeProps,
   type EdgeProps,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
@@ -38,6 +39,12 @@ import {
   Settings,
   LucideIcon,
   Trash2,
+  Undo2,
+  Redo2,
+  LayoutGrid,
+  Maximize2,
+  Download,
+  Upload,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -74,6 +81,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type TreeNodeKind = 'trigger' | 'action' | 'conditional' | 'loop';
 
@@ -81,6 +89,8 @@ interface TreeNodeData {
   label: string;
   kind: TreeNodeKind;
   icon: LucideIcon;
+  /** Backend’deki benzersiz node adı (aynı script’ten birden fazla eklerken çakışmayı önlemek için) */
+  workflowNodeName?: string;
   isVirtual?: boolean;
   onDelete?: () => void;
   /** Konfigüre edilmiş parametreler (key → value); kartta özet göstermek için */
@@ -127,6 +137,15 @@ const toDisplayLabel = (s: string) =>
     .split(/\s+/)
     .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
+
+/** API workflow içinde node adı benzersiz olmalı; aynı şablondan tekrar eklerken sonek üretir */
+function makeUniqueWorkflowNodeName(base: string, existingNames: Iterable<string>): string {
+  const taken = new Set(Array.from(existingNames, (n) => n.trim()).filter(Boolean));
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}_${n}`)) n += 1;
+  return `${base}_${n}`;
+}
 
 function valueIsFilled(v: unknown): boolean {
   if (v === undefined || v === null) return false;
@@ -219,7 +238,7 @@ const DeletableEdge = (props: EdgeProps) => {
     style,
   } = props;
   const gradientId = useId().replace(/:/g, '');
-  const { setEdges } = useReactFlow();
+  const { deleteElements } = useReactFlow();
   const { currentWorkspace } = useWorkspace();
   const { id: workflowId } = useParams<{ id: string }>();
 
@@ -239,11 +258,10 @@ const DeletableEdge = (props: EdgeProps) => {
     event.preventDefault();
     event.stopPropagation();
 
-    // Optimistically remove from local state
-    setEdges((eds) => eds.filter((e) => e.id !== id));
+    await deleteElements({ edges: [{ id }] });
 
-    // Fire-and-forget API call when we have the identifiers
-    if (currentWorkspace?.id && workflowId && workflowId !== 'new') {
+    const isSyntheticVirtual = String(id).startsWith('synthetic-virtual-');
+    if (!isSyntheticVirtual && currentWorkspace?.id && workflowId && workflowId !== 'new') {
       try {
         await deleteEdgeFromWorkflow(currentWorkspace.id, workflowId, String(id));
       } catch (error) {
@@ -679,6 +697,55 @@ function applyTreeLayout(nodes: TreeNode[], edges: TreeEdge[]): TreeNode[] {
   });
 }
 
+const MAX_GRAPH_HISTORY = 40;
+const TREE_EXPORT_FORMAT = 'purple-orbit-tree-workflow' as const;
+
+type TreeGraphSnapshot = {
+  nodes: TreeNode[];
+  edges: TreeEdge[];
+};
+
+function snapshotGraph(nodes: TreeNode[], edges: TreeEdge[]): TreeGraphSnapshot {
+  return {
+    nodes: nodes.map((node) => {
+      const raw = node.data as unknown as TreeNodeData;
+      const { onDelete: _onDelete, ...rest } = raw;
+      return {
+        ...node,
+        data: rest as unknown as Record<string, unknown>,
+      } as TreeNode;
+    }),
+    edges: edges.map((e) => ({ ...e })),
+  };
+}
+
+const VIRTUAL_TRIGGER_ID = 'virtual-trigger';
+
+/** API’de ayrı trigger node’u yoksa kök action’lar gelen edge’siz kalır; sanal trigger yalnızca UI’dadır ve edge’ler persist edilmez. Yüklemede bu bağlantıları yeniden kuruyoruz. */
+function synthesizeVirtualTriggerEdges(nodes: TreeNode[], edges: TreeEdge[]): TreeEdge[] {
+  const hasRealTrigger = nodes.some(
+    (n) => (n.data as unknown as TreeNodeData).kind === 'trigger'
+  );
+  if (nodes.length === 0 || hasRealTrigger) return [];
+
+  const incoming = new Set<string>();
+  edges.forEach((e) => {
+    const t = e.target?.toString();
+    if (t) incoming.add(t);
+  });
+
+  const roots = nodes.filter((n) => !incoming.has(n.id));
+  return roots.map(
+    (root) =>
+      ({
+        id: `synthetic-virtual-${root.id}`,
+        source: VIRTUAL_TRIGGER_ID,
+        target: root.id,
+        type: 'deletable',
+      }) as TreeEdge
+  );
+}
+
 function mapWorkflowGraphToTree(workflowData: any): { nodes: TreeNode[]; edges: TreeEdge[] } {
   const backendNodes: any[] = Array.isArray(workflowData.nodes) ? workflowData.nodes : [];
   const backendEdges: any[] = Array.isArray(workflowData.edges) ? workflowData.edges : [];
@@ -700,6 +767,7 @@ function mapWorkflowGraphToTree(workflowData: any): { nodes: TreeNode[]; edges: 
         label,
         kind,
         icon,
+        workflowNodeName: typeof apiNode.name === 'string' ? apiNode.name : rawName,
       },
       position: { x: 0, y: 0 },
       type: kind === 'trigger' ? 'triggerNode' : 'actionNode',
@@ -761,6 +829,66 @@ export default function TreeWorkflowEditor() {
   const [nodeParams, setNodeParams] = useState<Record<string, Record<string, any>>>({});
   const [isLoadingOutputs, setIsLoadingOutputs] = useState(false);
 
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  useEffect(() => {
+    nodesRef.current = nodes;
+    edgesRef.current = edges;
+  }, [nodes, edges]);
+
+  const reactFlowRef = useRef<ReactFlowInstance | null>(null);
+  const pastSnapshots = useRef<TreeGraphSnapshot[]>([]);
+  const futureSnapshots = useRef<TreeGraphSnapshot[]>([]);
+  const skipHistoryRef = useRef(true);
+  const isRestoringHistoryRef = useRef(false);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  useEffect(() => {
+    pastSnapshots.current = [];
+    futureSnapshots.current = [];
+    setCanUndo(false);
+    setCanRedo(false);
+    skipHistoryRef.current = Boolean(currentWorkspace?.id && id && id !== 'new');
+  }, [id, currentWorkspace?.id]);
+
+  const recordHistory = useCallback(() => {
+    if (skipHistoryRef.current || isRestoringHistoryRef.current) return;
+    pastSnapshots.current.push(snapshotGraph(nodesRef.current, edgesRef.current));
+    if (pastSnapshots.current.length > MAX_GRAPH_HISTORY) {
+      pastSnapshots.current.shift();
+    }
+    futureSnapshots.current = [];
+    setCanUndo(true);
+    setCanRedo(false);
+  }, []);
+
+  const onBeforeDelete = useCallback(
+    async ({
+      nodes: nodesToRemove,
+      edges: edgesToRemove,
+    }: {
+      nodes: Node[];
+      edges: Edge[];
+    }) => {
+      const nList = nodesToRemove as TreeNode[];
+      const eList = edgesToRemove as TreeEdge[];
+      const nonVirtual = nList.filter((n) => !(n.data as unknown as TreeNodeData).isVirtual);
+      if (nonVirtual.length !== nList.length && nonVirtual.length === 0 && eList.length === 0) {
+        return false;
+      }
+      if (!skipHistoryRef.current && !isRestoringHistoryRef.current && (nonVirtual.length > 0 || eList.length > 0)) {
+        recordHistory();
+      }
+      if (nonVirtual.length !== nList.length) {
+        return { nodes: nonVirtual, edges: eList };
+      }
+      return true;
+    },
+    [recordHistory]
+  );
+
   const nodeTypes = useMemo(
     () => ({
       triggerNode: TriggerTreeNode,
@@ -797,13 +925,18 @@ export default function TreeWorkflowEditor() {
   useEffect(() => {
     const loadWorkflowFromAPI = async () => {
       const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) return;
+      if (!accessToken) {
+        skipHistoryRef.current = false;
+        return;
+      }
 
       if (!currentWorkspace?.id || !id || id === 'new') {
+        skipHistoryRef.current = false;
         return;
       }
 
       setIsLoadingWorkflow(true);
+      skipHistoryRef.current = true;
       try {
         const response = await getWorkflowGraph(currentWorkspace.id, id);
 
@@ -830,15 +963,15 @@ export default function TreeWorkflowEditor() {
                 )
               : mapped.nodes;
           setNodes(withNodeActions(nodesWithPositions));
-          setEdges(
-            mapped.edges.map(
-              (edge) =>
-                ({
-                  ...edge,
-                  type: 'deletable',
-                } as TreeEdge)
-            )
+          const apiEdges = mapped.edges.map(
+            (edge) =>
+              ({
+                ...edge,
+                type: 'deletable',
+              } as TreeEdge)
           );
+          const restoredVirtualEdges = synthesizeVirtualTriggerEdges(mapped.nodes, apiEdges);
+          setEdges([...apiEdges, ...restoredVirtualEdges]);
         }
       } catch (error) {
         console.error('Error loading workflow graph for tree editor:', error);
@@ -852,6 +985,7 @@ export default function TreeWorkflowEditor() {
         });
       } finally {
         setIsLoadingWorkflow(false);
+        skipHistoryRef.current = false;
       }
     };
 
@@ -996,6 +1130,8 @@ export default function TreeWorkflowEditor() {
         return;
       }
 
+      recordHistory();
+
       // Persist edge only when both endpoints are real backend nodes
       if (currentWorkspace?.id && id && id !== 'new' && !isSourceVirtual && !isTargetVirtual) {
         try {
@@ -1046,7 +1182,7 @@ export default function TreeWorkflowEditor() {
           ) as TreeEdge[]
       );
     },
-    [nodes, edges, currentWorkspace?.id, id, checkCreatesCycle]
+    [nodes, edges, currentWorkspace?.id, id, checkCreatesCycle, recordHistory]
   );
 
   const selectedNode = useMemo(
@@ -1112,6 +1248,8 @@ export default function TreeWorkflowEditor() {
       return;
     }
 
+    recordHistory();
+
     // Delete on backend when possible
     if (currentWorkspace?.id && id && id !== 'new') {
       try {
@@ -1139,7 +1277,7 @@ export default function TreeWorkflowEditor() {
     setSelectedEdgeId(null);
     setShowParamsPanel(false);
     setShowOutputsPanel(false);
-  }, [nodes, currentWorkspace?.id, id]);
+  }, [nodes, currentWorkspace?.id, id, recordHistory]);
 
   const handleDeleteSelectedNode = useCallback(() => {
     if (!selectedNodeId) return;
@@ -1149,10 +1287,11 @@ export default function TreeWorkflowEditor() {
   const handleDeleteSelectedEdge = useCallback(async () => {
     if (!selectedEdgeId) return;
 
+    recordHistory();
     // Currently there is no delete-edge API, so we only update local state
     setEdges((prev) => prev.filter((e) => e.id !== selectedEdgeId));
     setSelectedEdgeId(null);
-  }, [selectedEdgeId]);
+  }, [selectedEdgeId, recordHistory]);
 
   const withNodeActions = useCallback(
     (inputNodes: TreeNode[]): TreeNode[] =>
@@ -1172,6 +1311,153 @@ export default function TreeWorkflowEditor() {
     [deleteNodeById]
   );
 
+  const handleUndo = useCallback(() => {
+    if (pastSnapshots.current.length === 0) return;
+    isRestoringHistoryRef.current = true;
+    const currentSnap = snapshotGraph(nodesRef.current, edgesRef.current);
+    futureSnapshots.current.push(currentSnap);
+    const prev = pastSnapshots.current.pop()!;
+    const restoredNodes = withNodeActions(prev.nodes);
+    setNodes(restoredNodes);
+    setEdges([...prev.edges]);
+    if (currentWorkspace?.id && id && id !== 'new') {
+      saveNodePositions(currentWorkspace.id, id, restoredNodes);
+    }
+    setCanUndo(pastSnapshots.current.length > 0);
+    setCanRedo(futureSnapshots.current.length > 0);
+    queueMicrotask(() => {
+      isRestoringHistoryRef.current = false;
+    });
+  }, [withNodeActions, currentWorkspace?.id, id]);
+
+  const handleRedo = useCallback(() => {
+    if (futureSnapshots.current.length === 0) return;
+    isRestoringHistoryRef.current = true;
+    const currentSnap = snapshotGraph(nodesRef.current, edgesRef.current);
+    pastSnapshots.current.push(currentSnap);
+    const next = futureSnapshots.current.pop()!;
+    const restoredNodes = withNodeActions(next.nodes);
+    setNodes(restoredNodes);
+    setEdges([...next.edges]);
+    if (currentWorkspace?.id && id && id !== 'new') {
+      saveNodePositions(currentWorkspace.id, id, restoredNodes);
+    }
+    setCanUndo(pastSnapshots.current.length > 0);
+    setCanRedo(futureSnapshots.current.length > 0);
+    queueMicrotask(() => {
+      isRestoringHistoryRef.current = false;
+    });
+  }, [withNodeActions, currentWorkspace?.id, id]);
+
+  const handleAutoLayout = useCallback(() => {
+    if (activeTab !== 'editor' || isLoadingWorkflow) return;
+    recordHistory();
+    setNodes((prevNodes) => {
+      const laidOut = applyTreeLayout(prevNodes, edgesRef.current);
+      const next = withNodeActions(laidOut);
+      if (currentWorkspace?.id && id && id !== 'new') {
+        saveNodePositions(currentWorkspace.id, id, next);
+      }
+      return next;
+    });
+  }, [activeTab, isLoadingWorkflow, recordHistory, withNodeActions, currentWorkspace?.id, id]);
+
+  const handleFitView = useCallback(() => {
+    if (activeTab !== 'editor') return;
+    reactFlowRef.current?.fitView({ padding: 0.2, duration: 220 });
+  }, [activeTab]);
+
+  const handleExportLayoutJson = useCallback(() => {
+    try {
+      const snap = snapshotGraph(nodes, edges);
+      const payload = {
+        format: TREE_EXPORT_FORMAT,
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        workflowName,
+        workflowId: id ?? null,
+        nodes: snap.nodes,
+        edges: snap.edges,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = (workflowName || 'untitled').replace(/[^\w\-]+/g, '-').slice(0, 80) || 'untitled';
+      a.download = `workflow-layout-${safeName}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Exported', description: 'Canvas layout saved as JSON.' });
+    } catch {
+      toast({ title: 'Export failed', description: 'Could not build the file.', variant: 'destructive' });
+    }
+  }, [workflowName, id, nodes, edges]);
+
+  const handleImportLayoutJson = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = reader.result as string;
+          const data = JSON.parse(text) as {
+            format?: string;
+            nodes?: TreeNode[];
+            edges?: TreeEdge[];
+          };
+          if (data.format !== TREE_EXPORT_FORMAT || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+            toast({
+              title: 'Invalid file',
+              description: 'Use a JSON file exported from this editor.',
+              variant: 'destructive',
+            });
+            return;
+          }
+          const nodeIds = new Set(data.nodes.map((n) => n.id));
+          const validEdges = data.edges.filter(
+            (e) => nodeIds.has(String(e.source)) && nodeIds.has(String(e.target))
+          );
+          recordHistory();
+          const restored = withNodeActions(data.nodes);
+          setNodes(restored);
+          setEdges(
+            validEdges.map((e) => ({ ...e, type: (e.type as string) || 'deletable' })) as TreeEdge[]
+          );
+          if (currentWorkspace?.id && id && id !== 'new') {
+            saveNodePositions(currentWorkspace.id, id, restored);
+          }
+          toast({ title: 'Imported', description: 'Canvas layout was replaced from the file.' });
+        } catch {
+          toast({
+            title: 'Import failed',
+            description: 'Could not parse the JSON file.',
+            variant: 'destructive',
+          });
+        }
+      };
+      reader.readAsText(file);
+    },
+    [recordHistory, withNodeActions, currentWorkspace?.id, id]
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (activeTab !== 'editor') return;
+      const el = e.target as HTMLElement | null;
+      if (el?.closest('input, textarea, [contenteditable=true]')) return;
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) handleRedo();
+        else handleUndo();
+      } else if (mod && e.key === 'y') {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeTab, handleUndo, handleRedo]);
+
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const hasPositionChange = changes.some((c) => c.type === 'position' && 'position' in c);
@@ -1189,11 +1475,12 @@ export default function TreeWorkflowEditor() {
 
   const handleAddNode = useCallback(
     async (category: string, subcategory: string, nodeName: string, scriptId: string) => {
-      const displayLabel = toDisplayLabel(nodeName);
       const { kind, icon } = detectNodeKindAndIcon(nodeName);
 
       // If workspace/workflow not ready, work only in local state
       if (!currentWorkspace?.id || !id || id === 'new') {
+        recordHistory();
+        const displayLabel = toDisplayLabel(nodeName);
         const newId = `node-${Date.now()}`;
         const newNode: TreeNode = {
           id: newId,
@@ -1212,7 +1499,7 @@ export default function TreeWorkflowEditor() {
           return laidOutNodes;
         });
         if (edges.length === 0) {
-          const triggerId = nodes.find((n) => (n.data as { kind?: string })?.kind === 'trigger')?.id ?? 'virtual-trigger';
+          const triggerId = nodes.find((n) => (n.data as { kind?: string })?.kind === 'trigger')?.id ?? VIRTUAL_TRIGGER_ID;
           setEdges((prev) => [
             ...prev,
             { id: `e-${triggerId}-${newId}`, source: triggerId, target: newId, type: 'deletable' },
@@ -1224,12 +1511,18 @@ export default function TreeWorkflowEditor() {
 
       // Backend‑persisted node
       try {
+        const existingNames = nodes
+          .map((n) => (n.data as unknown as TreeNodeData).workflowNodeName)
+          .filter((n): n is string => typeof n === 'string' && n.length > 0);
+        const uniqueNodeName = makeUniqueWorkflowNodeName(nodeName, existingNames);
+        const displayLabel = toDisplayLabel(uniqueNodeName);
+
         const nodeDescription = `${toDisplayLabel(
           nodeName
         )} node from ${toDisplayLabel(category)} > ${toDisplayLabel(subcategory)}`;
 
         const nodeData = {
-          name: nodeName,
+          name: uniqueNodeName,
           script_id: scriptId,
           description: nodeDescription,
           input_params: {} as Record<string, any>,
@@ -1247,10 +1540,13 @@ export default function TreeWorkflowEditor() {
             label: displayLabel,
             kind,
             icon,
+            workflowNodeName: uniqueNodeName,
           },
           position: { x: 0, y: 0 },
           type: kind === 'trigger' ? 'triggerNode' : 'actionNode',
         };
+
+        recordHistory();
 
         setNodes((prevNodes) => {
           const updatedNodes = withNodeActions([...prevNodes, newNode]);
@@ -1258,8 +1554,8 @@ export default function TreeWorkflowEditor() {
           return laidOutNodes;
         });
         if (edges.length === 0) {
-          const triggerId = nodes.find((n) => (n.data as { kind?: string })?.kind === 'trigger')?.id ?? 'virtual-trigger';
-          const isVirtualTrigger = triggerId === 'virtual-trigger';
+          const triggerId = nodes.find((n) => (n.data as { kind?: string })?.kind === 'trigger')?.id ?? VIRTUAL_TRIGGER_ID;
+          const isVirtualTrigger = triggerId === VIRTUAL_TRIGGER_ID;
           if (!isVirtualTrigger) {
             try {
               await addEdgeToWorkflow(currentWorkspace.id, id, {
@@ -1298,7 +1594,7 @@ export default function TreeWorkflowEditor() {
         });
       }
     },
-    [nodes, edges, selectedNodeId, currentWorkspace?.id, id]
+    [nodes, edges, selectedNodeId, currentWorkspace?.id, id, recordHistory]
   );
 
   const fetchExecutionDetails = useCallback(
@@ -1478,15 +1774,15 @@ export default function TreeWorkflowEditor() {
   const totalDuration = executionData?.duration || 0;
 
   // Ensure there is always a visible trigger node on the canvas when backend graph
-  // does not provide one. This is a virtual node used only for visualization and
-  // local tree layout; backend edges are not persisted for this virtual trigger.
+  // does not provide one. Virtual→root edges are not stored by the API; they are
+  // re-added in load via synthesizeVirtualTriggerEdges.
   useEffect(() => {
     setNodes((prevNodes) => {
       const hasTrigger = prevNodes.some((n) => (n.data as { kind?: string })?.kind === 'trigger');
       if (hasTrigger) return prevNodes;
 
       const virtualTrigger: TreeNode = {
-        id: 'virtual-trigger',
+        id: VIRTUAL_TRIGGER_ID,
         data: {
           label: 'Workflow Trigger',
           kind: 'trigger',
@@ -1545,7 +1841,121 @@ export default function TreeWorkflowEditor() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <TooltipProvider delayDuration={400}>
+                <div className="flex items-center gap-0.5 rounded-xl border border-border/50 bg-surface/40 p-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        disabled={!canUndo}
+                        onClick={handleUndo}
+                        aria-label="Undo"
+                      >
+                        <Undo2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Undo (Ctrl+Z)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        disabled={!canRedo}
+                        onClick={handleRedo}
+                        aria-label="Redo"
+                      >
+                        <Redo2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Redo (Ctrl+Y or Ctrl+Shift+Z)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
+                        onClick={handleAutoLayout}
+                        aria-label="Auto layout"
+                      >
+                        <LayoutGrid className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Auto-align tree layout</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
+                        onClick={handleFitView}
+                        aria-label="Fit view"
+                      >
+                        <Maximize2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Fit graph to view</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        disabled={nodes.length === 0}
+                        onClick={handleExportLayoutJson}
+                        aria-label="Export layout JSON"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Download layout as JSON</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        onClick={() => importFileInputRef.current?.click()}
+                        aria-label="Import layout JSON"
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Replace layout from JSON file</TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
+
+              <input
+                ref={importFileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                aria-hidden
+                tabIndex={-1}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = '';
+                  if (file) handleImportLayoutJson(file);
+                }}
+              />
+
               <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-surface/40 px-3 py-1.5">
                 <Label htmlFor="workflow-active" className="text-xs text-muted-foreground font-medium">
                   Active
@@ -1630,6 +2040,13 @@ export default function TreeWorkflowEditor() {
                         edges={edges}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
+                        onInit={(instance) => {
+                          reactFlowRef.current = instance;
+                        }}
+                        onBeforeDelete={onBeforeDelete}
+                        onNodeDragStart={() => {
+                          recordHistory();
+                        }}
                         onNodesChange={handleNodesChange}
                         onEdgesChange={handleEdgesChange}
                         onConnect={handleConnect}
@@ -1687,7 +2104,7 @@ export default function TreeWorkflowEditor() {
                     />
                   )}
                   <div
-                    className="pointer-events-none absolute inset-y-0 z-50 w-[360px] max-w-full"
+                    className="pointer-events-none absolute inset-y-0 z-50  max-w-full"
                     style={{ right: showParamsPanel ? 350 : 0 }}
                   >
                     <div className="pointer-events-auto h-full">
