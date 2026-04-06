@@ -897,6 +897,12 @@ export default function TreeWorkflowEditor() {
     [nodes, nodeParams]
   );
 
+  /** Stable when only node positions change (drag); avoids refetching form schemas on every move. */
+  const nodeGraphStructureKey = useMemo(
+    () => nodes.map((n) => n.id).sort().join('|'),
+    [nodes]
+  );
+
   useEffect(() => {
     const loadWorkflowFromAPI = async () => {
       const accessToken = localStorage.getItem('access_token');
@@ -971,13 +977,14 @@ export default function TreeWorkflowEditor() {
     };
 
     const fetchNodeOutputs = async () => {
-      if (!currentWorkspace?.id || !id || id === 'new' || nodes.length === 0) return;
+      const graphNodes = nodesRef.current;
+      if (!currentWorkspace?.id || !id || id === 'new' || graphNodes.length === 0) return;
       setIsLoadingOutputs(true);
       const outputs: Record<string, { nodeId: string; nodeName: string; icon: LucideIcon; output: any }> = {};
       const paramsMap: Record<string, Record<string, any>> = {};
       try {
         await Promise.all(
-          nodes.map(async (node) => {
+          graphNodes.map(async (node) => {
             const nodeData = node.data as unknown as TreeNodeData;
             if (nodeData.isVirtual) {
               outputs[node.id] = {
@@ -1022,7 +1029,7 @@ export default function TreeWorkflowEditor() {
       }
     };
     fetchNodeOutputs();
-  }, [nodes, currentWorkspace?.id, id]);
+  }, [nodeGraphStructureKey, currentWorkspace?.id, id]);
 
   const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
