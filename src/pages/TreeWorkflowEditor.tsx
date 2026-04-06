@@ -105,31 +105,6 @@ type TreeEdge = Edge;
 const NODE_HORIZONTAL_SPACING = 260;
 const NODE_VERTICAL_SPACING = 180;
 
-const STORAGE_KEY_POSITIONS = (workspaceId: string, workflowId: string) =>
-  `tree-workflow-positions-${workspaceId}-${workflowId}`;
-
-function loadSavedNodePositions(workspaceId: string | undefined, workflowId: string | undefined): Record<string, { x: number; y: number }> {
-  if (!workspaceId || !workflowId || workflowId === 'new') return {};
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_POSITIONS(workspaceId, workflowId));
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, { x: number; y: number }>;
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveNodePositions(workspaceId: string | undefined, workflowId: string | undefined, nodes: { id: string; position: { x: number; y: number } }[]) {
-  if (!workspaceId || !workflowId || workflowId === 'new') return;
-  try {
-    const positions = Object.fromEntries(nodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }]));
-    localStorage.setItem(STORAGE_KEY_POSITIONS(workspaceId, workflowId), JSON.stringify(positions));
-  } catch {
-    // ignore
-  }
-}
-
 const toDisplayLabel = (s: string) =>
   (s || '')
     .replace(/_/g, ' ')
@@ -955,14 +930,7 @@ export default function TreeWorkflowEditor() {
           }
 
           const mapped = mapWorkflowGraphToTree(workflowData);
-          const savedPositions = loadSavedNodePositions(currentWorkspace.id, id);
-          const nodesWithPositions =
-            Object.keys(savedPositions).length > 0
-              ? mapped.nodes.map((n) =>
-                  savedPositions[n.id] ? { ...n, position: savedPositions[n.id]! } : n
-                )
-              : mapped.nodes;
-          setNodes(withNodeActions(nodesWithPositions));
+          setNodes(withNodeActions(mapped.nodes));
           const apiEdges = mapped.edges.map(
             (edge) =>
               ({
@@ -1320,15 +1288,12 @@ export default function TreeWorkflowEditor() {
     const restoredNodes = withNodeActions(prev.nodes);
     setNodes(restoredNodes);
     setEdges([...prev.edges]);
-    if (currentWorkspace?.id && id && id !== 'new') {
-      saveNodePositions(currentWorkspace.id, id, restoredNodes);
-    }
     setCanUndo(pastSnapshots.current.length > 0);
     setCanRedo(futureSnapshots.current.length > 0);
     queueMicrotask(() => {
       isRestoringHistoryRef.current = false;
     });
-  }, [withNodeActions, currentWorkspace?.id, id]);
+  }, [withNodeActions]);
 
   const handleRedo = useCallback(() => {
     if (futureSnapshots.current.length === 0) return;
@@ -1339,28 +1304,21 @@ export default function TreeWorkflowEditor() {
     const restoredNodes = withNodeActions(next.nodes);
     setNodes(restoredNodes);
     setEdges([...next.edges]);
-    if (currentWorkspace?.id && id && id !== 'new') {
-      saveNodePositions(currentWorkspace.id, id, restoredNodes);
-    }
     setCanUndo(pastSnapshots.current.length > 0);
     setCanRedo(futureSnapshots.current.length > 0);
     queueMicrotask(() => {
       isRestoringHistoryRef.current = false;
     });
-  }, [withNodeActions, currentWorkspace?.id, id]);
+  }, [withNodeActions]);
 
   const handleAutoLayout = useCallback(() => {
     if (activeTab !== 'editor' || isLoadingWorkflow) return;
     recordHistory();
     setNodes((prevNodes) => {
       const laidOut = applyTreeLayout(prevNodes, edgesRef.current);
-      const next = withNodeActions(laidOut);
-      if (currentWorkspace?.id && id && id !== 'new') {
-        saveNodePositions(currentWorkspace.id, id, next);
-      }
-      return next;
+      return withNodeActions(laidOut);
     });
-  }, [activeTab, isLoadingWorkflow, recordHistory, withNodeActions, currentWorkspace?.id, id]);
+  }, [activeTab, isLoadingWorkflow, recordHistory, withNodeActions]);
 
   const handleFitView = useCallback(() => {
     if (activeTab !== 'editor') return;
@@ -1422,9 +1380,6 @@ export default function TreeWorkflowEditor() {
           setEdges(
             validEdges.map((e) => ({ ...e, type: (e.type as string) || 'deletable' })) as TreeEdge[]
           );
-          if (currentWorkspace?.id && id && id !== 'new') {
-            saveNodePositions(currentWorkspace.id, id, restored);
-          }
           toast({ title: 'Imported', description: 'Canvas layout was replaced from the file.' });
         } catch {
           toast({
@@ -1436,7 +1391,7 @@ export default function TreeWorkflowEditor() {
       };
       reader.readAsText(file);
     },
-    [recordHistory, withNodeActions, currentWorkspace?.id, id]
+    [recordHistory, withNodeActions]
   );
 
   useEffect(() => {
@@ -1460,17 +1415,12 @@ export default function TreeWorkflowEditor() {
 
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      const hasPositionChange = changes.some((c) => c.type === 'position' && 'position' in c);
       setNodes((nds) => {
         const updated = applyNodeChanges(changes, nds) as TreeNode[];
-        const result = withNodeActions(updated);
-        if (hasPositionChange && id && id !== 'new' && currentWorkspace?.id) {
-          saveNodePositions(currentWorkspace.id, id, result);
-        }
-        return result;
+        return withNodeActions(updated);
       });
     },
-    [withNodeActions, id, currentWorkspace?.id]
+    [withNodeActions]
   );
 
   const handleAddNode = useCallback(
