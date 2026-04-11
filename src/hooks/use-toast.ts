@@ -2,8 +2,12 @@ import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+/** Max simultaneous toasts in the viewport stack */
+const TOAST_LIMIT = 5;
+/** Time to keep unmounted toast in DOM so exit animation can finish (ms) */
+const TOAST_REMOVE_DELAY = 1000;
+/** Auto-dismiss duration for Radix Toast.Root when not overridden */
+const DEFAULT_TOAST_DURATION = 5000;
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -149,6 +153,7 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
+      duration: props.duration !== undefined ? props.duration : DEFAULT_TOAST_DURATION,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss();
@@ -174,7 +179,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
     ...state,

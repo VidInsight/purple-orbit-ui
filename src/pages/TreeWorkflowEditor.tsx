@@ -105,6 +105,12 @@ type TreeEdge = Edge;
 const NODE_HORIZONTAL_SPACING = 260;
 const NODE_VERTICAL_SPACING = 180;
 
+/** Navbar tool cluster: icon buttons + tooltip styling */
+const TREE_TOOLBAR_ICON_BTN_CLASS =
+  'h-9 w-9 sm:h-10 sm:w-10 rounded-xl border border-border/45 bg-surface/35 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/45 hover:bg-primary/[0.11] hover:text-primary hover:shadow-[0_0_28px_-12px_hsl(var(--primary)/0.5)] active:scale-[0.98]';
+const TREE_TOOLBAR_TOOLTIP_CLASS =
+  'max-w-[min(100vw-2rem,22rem)] rounded-xl border border-primary/30 bg-gradient-to-b from-popover via-popover/98 to-popover/90 px-4 py-2.5 text-sm font-medium leading-snug text-popover-foreground shadow-[0_14px_44px_-10px_rgba(0,0,0,0.55)] backdrop-blur-xl';
+
 const toDisplayLabel = (s: string) =>
   (s || '')
     .replace(/_/g, ' ')
@@ -1081,7 +1087,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Invalid connection',
           description: 'Trigger node cannot have a parent in tree view.',
-          variant: 'destructive',
+          variant: 'warning',
         });
         return;
       }
@@ -1091,7 +1097,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Invalid connection',
           description: 'Each node can only have a single parent in tree mode.',
-          variant: 'destructive',
+          variant: 'warning',
         });
         return;
       }
@@ -1100,7 +1106,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Invalid connection',
           description: 'This connection would create a cycle. Tree must remain acyclic.',
-          variant: 'destructive',
+          variant: 'warning',
         });
         return;
       }
@@ -1218,7 +1224,7 @@ export default function TreeWorkflowEditor() {
       toast({
         title: 'Cannot delete trigger',
         description: 'The virtual trigger node cannot be deleted.',
-        variant: 'destructive',
+        variant: 'warning',
       });
       return;
     }
@@ -1352,7 +1358,7 @@ export default function TreeWorkflowEditor() {
       a.download = `workflow-layout-${safeName}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: 'Exported', description: 'Canvas layout saved as JSON.' });
+      toast({ title: 'Exported', description: 'Canvas layout saved as JSON.', variant: 'success' });
     } catch {
       toast({ title: 'Export failed', description: 'Could not build the file.', variant: 'destructive' });
     }
@@ -1387,7 +1393,7 @@ export default function TreeWorkflowEditor() {
           setEdges(
             validEdges.map((e) => ({ ...e, type: (e.type as string) || 'deletable' })) as TreeEdge[]
           );
-          toast({ title: 'Imported', description: 'Canvas layout was replaced from the file.' });
+          toast({ title: 'Imported', description: 'Canvas layout was replaced from the file.', variant: 'success' });
         } catch {
           toast({
             title: 'Import failed',
@@ -1538,6 +1544,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Success',
           description: 'Node added to workflow successfully.',
+          variant: 'success',
         });
       } catch (error) {
         console.error('Failed to add node:', error);
@@ -1569,7 +1576,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Warning',
           description: 'Failed to load execution details.',
-          variant: 'default',
+          variant: 'warning',
         });
       } finally {
         setIsLoadingExecution(false);
@@ -1628,13 +1635,14 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Warning',
           description: 'Execution started but execution ID not found in response.',
-          variant: 'default',
+          variant: 'warning',
         });
       }
 
       toast({
         title: 'Success',
         description: 'Workflow test execution started successfully.',
+        variant: 'success',
       });
     } catch (error) {
       console.error('Failed to test workflow:', error);
@@ -1686,6 +1694,7 @@ export default function TreeWorkflowEditor() {
         toast({
           title: 'Execution stopped',
           description: 'Test execution was cancelled successfully.',
+          variant: 'success',
         });
       }
     } catch (error) {
@@ -1761,220 +1770,240 @@ export default function TreeWorkflowEditor() {
         <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.08),transparent)]" />
         <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_80%_at_100%_100%,hsl(var(--primary)/0.04),transparent)]" />
 
-        <header className="relative z-10 border-b border-border/40 bg-background/70 backdrop-blur-xl">
-          <div className="container mx-auto flex items-center justify-between gap-4 px-6 py-3">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-                className="h-9 w-9 rounded-xl border border-transparent hover:border-border/60 hover:bg-surface/60 transition-all duration-200"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex flex-col gap-0.5">
-                {isEditingName ? (
-                  <input
-                    className="bg-surface/50 rounded-lg px-3 py-1.5 text-lg font-semibold outline-none border border-border/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                    autoFocus
-                    value={workflowName}
-                    onChange={(e) => setWorkflowName(e.target.value)}
-                    onBlur={() => setIsEditingName(false)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') setIsEditingName(false);
-                    }}
-                  />
-                ) : (
-                  <button
-                    className="text-left text-lg font-semibold text-foreground hover:text-primary transition-colors rounded px-1 -mx-1 py-0.5"
-                    onClick={() => setIsEditingName(true)}
-                  >
-                    {workflowName}
-                  </button>
-                )}
-                <span className="text-[11px] font-medium text-muted-foreground/90 tracking-wide">
-                  Tree workflow · React Flow
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <TooltipProvider delayDuration={400}>
-                <div className="flex items-center gap-0.5 rounded-xl border border-border/50 bg-surface/40 p-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={!canUndo}
-                        onClick={handleUndo}
-                        aria-label="Undo"
-                      >
-                        <Undo2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Undo (Ctrl+Z)</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={!canRedo}
-                        onClick={handleRedo}
-                        aria-label="Redo"
-                      >
-                        <Redo2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Redo (Ctrl+Y or Ctrl+Shift+Z)</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
-                        onClick={handleAutoLayout}
-                        aria-label="Auto layout"
-                      >
-                        <LayoutGrid className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Auto-align tree layout</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
-                        onClick={handleFitView}
-                        aria-label="Fit view"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Fit graph to view</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        disabled={nodes.length === 0}
-                        onClick={handleExportLayoutJson}
-                        aria-label="Export layout JSON"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Download layout as JSON</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        onClick={() => importFileInputRef.current?.click()}
-                        aria-label="Import layout JSON"
-                      >
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Replace layout from JSON file</TooltipContent>
-                  </Tooltip>
-                </div>
-              </TooltipProvider>
-
-              <input
-                ref={importFileInputRef}
-                type="file"
-                accept="application/json,.json"
-                className="sr-only"
-                aria-hidden
-                tabIndex={-1}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file) handleImportLayoutJson(file);
-                }}
-              />
-
-              <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-surface/40 px-3 py-1.5">
-                <Label htmlFor="workflow-active" className="text-xs text-muted-foreground font-medium">
-                  Active
-                </Label>
-                <Switch
-                  id="workflow-active"
-                  checked={isActive}
-                  onCheckedChange={(checked) => setIsActive(checked)}
+        <header className="relative z-10 shrink-0 border-b border-border/30 bg-background/65 shadow-[0_8px_32px_-16px_rgba(0,0,0,0.45)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/50">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent"
+            aria-hidden
+          />
+          <div className="container mx-auto px-4 py-3 sm:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                  className="h-9 w-9 shrink-0 rounded-xl border border-border/50 bg-surface/35 text-muted-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:bg-primary/[0.08] hover:text-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.2),0_10px_28px_-12px_hsl(var(--primary)/0.45)]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div
+                  className="hidden h-9 w-px shrink-0 bg-gradient-to-b from-transparent via-border/70 to-transparent sm:block"
+                  aria-hidden
                 />
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-br from-primary/[0.14] to-primary/[0.04] text-primary shadow-[inset_0_1px_0_0_hsl(var(--primary)/0.22)] sm:flex"
+                      aria-hidden
+                    >
+                      <GitBranch className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      {isEditingName ? (
+                        <input
+                          className="w-full min-w-0 max-w-md rounded-lg border border-border/60 bg-surface/55 px-3 py-1.5 text-lg font-semibold tracking-tight shadow-inner outline-none transition-all focus:border-primary/60 focus:ring-2 focus:ring-primary/25"
+                          autoFocus
+                          value={workflowName}
+                          onChange={(e) => setWorkflowName(e.target.value)}
+                          onBlur={() => setIsEditingName(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') setIsEditingName(false);
+                          }}
+                        />
+                      ) : (
+                        <button
+                          className="-mx-1.5 rounded-lg px-1.5 py-0.5 text-left text-lg font-semibold tracking-tight text-foreground transition-colors hover:bg-primary/[0.06] hover:text-primary"
+                          onClick={() => setIsEditingName(true)}
+                        >
+                          {workflowName}
+                        </button>
+                      )}
+                      <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80 sm:text-[11px]">
+                        
+                      </span>
+                    </div>
+                  </div>
+                  <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'editor' | 'test')}>
+                    <TabsList className="relative h-9 shrink-0 gap-1 rounded-2xl border border-border/40 bg-muted/25 p-1 shadow-[inset_0_1px_0_0_hsl(var(--border)/0.28)]">
+                      <TabsTrigger
+                        value="editor"
+                        className="rounded-xl px-4 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-[0_1px_0_0_hsl(var(--border)/0.2)] data-[state=active]:ring-1 data-[state=active]:ring-primary/35"
+                      >
+                        Editor
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="test"
+                        className="rounded-xl px-4 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-[0_1px_0_0_hsl(var(--border)/0.2)] data-[state=active]:ring-1 data-[state=active]:ring-primary/35"
+                      >
+                        Test
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
               </div>
 
-              <Button
-                variant={showParamsPanel ? 'secondary' : 'outline'}
-                size="sm"
-                disabled={!selectedNodeId}
-                onClick={() => setShowParamsPanel((v) => !v)}
-                className="rounded-xl border-border/60 h-9 gap-2 font-medium"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Node Config</span>
-              </Button>
+              <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">
+                <TooltipProvider delayDuration={350}>
+                  <div className="flex items-center gap-1 rounded-2xl border border-border/50 bg-gradient-to-b from-surface/95 to-surface/45 p-1.5 shadow-[inset_0_1px_0_0_hsl(var(--border)/0.35)]">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          disabled={!canUndo}
+                          onClick={handleUndo}
+                          aria-label="Undo"
+                        >
+                          <Undo2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Undo (Ctrl+Z)
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          disabled={!canRedo}
+                          onClick={handleRedo}
+                          aria-label="Redo"
+                        >
+                          <Redo2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Redo (Ctrl+Y or Ctrl+Shift+Z)
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
+                          onClick={handleAutoLayout}
+                          aria-label="Auto layout"
+                        >
+                          <LayoutGrid className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Auto-align tree layout
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          disabled={activeTab !== 'editor' || isLoadingWorkflow || nodes.length === 0}
+                          onClick={handleFitView}
+                          aria-label="Fit view"
+                        >
+                          <Maximize2 className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Fit graph to view
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          disabled={nodes.length === 0}
+                          onClick={handleExportLayoutJson}
+                          aria-label="Export layout JSON"
+                        >
+                          <Download className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Download layout as JSON
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className={TREE_TOOLBAR_ICON_BTN_CLASS}
+                          onClick={() => importFileInputRef.current?.click()}
+                          aria-label="Import layout JSON"
+                        >
+                          <Upload className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.75} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" sideOffset={10} className={TREE_TOOLBAR_TOOLTIP_CLASS}>
+                        Replace layout from JSON file
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
 
-              <Button
-                size="sm"
-                onClick={handleTest}
-                disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
-                className="rounded-xl h-9 gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
-                data-tour-id="tree-editor-run-button"
-              >
-                {isRunningTest ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-                <span>Run Test</span>
-              </Button>
+                <input
+                  ref={importFileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  aria-hidden
+                  tabIndex={-1}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (file) handleImportLayoutJson(file);
+                  }}
+                />
+
+                <div className="flex items-center gap-2 rounded-2xl border border-border/45 bg-gradient-to-b from-surface/95 to-surface/50 px-3 py-1.5 shadow-[inset_0_1px_0_0_hsl(var(--border)/0.3)]">
+                  <Label htmlFor="workflow-active" className="text-xs font-medium text-muted-foreground">
+                    Active
+                  </Label>
+                  <Switch
+                    id="workflow-active"
+                    checked={isActive}
+                    onCheckedChange={(checked) => setIsActive(checked)}
+                  />
+                </div>
+
+               
+
+                <Button
+                  size="sm"
+                  onClick={handleTest}
+                  disabled={isRunningTest || !currentWorkspace?.id || !id || id === 'new'}
+                  className="h-9 gap-2 rounded-xl bg-primary font-medium text-primary-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_12px_32px_-12px_hsl(var(--primary)/0.55)] hover:bg-primary/92"
+                  data-tour-id="tree-editor-run-button"
+                >
+                  {isRunningTest ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  <span>Run</span>
+                </Button>
+              </div>
             </div>
-          </div>
-
-          <div className="container mx-auto px-6 pb-2">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'editor' | 'test')}>
-              <TabsList className="h-10 p-1 rounded-xl bg-surface/50 border border-border/40 gap-1">
-                <TabsTrigger
-                  value="editor"
-                  className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground font-medium px-4"
-                >
-                  Editor
-                </TabsTrigger>
-                <TabsTrigger
-                  value="test"
-                  className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground font-medium px-4"
-                >
-                  Test
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
         </header>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'editor' | 'test')}>
           <TabsContent value="editor" className="mt-0">
-            <div className="relative h-[calc(100vh-112px)] bg-background">
+            <div className="relative h-[calc(100vh-80px)] bg-background">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.03)_1px,transparent_1px)] bg-[size:24px_24px]" />
               <div className="relative flex h-full flex-col">
                 
@@ -1993,6 +2022,7 @@ export default function TreeWorkflowEditor() {
                   ) : (
                     <>
                       <ReactFlow
+                        proOptions={{ hideAttribution: true }}
                         nodes={nodesWithParams}
                         edges={edges}
                         nodeTypes={nodeTypes}
@@ -2024,14 +2054,7 @@ export default function TreeWorkflowEditor() {
                         }}
                       >
                         <Background gap={24} size={1} className="!stroke-border/40" />
-                        <MiniMap
-                          pannable
-                          zoomable
-                          nodeStrokeColor="hsl(var(--primary))"
-                          nodeColor="hsl(var(--primary) / 0.12)"
-                          maskColor="hsl(var(--background) / 0.8)"
-                          className="!rounded-xl !overflow-hidden !border !border-border/50 !shadow-lg"
-                        />
+                        
                         <Controls
                           className="!rounded-xl !overflow-hidden !border !border-border/50 !shadow-lg !bg-surface/95 [&>button]:!rounded-lg [&>button]:!border-0 [&>button]:!bg-surface [&>button]:!text-muted-foreground [&>button:hover]:!bg-primary/10 [&>button:hover]:!text-primary"
                         />
@@ -2127,7 +2150,7 @@ export default function TreeWorkflowEditor() {
           </TabsContent>
 
           <TabsContent value="test" className="mt-0">
-            <div className="relative h-[calc(100vh-112px)] min-h-[400px] overflow-auto bg-background">
+            <div className="relative h-[calc(100vh-80px)] min-h-[400px] overflow-auto bg-background">
               <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,hsl(var(--border)/0.02)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.02)_1px,transparent_1px)] bg-[size:32px_32px]" />
               <div className="relative container mx-auto px-6 py-8 space-y-6">
                 {!executionId && !isRunningTest ? (
